@@ -1,12 +1,15 @@
 package ctu.student.regreen.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
 @Entity
+@Table(name = "addresses")
+@Getter
+@Setter
 public class Address {
 
     @Id
@@ -21,9 +24,10 @@ public class Address {
     @JoinColumn(name = "village_id")
     private Village village;
 
-    @ManyToMany(mappedBy = "addresses")
+    @ManyToMany
+    @JoinTable(name = "user_address", joinColumns = @JoinColumn(name = "address_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 //    danh sach khach hang cung dia chi
-    private List<Customer> customers;
+    private List<User> users;
 
     public Address() {
         this.address_id = -1;
@@ -39,37 +43,6 @@ public class Address {
         this.village = village;
     }
 
-    public Integer getAddress_id() {
-        return address_id;
-    }
-
-    public void setAddress_id(Integer address_id) {
-        this.address_id = address_id;
-    }
-
-    public String getAddress_name() {
-        return address_name;
-    }
-
-    public void setAddress_name(String address_name) {
-        this.address_name = address_name;
-    }
-
-    public String getAddress_street() {
-        return address_street;
-    }
-
-    public void setAddress_street(String address_street) {
-        this.address_street = address_street;
-    }
-
-    public Village getVillage() {
-        return village;
-    }
-
-    public void setVillage(Village village) {
-        this.village = village;
-    }
 
     @Override
     public String toString() {

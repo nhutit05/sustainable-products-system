@@ -5,10 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
-import java.util.Properties;
 
 @Component
 public class DatabaseConfig implements CommandLineRunner {

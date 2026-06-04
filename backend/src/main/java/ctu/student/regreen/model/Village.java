@@ -1,10 +1,13 @@
 package ctu.student.regreen.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
 @Entity
+@Table(name = "vilages")
+@Getter
+@Setter
 public class Village {
 
     @Id
@@ -28,38 +31,6 @@ public class Village {
         this.village_id = village_id;
         this.village_name = village_name;
         this.village_code = village_code;
-        this.city = city;
-    }
-
-    public Integer getVillage_id() {
-        return village_id;
-    }
-
-    public void setVillage_id(Integer village_id) {
-        this.village_id = village_id;
-    }
-
-    public String getVillage_name() {
-        return village_name;
-    }
-
-    public void setVillage_name(String village_name) {
-        this.village_name = village_name;
-    }
-
-    public Integer getVillage_code() {
-        return village_code;
-    }
-
-    public void setVillage_code(Integer village_code) {
-        this.village_code = village_code;
-    }
-
-    public City getCity() {
-        return city;
-    }
-
-    public void setCity(City city) {
         this.city = city;
     }
 

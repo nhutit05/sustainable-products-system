@@ -1,21 +1,20 @@
 package ctu.student.regreen.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.List;
-
-@Data
 @Entity
+@Table(name = "customers")
+@Getter
+@Setter
 public class Customer {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer user_id;
-    private String email, password, username,number_phone, national_id;
+    private Integer customer_id;
 
-    @ManyToMany
-    private List<Address> addresses;
+    @OneToOne
+    @MapsId
+    private User user;
 
-
+    private Float current_eco_points, accumulated_eco_points;
 }
