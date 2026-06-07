@@ -1,56 +1,43 @@
 package ctu.student.regreen.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "addresses")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "users")
 public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer address_id;
-//    địa chỉ nhà
+
+    @NotBlank
+    @Column(nullable = false)
     private String address_name;
-//    Tên đường
+
+    @NotBlank
+    @Column(nullable = false)
     private String address_street;
 
-    @ManyToOne
-    @JoinColumn(name = "village_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "village_id", nullable = false)
     private Village village;
 
     @ManyToMany
     @JoinTable(name = "user_address", joinColumns = @JoinColumn(name = "address_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-//    danh sach khach hang cung dia chi
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
 
-    public Address() {
-        this.address_id = -1;
-        this.address_name = "";
-        this.address_street = "";
-        this.village = new Village();
-    }
-
-    public Address(Integer address_id, String address_name, String address_street, Village village) {
-        this.address_id = address_id;
-        this.address_name = address_name;
-        this.address_street = address_street;
-        this.village = village;
-    }
-
-
-    @Override
-    public String toString() {
-        return "Address{" +
-                "address_id=" + address_id +
-                ", address_name='" + address_name + '\'' +
-                ", address_street='" + address_street + '\'' +
-                ", village=" + village +
-                '}';
-    }
 }

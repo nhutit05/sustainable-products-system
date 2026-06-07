@@ -1,41 +1,38 @@
 package ctu.student.regreen.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "villages")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "city")
 public class Village {
 
     @Id
     private Integer village_id;
+
+    @Column(nullable = false)
+    @NotBlank
     private String village_name;
 
-    @ManyToOne
-    @JoinColumn(name = "city_id")
+    @NotBlank
+    @Column(nullable = false)
+    @Pattern(regexp = "^(Xã|Phường|Thị trấn)$")
+    private String village_level;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
+    @JoinColumn(name = "city_id", nullable = false)
     private City city;
-
-    public Village() {
-        this.village_id = -1;
-        this.village_name = "";
-        this.city = new City();
-    }
-
-    public Village(Integer village_id, String village_name, City city) {
-        this.village_id = village_id;
-        this.village_name = village_name;
-        this.city = city;
-    }
-
-    @Override
-    public String toString() {
-        return "Village{" +
-                "village_id=" + village_id +
-                ", village_name='" + village_name + '\'' +
-                ", city=" + city +
-                '}';
-    }
 }
