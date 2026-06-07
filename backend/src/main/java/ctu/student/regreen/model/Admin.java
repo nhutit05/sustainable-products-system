@@ -4,25 +4,24 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.PastOrPresent;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Table(name = "admins")
 @Entity
 @Getter
 @Setter
-public class Admin {
-    @Id
-    private Integer admin_id;
-
-    @OneToOne
-    @MapsId
-    private User user;
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(callSuper = true)
+public class Admin extends User{
 
     @Column(nullable = false)
-    private LocalDate hired_date;
+    @PastOrPresent
+    private LocalDate hire_date;
 }
