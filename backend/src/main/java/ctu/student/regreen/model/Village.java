@@ -20,7 +20,6 @@ import lombok.ToString;
 public class Village {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer village_id;
 
     @Column(nullable = false)
