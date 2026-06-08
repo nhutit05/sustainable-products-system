@@ -29,3 +29,4 @@ public class Order {
     @JoinColumn(name = "payment_method_id", nullable = false)
     private PaymentMethod payment_method;
 }
+

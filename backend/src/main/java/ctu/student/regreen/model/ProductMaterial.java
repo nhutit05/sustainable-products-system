@@ -22,10 +22,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product_Material {
+public class ProductMaterial {
 
     @EmbeddedId
-    private Product_Material_Id id;
+    private ProductMaterialId id;
 
     @MapsId("product_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
