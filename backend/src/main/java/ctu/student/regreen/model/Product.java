@@ -69,4 +69,8 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     @NotNull(message = "Danh mục không được trống")
     private Category category;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "file_id", nullable = false)
+    private File file;
 }

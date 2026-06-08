@@ -15,7 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class Product_Material_Id implements Serializable {
+public class ProductMaterialId implements Serializable {
     private Integer product_id;
     private Integer material_id;
 }
