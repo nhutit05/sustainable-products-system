@@ -26,5 +26,4 @@ public class FavoriteProduct {
     @ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Customer customer;
-
 }

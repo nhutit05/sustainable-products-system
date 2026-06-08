@@ -20,6 +20,7 @@ public class RefundSlip {
     @NotBlank(message = "So tai khoản ngân hàng không được để trống")
     @Column(nullable = false)
     private String bank_number;
+    
     @NotBlank(message = "Tên chủ tài khoản ngân hàng không được để trống")
     @Column(nullable = false)
     private String account_bank_name;
@@ -28,11 +29,11 @@ public class RefundSlip {
     @Column(nullable = false)
     private String reason;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bank_id", nullable = false)
     private Bank bank;
 }

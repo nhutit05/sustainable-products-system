@@ -1,7 +1,6 @@
 package ctu.student.regreen.model;
 
 import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +14,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,7 +25,6 @@ import lombok.ToString;
 @Setter
 @ToString
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
 public class Voucher {
     @Id
@@ -62,7 +59,6 @@ public class Voucher {
     @NotNull
     private Integer quantity;
 
-    @Builder.Default
     @Column(nullable = false)
     @NotNull
     private Boolean is_active = true;
