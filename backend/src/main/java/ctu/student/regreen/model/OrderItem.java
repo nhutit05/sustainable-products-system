@@ -1,0 +1,5 @@
+package ctu.student.regreen.model;
+
+public class OrderItem {
+    
+}
