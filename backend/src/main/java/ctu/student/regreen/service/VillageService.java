@@ -33,6 +33,11 @@ public class VillageService {
         return repository.save(village);
     }
 
+    // [POST] /api/villages/bulk
+    public List<Village> createVillages(List<Village> villages) {
+        return repository.saveAll(villages);
+    }
+
     // PUT] /api/villages/{id}
     public Village updateVillage(Integer id, Village village) {
         Village existingVillage = repository.findById(id).orElse(null);

@@ -22,7 +22,6 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "villages")
 public class City {
     @Id
     private Integer city_id;
@@ -34,5 +33,4 @@ public class City {
     @NotBlank
     @Column(nullable = false)
     private String city_level;
-
 }

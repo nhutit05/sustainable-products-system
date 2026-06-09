@@ -22,9 +22,18 @@ public class CityService {
         return repository.findById(city_id).orElse(null);
     }
 
+    // [GET] /api/city/count
+    public Integer countCities() {
+        return (int) repository.count();
+    }
     // [POST] /api/city
     public void addCity(City new_City) {
         repository.save(new_City);
+    }
+
+    // [POST] /api/city/bulk
+    public void addCities(List<City> new_Cities) {
+        repository.saveAll(new_Cities);
     }
 
     // PUT /api/city/:id
