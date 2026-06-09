@@ -34,7 +34,7 @@ public class City {
     @NotBlank
     @Column(nullable = false)
     private String city_level;
-
+    
     @OneToMany(mappedBy = "city", fetch = FetchType.LAZY)
     private List<Village> villages = new ArrayList<>();
 }
