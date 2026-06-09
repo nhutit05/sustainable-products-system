@@ -12,11 +12,19 @@ import lombok.ToString;
 @Table(name = "customers")
 @Getter
 @Setter
-@ToString(callSuper = true)
+@ToString(callSuper = true, exclude = "cart")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Customer extends User{
     @Column(nullable = false)
     @PositiveOrZero
     private Integer accumulated_eco_points =  0;
+
+    @OneToOne(
+        mappedBy = "customer",
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private Cart cart;
 }

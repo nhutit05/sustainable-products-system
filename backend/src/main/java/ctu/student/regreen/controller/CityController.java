@@ -3,7 +3,6 @@ package ctu.student.regreen.controller;
 import ctu.student.regreen.model.City;
 import ctu.student.regreen.service.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
