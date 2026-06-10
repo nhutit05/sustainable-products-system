@@ -1,5 +1,6 @@
 package ctu.student.regreen.service;
 
+import ctu.student.regreen.dto.AddressRequest;
 import ctu.student.regreen.model.Address;
 import ctu.student.regreen.repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,8 @@ public class AddressService {
     }
 
     // [POST] /api/addresses
-    public Address createAddress(Address address) {
-        return repository.save(address);
+    public Address createAddress(AddressRequest address) {
+        return null;
     }
 
     // [POST] /api/addresses/bulk

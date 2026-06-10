@@ -1,5 +1,6 @@
 package ctu.student.regreen.controller;
 
+import ctu.student.regreen.dto.AddressRequest;
 import ctu.student.regreen.model.Address;
 import ctu.student.regreen.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class AddressController {
 
     // [POST] /api/addresses
     @PostMapping
-    public void createAddress(@RequestBody Address address) {
+    public void createAddress(@RequestBody AddressRequest address) {
         service.createAddress(address);
     }
 
