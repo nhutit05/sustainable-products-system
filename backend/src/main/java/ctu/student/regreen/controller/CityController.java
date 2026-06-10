@@ -27,10 +27,22 @@ public class CityController {
         return service.getCityById(city_id);
     }
 
+    // [GET] /api/city/count
+    @GetMapping("/count")
+    public Integer countCities() {
+        return service.countCities();
+    }
+
     // [POST]
     @PostMapping
     public void addCity(@RequestBody City newCity) {
         service.addCity(newCity);
+    }
+
+        // [POST] /api/city/bulk
+    @PostMapping("/bulk")
+    public void addCities(@RequestBody List<City> newCities) {
+        service.addCities(newCities);
     }
 
     // [PUT] /api/city/:id

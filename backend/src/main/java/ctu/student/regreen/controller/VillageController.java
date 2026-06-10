@@ -39,6 +39,12 @@ public class VillageController {
         return service.createVillage(village);
     }
 
+    // [POST] /api/villages/bulk
+    @PostMapping("/bulk")
+    public List<Village> createVillages(@RequestBody List<Village> villages) {
+        return service.createVillages(villages);
+    }
+
     // PUT] /api/villages/{id}
     @PutMapping("{id}")
     public Village updateVillage(@PathVariable Integer id,@RequestBody Village village) {
