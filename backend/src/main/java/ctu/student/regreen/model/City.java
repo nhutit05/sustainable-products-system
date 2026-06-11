@@ -1,15 +1,17 @@
 package ctu.student.regreen.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Table(name = "cities")
 @Entity
@@ -17,17 +19,21 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
+@ToString
 public class City {
     @Id
-    private Integer city_id;
+    @NotNull
+    @Column(nullable = false, name = "city_id")
+    private Integer cityId;
 
     @NotBlank(message = "Tên tỉnh/thành phố không được trống")
-    @Column(nullable = false)
-    private String city_name;
+    @Size(max = 100)
+    @Column(nullable = false, name = "city_name", length = 100)
+    private String cityName;
 
     @NotBlank
-    @Column(nullable = false)
-    private String city_level;
+    @Size(max = 100)
+    @Column(nullable = false, name = "city_level", length = 100)
+    private String cityLevel;
+
 }

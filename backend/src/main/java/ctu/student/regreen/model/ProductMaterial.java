@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "product_materials")
@@ -22,17 +23,18 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = {"product", "material"})
 public class ProductMaterial {
 
     @EmbeddedId
     private ProductMaterialId id;
 
-    @MapsId("product_id")
+    @MapsId("productId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @MapsId("material_id")
+    @MapsId("materialId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "material_id", nullable = false)
     private Material material;
@@ -40,6 +42,6 @@ public class ProductMaterial {
     @NotNull(message = "Tỷ lệ phần trăm không được trống")
     @DecimalMin(value = "0.0", inclusive = false, message = "Tỷ lệ phần trăm phải lớn hơn 0")
     @DecimalMax(value = "100.0", inclusive = true, message = "Tỷ lệ phần trăm không được vượt quá 100")
-    @Column(nullable = false)
+    @Column(nullable = false, name = "percentage")
     private Float percentage; // Tỷ lệ phần trăm của vật liệu trong sản phẩm
 }

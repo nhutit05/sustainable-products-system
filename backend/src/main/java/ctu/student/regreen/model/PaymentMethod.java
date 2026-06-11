@@ -24,10 +24,11 @@ import lombok.ToString;
 public class PaymentMethod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer payment_method_id;
+    @Column(name = "payment_method_id")
+    private Integer paymentMethodId;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 50, name = "payment_method_name")
     @Size(max = 50)
     @NotBlank(message = "Tên phương thức thanh toán không được rỗng.")
-    private String payment_method_name;
+    private String paymentMethodName;
 }

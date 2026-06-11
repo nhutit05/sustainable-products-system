@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -18,9 +19,10 @@ import lombok.ToString;
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer extends User{
-    @Column(nullable = false)
+    @NonNull
+    @Column(nullable = false, name = "accumulated_eco_points")
     @PositiveOrZero
-    private Integer accumulated_eco_points =  0;
+    private Integer accumulatedEcoPoints =  0;
 
     @OneToOne(
         mappedBy = "customer",
