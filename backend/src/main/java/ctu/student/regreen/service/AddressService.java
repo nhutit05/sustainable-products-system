@@ -43,7 +43,7 @@ public class AddressService {
     public Address updateAddress(Integer id, Address address) {
         Address existingAddress = repository.findById(id).orElse(null);
         if (existingAddress != null) {
-            return repository.save(existingAddress);
+            return repository.save(address);
         }
         return null;
     }

@@ -42,7 +42,7 @@ public class VillageService {
     public Village updateVillage(Integer id, Village village) {
         Village existingVillage = repository.findById(id).orElse(null);
         if (existingVillage != null) {
-            return repository.save(existingVillage);
+            return repository.save(village);
         }
         return null;
     }
