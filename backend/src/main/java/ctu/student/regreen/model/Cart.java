@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,23 +27,24 @@ import lombok.ToString;
 @Table(name = "carts")
 @Getter
 @Setter
-@ToString(exclude = "customer")
+@ToString(exclude = {"customer", "cartItems"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer cart_id;
+    @Column(name = "cart_id")
+    private Integer cartId;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime carted_at;
+    @Column(nullable = false, updatable = false, name = "carted_at")
+    private LocalDateTime cartedAt;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(nullable = false, name = "user_id", unique = true)
     private Customer customer;
 
-    @OneToMany(mappedBy = "cart")
-    private List<CartItem> cart_items = new ArrayList<>();
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
 
 }

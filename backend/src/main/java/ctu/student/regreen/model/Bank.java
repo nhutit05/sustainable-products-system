@@ -18,10 +18,12 @@ import lombok.Setter;
 @Setter
 public class Bank {
 
+    @NotBlank
     @Id
-    private String bank_id;
+    @Column(name = "bank_id", nullable = false, length = 20)
+    private String bankId;
 
     @NotBlank(message = "Tên ngân hàng không được để trống")
-    @Column(nullable = false)
-    private String bank_name;
+    @Column(nullable = false, name = "bank_name")
+    private String bankName;
 }

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +22,8 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Admin extends User{
 
-    @Column(nullable = false)
+    @NotNull
+    @Column(nullable = false, name = "hire_date")
     @PastOrPresent
-    private LocalDate hire_date;
+    private LocalDate hireDate;
 }

@@ -15,10 +15,11 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer category_id;
+    @Column(name = "category_id")
+    private Integer categoryId;
 
     @NotBlank(message = "Tên danh mục không được trống")
     @Size(max = 150, message = "Tên danh mục tối đa 150 ký tự")
-    @Column(nullable = false, unique = true)
-    private String category_name;
+    @Column(nullable = false, unique = true, name = "category_name", length = 150)
+    private String categoryName;
 }

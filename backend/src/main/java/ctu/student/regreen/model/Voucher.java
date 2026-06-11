@@ -11,6 +11,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -29,45 +30,46 @@ import lombok.ToString;
 public class Voucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer voucher_id;
+    @Column(name = "voucher_id")
+    private Integer voucherId;
 
-    @Column(nullable = false, updatable = false, unique = true, length = 50)
+    @Column(nullable = false, updatable = false, unique = true, length = 50, name = "code")
     @NotBlank
     @Size(max = 50)
     private String code;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT", name = "description")
     @NotBlank
     private String description;
 
-    @PositiveOrZero
+    @Positive
     @NotNull
-    @Column(nullable = false)
-    private Float discount_value;
+    @Column(nullable = false, name = "discount_value")
+    private Float discountValue;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, name = "started_at")
     @FutureOrPresent
-    private LocalDate started_at;
+    private LocalDate startedAt;
 
     @NotNull
-    @Column(nullable = false)
-    private LocalDate expired_at;
+    @Column(nullable = false, name = "expired_at")
+    private LocalDate expiredAt;
 
-    @Column(nullable = false, updatable = true)
+    @Column(nullable = false, updatable = true, name = "quantity")
     @PositiveOrZero
     @NotNull
     private Integer quantity;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_active")
     @NotNull
-    private Boolean is_active = true;
+    private Boolean isActive = true;
 
     @AssertTrue(message = "Expired date must be after or equal started date")
     public boolean isDateValid() {
-        if (started_at == null || expired_at == null) {
+        if (startedAt == null || expiredAt == null) {
             return true;
         }
-        return !expired_at.isBefore(started_at);
+        return !expiredAt.isBefore(startedAt);
     }
 }

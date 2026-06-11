@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +20,7 @@ import lombok.ToString;
 @Table(name = "cart_items")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"product", "cart"})
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartItem {
@@ -28,17 +28,17 @@ public class CartItem {
     private CartItemId id;
 
     @NotNull
-    @Column(nullable = false)
-    @PositiveOrZero
+    @Column(nullable = false, name = "quantity")
+    @Positive
     private Integer quantity;
 
-    @MapsId("product_id")
+    @MapsId("productId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;   
 
  
-    @MapsId("cart_id")
+    @MapsId("cartId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id")
     private Cart cart;

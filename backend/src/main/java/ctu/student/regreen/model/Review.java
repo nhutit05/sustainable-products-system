@@ -1,13 +1,16 @@
 package ctu.student.regreen.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "reviews")
@@ -15,16 +18,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString(exclude = {"customer", "product", "reviewImages"})
 public class Review {
 
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    private Integer review_id;
+    @Column(name = "review_id")
+    private Integer reviewId;
 
-    private String review_content;
+    @Column(name = "review_content", nullable = false)
+    @NotBlank
+    private String reviewContent;
 
-    @PositiveOrZero
-    private Integer review_rating;
+    @Positive
+    @Column(name = "review_rating")
+    private Integer reviewRating;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -35,5 +43,5 @@ public class Review {
     private Product product;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewImage> reviewImages;
+    private List<ReviewImage> reviewImages = new ArrayList<>();
 }

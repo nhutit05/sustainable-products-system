@@ -1,5 +1,6 @@
 package ctu.student.regreen.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -16,7 +17,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class ProductMaterialId implements Serializable {
-    private Integer product_id;
-    private Integer material_id;
+    @Column(name = "product_id")
+    private Integer productId;
+
+    @Column(name = "material_id")
+    private Integer materialId;
 }
 
