@@ -1,55 +1,70 @@
 package ctu.student.regreen.service;
-
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import ctu.student.regreen.dto.request.PaymentStatusRequest;
+import ctu.student.regreen.dto.response.PaymentStatusResponse;
+import ctu.student.regreen.exception.BusinessException;
+import ctu.student.regreen.exception.ErrorCode;
+import ctu.student.regreen.exception.ResourceNotFoundException;
+import ctu.student.regreen.mapper.PaymentStatusMapper;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PaymentStatusService {
-    
+
     private final PaymentStatusRepository repository;
+    private final PaymentStatusMapper mapper;
 
-    @Transactional
-    public PaymentStatus addPaymentStatus(PaymentStatus paymentStatus) {
-        return repository.save(paymentStatus);
-    }
+    public PaymentStatusResponse create(PaymentStatusRequest request) {
 
-    public List<PaymentStatus> getAllPaymentStatuses() {
-        return repository.findAll();
-    }
-
-    public Optional<PaymentStatus> getPaymentStatusById(Integer id) {
-        return repository.findById(id);
-    }
-
-    public PaymentStatus updatePaymentStatus(Integer id, PaymentStatus newData) {
-        return repository.findById(id)
-        .map(existingStatus -> {
-            existingStatus.setPaymentStatusName(newData.getPaymentStatusName());
-            return repository.save(existingStatus);
-        })
-        .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi phù hợp với id" + id));
-    }
-
-    @Transactional
-    public void deleteAllPaymentStatuses() {
-        repository.deleteAll();
-    }
-
-    @Transactional
-    public boolean deletePaymentStatusById(Integer id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
+        if (repository.existsByPaymentStatusName(request.getPaymentStatusName())) {
+            throw new BusinessException(ErrorCode.PAYMENT_STATUS_ALREADY_EXISTS);
         }
-        return false;
+
+        PaymentStatus entity = mapper.toEntity(request);
+        return mapper.toResponse(repository.save(entity));
+    }
+
+    public PaymentStatusResponse getById(Integer id) {
+
+        PaymentStatus entity = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(ErrorCode.PAYMENT_STATUS_NOT_FOUND));
+
+        return mapper.toResponse(entity);
+    }
+
+    public List<PaymentStatusResponse> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public PaymentStatusResponse update(Integer id, PaymentStatusRequest request) {
+
+        PaymentStatus entity = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(ErrorCode.PAYMENT_STATUS_NOT_FOUND));
+
+        entity.setPaymentStatusName(request.getPaymentStatusName());
+
+        return mapper.toResponse(entity);
+    }
+
+    public void delete(Integer id) {
+
+        PaymentStatus entity = repository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(ErrorCode.PAYMENT_STATUS_NOT_FOUND));
+
+        repository.delete(entity);
     }
 }

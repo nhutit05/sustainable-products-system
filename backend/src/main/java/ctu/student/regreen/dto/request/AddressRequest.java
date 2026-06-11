@@ -1,4 +1,4 @@
-package ctu.student.regreen.dto;
+package ctu.student.regreen.dto.request;
 
 public class AddressRequest {
     private String address_name;

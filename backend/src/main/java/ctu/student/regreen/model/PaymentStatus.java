@@ -20,7 +20,6 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class PaymentStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +27,5 @@ public class PaymentStatus {
     private Integer paymentStatusId;
 
     @Column(nullable = false, unique = true, length = 50, name = "payment_status_name")
-    @Size(max = 50)
-    @NotBlank(message = "Tên trạng thái thanh toán không được rỗng.")
     private String paymentStatusName;
 }
