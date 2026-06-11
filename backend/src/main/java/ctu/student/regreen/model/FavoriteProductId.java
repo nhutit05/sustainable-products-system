@@ -15,6 +15,7 @@ import java.io.Serializable;
 public class FavoriteProductId  implements Serializable {
     @Column(name = "product_id")
     private Integer productId;
+
     @Column(name = "user_id")
     private Integer userId;
 }

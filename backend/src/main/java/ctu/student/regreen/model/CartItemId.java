@@ -18,7 +18,7 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class CartItemId implements Serializable{
     @Column(name = "cart_id")
-    private Integer carId;
+    private Integer cartId;
     @Column(name = "product_id")
     private Integer productId;
 }

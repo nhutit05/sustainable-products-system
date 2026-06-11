@@ -24,12 +24,12 @@ public class Material {
 
     @NotBlank(message = "Tên vật liệu không được trống")
     @Size(max = 150, message = "Tên vật liệu tối đa 150 ký tự")
-    @Column(name = "material_name", nullable = false, unique = true)
+    @Column(nullable = false, unique = true, name = "material_name", length = 150)
     private String materialName;
 
 //    Hệ số phát thải (emission index) của vật liệu, đơn vị kg CO2e/kg vật liệu
     @NotNull(message = "Hệ số phát thải không được trống")
     @DecimalMin(value = "0.0", inclusive = true, message = "Hệ số phát thải phải lớn hơn hoặc bằng 0")
-    @Column(name = "emission_index", nullable = false)
+    @Column(nullable = false, name = "emission_index")
     private Float emissionIndex;
 }

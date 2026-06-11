@@ -24,10 +24,10 @@ import lombok.ToString;
 public class PaymentStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_status_id", nullable = false, updatable = false)
+    @Column(name = "payment_status_id")
     private Integer paymentStatusId;
 
-    @Column(name = "payment_status_name", nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 50, name = "payment_status_name")
     @Size(max = 50)
     @NotBlank(message = "Tên trạng thái thanh toán không được rỗng.")
     private String paymentStatusName;

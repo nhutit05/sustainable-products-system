@@ -10,15 +10,16 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString(exclude = {"review"})
 public class ReviewImage {
 
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    @Column(name = "review_image_id", nullable = false, updatable = false)
+    @Column(name = "review_image_id")
     private Integer reviewImageId;
 
     @NotBlank(message = "URL hình ảnh không được để trống")
-    @Column(name = "review_image_url", nullable = false)
+    @Column(nullable = false, name = "review_image_url")
     private String reviewImageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

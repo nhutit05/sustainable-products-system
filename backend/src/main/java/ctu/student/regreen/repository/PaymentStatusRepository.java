@@ -1,10 +1,10 @@
 package ctu.student.regreen.repository;
 
-import ctu.student.regreen.model.City;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import ctu.student.regreen.model.PaymentStatus;
 
 @Repository
-public interface CityRepository extends JpaRepository<City, Integer> {
+public interface PaymentStatusRepository extends JpaRepository<PaymentStatus, Integer>{
 }

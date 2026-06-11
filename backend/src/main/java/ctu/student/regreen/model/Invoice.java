@@ -2,6 +2,8 @@ package ctu.student.regreen.model;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +23,7 @@ import lombok.ToString;
 @Table(name = "invoices")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "order")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Invoice {
@@ -30,10 +32,11 @@ public class Invoice {
     @Column(name = "invoice_id")
     private Integer invoiceId;
 
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
 }

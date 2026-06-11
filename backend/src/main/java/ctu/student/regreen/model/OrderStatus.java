@@ -27,7 +27,7 @@ public class OrderStatus {
     @Column(name = "order_status_id")
     private Integer orderStatusId;
 
-    @Column(name = "order_status_name", nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 50, name = "order_status_name")
     @Size(max = 50)
     @NotBlank(message = "Tên trạng thái đơn hàng không được rỗng.")
     private String orderStatusName;

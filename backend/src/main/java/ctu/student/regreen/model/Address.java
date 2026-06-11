@@ -1,12 +1,14 @@
 package ctu.student.regreen.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+// import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "addresses")
@@ -14,7 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@ToString(exclude = {"user", "village"})
 public class Address {
 
     @Id
@@ -23,14 +25,14 @@ public class Address {
     private Integer addressId;
 
     @NotBlank
-    @Column(name = "address_name", nullable = false)
+    @Column(nullable = false, name = "address_name")
     private String addressName;
 
     @NotBlank
-    @Column(name = "address_street", nullable = false)
+    @Column(nullable = false, name = "address_street")
     private String addressStreet;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "village_id", nullable = false)
     private Village village;
 

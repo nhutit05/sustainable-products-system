@@ -8,6 +8,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,28 +22,29 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = {"product", "order"})
 public class OrderItem {
     @EmbeddedId
     private OrderItemId orderItemId;
 
     @PositiveOrZero
     @NotNull
-    @Column(nullable = false)
+    @Column(nullable = false, name = "quantity")
     private Integer quantity;
 
     @NotNull
-    @PositiveOrZero
-    @Column(name = "purchased_price", nullable = false)
-    private Integer purchasedPrice;
 
-    @MapsId("order_id")
+    @Positive
+    @Column(nullable = false, name = "purchased_price")
+    private Float purchasedPrice;
+
+    @MapsId("orderId")
     @ManyToOne(optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @MapsId("product_id")
-    @ManyToOne
+    @MapsId("productId")
+    @ManyToOne(optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
