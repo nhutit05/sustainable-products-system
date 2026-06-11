@@ -19,7 +19,6 @@ import lombok.Setter;
 public class OrderItemId implements Serializable{
     @Column(name = "order_id")
     private Integer orderId;
-
     @Column(name = "product_id")
     private Integer productId;
 }

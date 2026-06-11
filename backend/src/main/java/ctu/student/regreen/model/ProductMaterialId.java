@@ -19,7 +19,6 @@ import java.io.Serializable;
 public class ProductMaterialId implements Serializable {
     @Column(name = "product_id")
     private Integer productId;
-
     @Column(name = "material_id")
     private Integer materialId;
 }

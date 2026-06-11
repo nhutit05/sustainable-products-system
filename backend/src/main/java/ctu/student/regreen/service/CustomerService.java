@@ -37,7 +37,7 @@ public class CustomerService {
     public Customer updateCustomer(Integer id, Customer customer) {
         Customer existingCustomer = repository.findById(id).orElse(null);
         if (existingCustomer != null) {
-            return repository.save(existingCustomer);
+            return repository.save(customer);
         }
         return null;
     }

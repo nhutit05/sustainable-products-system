@@ -33,11 +33,19 @@ import lombok.ToString;
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+<<<<<<< HEAD
+    @Column(name = "cart_id", nullable = false, unique = true)
+    private Integer cartId;
+
+    @CreationTimestamp
+    @Column(name = "carted_at", nullable = false, updatable = false)
+=======
     @Column(name = "cart_id")
     private Integer cartId;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false, name = "carted_at")
+>>>>>>> main
     private LocalDateTime cartedAt;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)

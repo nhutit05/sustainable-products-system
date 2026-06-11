@@ -33,6 +33,7 @@ public class OrderItem {
     private Integer quantity;
 
     @NotNull
+
     @Positive
     @Column(nullable = false, name = "purchased_price")
     private Float purchasedPrice;
