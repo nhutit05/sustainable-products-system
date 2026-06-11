@@ -1,6 +1,6 @@
 package ctu.student.regreen.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -8,25 +8,30 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.sql.Connection;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class DatabaseConfig implements CommandLineRunner {
 
-    @Autowired
-    private DataSource dataSource; // lấy dữ liệu được cấu hình bởi datasource
+    private final DataSource dataSource;
 
     @Value("${server.port}")
     private String port;
 
     @Override
-    public void run(String... args) throws Exception {
-        Connection connection = dataSource.getConnection();
+    public void run(String... args) {
+        try (Connection connection = dataSource.getConnection()) {
 
-        if(connection != null) {
-            System.out.println("Kết nối CSDL PostgreSQL thành công !");
-        } else {
-            System.out.println("Có lỗi trong quá trình kết nối CSDL !!!");
+            log.info("Kết nối CSDL PostgreSQL thành công!");
+
+            log.info("Database: {}", connection.getMetaData().getDatabaseProductName());
+
+        } catch (Exception e) {
+            log.error("Có lỗi khi kết nối CSDL!", e);
         }
-        System.out.println("link: http://localhost:" + port + "/api");
-        connection.close();
+
+        log.info("Link: http://localhost:{}/api", port);
     }
 }
