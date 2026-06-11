@@ -20,7 +20,6 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class PaymentMethod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +28,5 @@ public class PaymentMethod {
     private Integer paymentMethodId;
 
     @Column(nullable = false, unique = true, length = 50, name = "payment_method_name")
-    @Size(max = 50)
-    @NotBlank(message = "Tên phương thức thanh toán không được rỗng.")
     private String paymentMethodName;
 }

@@ -1,4 +1,5 @@
-package ctu.student.regreen.service;
+package ctu.student.regreen.service.implement;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,11 +13,12 @@ import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.PaymentStatusMapper;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.repository.PaymentStatusRepository;
+import ctu.student.regreen.service.interfaces.PaymentStatusService;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentStatusService {
+public class PaymentStatusServiceImpl implements PaymentStatusService {
 
     private final PaymentStatusRepository repository;
     private final PaymentStatusMapper mapper;
