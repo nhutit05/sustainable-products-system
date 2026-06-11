@@ -1,9 +1,6 @@
 package ctu.student.regreen.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,23 +16,26 @@ import lombok.Setter;
 public class File {
 
     @Id
-    private Integer file_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "file_id")
+    private Integer fileId;
 
     @NotBlank(message = "Tiêu đề file không được để trống")
-    @Column(nullable = false)
-    private String file_title;
+    @Column(name = "file_title", nullable = false)
+    private String fileTitle;
 
     @NotBlank(message = "Tên file không được để trống")
-    @Column(nullable = false)
-    private String file_name;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
     @NotBlank(message = "URL file không được để trống")
-    @Column(nullable = false)
-    private String file_url;
+    @Column(name = "file_url", nullable = false)
+    private String fileUrl;
 
     @NotBlank(message = "Định dạng file không được để trống")
-    @Column(nullable = false)
-    private String file_format;
+    @Column(name = "file_format", nullable = false)
+    private String fileFormat;
 
-    private Boolean update_merchanism;
+    @Column(name = "update_merchanism")
+    private Boolean updateMerchanism;
 }
