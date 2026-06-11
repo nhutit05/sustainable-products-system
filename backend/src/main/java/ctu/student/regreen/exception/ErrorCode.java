@@ -11,7 +11,10 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS("USR_002", "Email already exists"),
 
     INVALID_REQUEST("COM_001", "Invalid request"),
-    INTERNAL_SERVER_ERROR("COM_999", "Internal server error");
+    INTERNAL_SERVER_ERROR("COM_999", "Internal server error"),
+
+    PAYMENT_STATUS_ALREADY_EXISTS("USR_003", "Payment status already exists"),
+    PAYMENT_STATUS_NOT_FOUND("USR_004", "Payment status not found");
 
     private final String code;
     private final String message;
