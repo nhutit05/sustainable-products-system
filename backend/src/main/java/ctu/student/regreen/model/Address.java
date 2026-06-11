@@ -19,15 +19,16 @@ public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer address_id;
+    @Column(name = "address_id")
+    private Integer addressId;
 
     @NotBlank
-    @Column(nullable = false)
-    private String address_name;
+    @Column(name = "address_name", nullable = false)
+    private String addressName;
 
     @NotBlank
-    @Column(nullable = false)
-    private String address_street;
+    @Column(name = "address_street", nullable = false)
+    private String addressStreet;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "village_id", nullable = false)

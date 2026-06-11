@@ -21,46 +21,47 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    private Integer product_id;
+    @Column(name = "product_id", nullable = false, updatable = false)
+    private Integer productId;
 
     @NotBlank(message = "Tên sản phẩm không được trống")
     @Size(max = 150, message = "Tên sản phẩm tối đa 150 ký tự")
-    @Column(nullable = false)
-    private String product_name;
+    @Column(name = "product_name", nullable = false)
+    private String productName;
 
     @NotNull(message = "Giá sản phẩm không được trống")
     @DecimalMin(value = "0.0", inclusive = false, message = "Giá sản phẩm phải lớn hơn 0")
-    @Column(nullable = false)
-    private Float product_price;
+    @Column(name = "product_price", nullable = false)
+    private Float productPrice;
 
     @NotNull(message = "Chỉ số carbon của sản phẩm không được trống")
     @PositiveOrZero(message = "Chỉ số carbon không được âm")
-    @Column(nullable = false)
-    private Float product_carbon_index;
+    @Column(name = "product_carbon_index", nullable = false)
+    private Float productCarbonIndex;
 
     @NotNull(message = "Số điểm xanh cơ bản không được trống")
     @PositiveOrZero(message = "Số điểm xanh cơ bản không được âm")
-    @Column(nullable = false)
-    private Integer base_eco_points;
+    @Column(name = "base_eco_points", nullable = false)
+    private Integer baseEcoPoints;
 
     @NotNull(message = "Số lượng tồn kho không được trống")
     @PositiveOrZero(message = "Số lượng tồn kho không được âm")
-    @Column(nullable = false)
+    @Column(name = "inventory", nullable = false)
     private Integer inventory;
 
     @Size(max = 255, message = "Xuất xứ tối đa 255 ký tự")
     private String original;
 
     @NotNull(message = "Trạng thái sale không được trống")
-    @Column(nullable = false)
-    private Boolean status_sale;
+    @Column(name = "status_sale", nullable = false)
+    private Boolean statusSale;
 
     @NotNull(message = "Ngày hết hạn không được trống")
     @FutureOrPresent(message = "Ngày hết hạn phải từ hôm nay trở đi")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @Column(nullable = false)
-    private LocalDate expired_at;
+    @Column(name = "expired_at", nullable = false)
+    private LocalDate expiredAt;
 
     @Positive(message = "Khối lượng phải lớn hơn 0")
     private Float weight;

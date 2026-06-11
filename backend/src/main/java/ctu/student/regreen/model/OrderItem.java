@@ -24,7 +24,7 @@ import lombok.ToString;
 @ToString
 public class OrderItem {
     @EmbeddedId
-    private OrderItemId order_item_id;
+    private OrderItemId orderItemId;
 
     @PositiveOrZero
     @NotNull
@@ -33,8 +33,8 @@ public class OrderItem {
 
     @NotNull
     @PositiveOrZero
-    @Column(nullable = false)
-    private Integer purchased_price;
+    @Column(name = "purchased_price", nullable = false)
+    private Integer purchasedPrice;
 
     @MapsId("order_id")
     @ManyToOne(optional = false)

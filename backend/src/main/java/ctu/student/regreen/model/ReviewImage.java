@@ -14,11 +14,12 @@ public class ReviewImage {
 
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    private Integer review_image_id;
+    @Column(name = "review_image_id", nullable = false, updatable = false)
+    private Integer reviewImageId;
 
     @NotBlank(message = "URL hình ảnh không được để trống")
-    @Column(nullable = false)
-    private String review_image_url;
+    @Column(name = "review_image_url", nullable = false)
+    private String reviewImageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "review_id", nullable = false)

@@ -21,13 +21,14 @@ import lombok.Setter;
 
 public class City {
     @Id
-    private Integer city_id;
+    @Column(name = "city_id", nullable = false, unique = true)
+    private Integer cityId;
 
     @NotBlank(message = "Tên tỉnh/thành phố không được trống")
-    @Column(nullable = false)
-    private String city_name;
+    @Column(name = "city_name", nullable = false)
+    private String cityName;
 
     @NotBlank
-    @Column(nullable = false)
-    private String city_level;
+    @Column(name = "city_level", nullable = false)
+    private String cityLevel;
 }

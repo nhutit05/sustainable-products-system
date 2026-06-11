@@ -32,11 +32,12 @@ import lombok.ToString;
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer cart_id;
+    @Column(name = "cart_id", nullable = false, unique = true)
+    private Integer cartId;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime carted_at;
+    @Column(name = "carted_at", nullable = false, updatable = false)
+    private LocalDateTime cartedAt;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(nullable = false, name = "user_id", unique = true)

@@ -19,9 +19,10 @@ import lombok.Setter;
 public class Bank {
 
     @Id
-    private String bank_id;
+    @Column(name = "bank_id", nullable = false, unique = true)
+    private String bankId;
 
     @NotBlank(message = "Tên ngân hàng không được để trống")
-    @Column(nullable = false)
-    private String bank_name;
+    @Column(name = "bank_name", nullable = false)
+    private String bankName;
 }

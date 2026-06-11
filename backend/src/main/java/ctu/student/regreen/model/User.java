@@ -28,7 +28,8 @@ import lombok.ToString;
 public abstract class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer user_id;
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private Integer userId;
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Username không được trống.")
@@ -42,10 +43,10 @@ public abstract class User {
     @NotBlank(message = "Email không được trống")
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "number_phone", nullable = false, unique = true)
     @NotBlank(message = "Số điện thoại không được bỏ trống.")
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must contain exactly 10 digits")
-    private String number_phone;
+    private String numberPhone;
 
     @Column(nullable = false)
     @NotBlank(message = "Password không được để trống.")
@@ -53,5 +54,6 @@ public abstract class User {
     private String password;
 
     @Pattern(regexp = "^$|^[0-9]{12}$", message = "CCCD phải gồm 12 chữ số")
-    private String national_id;
+    @Column(name = "national_id", unique = true)
+    private String nationalId;
 }

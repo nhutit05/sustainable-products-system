@@ -22,16 +22,17 @@ import lombok.ToString;
 public class Village {
 
     @Id
-    private Integer village_id;
+    @Column(name = "village_id", nullable = false, updatable = false)
+    private Integer villageId;
 
-    @Column(nullable = false)
+    @Column(name = "village_name", nullable = false)
     @NotBlank
-    private String village_name;
+    private String villageName;
 
     @NotBlank
-    @Column(nullable = false)
+    @Column(name = "village_level", nullable = false)
     @Pattern(regexp = "^(Xã|Phường|Thị trấn)$")
-    private String village_level;
+    private String villageLevel;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull

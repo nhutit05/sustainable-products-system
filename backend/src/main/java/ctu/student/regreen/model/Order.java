@@ -35,26 +35,27 @@ import lombok.ToString;
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer order_id;
+    @Column(name = "order_id")
+    private Integer orderId;
 
     @NotNull
-    @Column(nullable = false, updatable = false)
+    @Column(name = "ordered_at", nullable = false, updatable = false)
     @FutureOrPresent
-    private LocalDateTime ordered_at;
+    private LocalDateTime orderedAt;
 
     @Size(max = 100)
     @NotBlank
-    @Column(nullable = false, updatable = false)
-    private String order_receiver;
+    @Column(name = "order_receiver", nullable = false, updatable = false)
+    private String orderReceiver;
 
     @NotBlank
     @Size(max = 10)
-    @Column(nullable = false, updatable = false)
-    private String order_receiver_phone;
+    @Column(name = "order_receiver_phone", nullable = false, updatable = false)
+    private String orderReceiverPhone;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "payment_method_id", nullable = false)
-    private PaymentMethod payment_method;
+    private PaymentMethod paymentMethod;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucher_id")
@@ -62,14 +63,14 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_status_id", nullable = false)
-    private OrderStatus order_status;
+    private OrderStatus orderStatus;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "payment_status_id", nullable = false)
-    private PaymentStatus payment_status;
+    private PaymentStatus paymentStatus;
 
     @OneToMany(mappedBy = "order", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<OrderItem> order_items = new ArrayList<>();
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

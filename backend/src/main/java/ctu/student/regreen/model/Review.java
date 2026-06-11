@@ -19,12 +19,15 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    private Integer review_id;
+    @Column(name = "review_id", nullable = false, updatable = false)
+    private Integer reviewId;
 
-    private String review_content;
+    @Column(name = "review_content", length = 1000)
+    private String reviewContent;
 
     @PositiveOrZero
-    private Integer review_rating;
+    @Column(name = "review_rating", nullable = false)
+    private Integer reviewRating;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

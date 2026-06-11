@@ -29,7 +29,8 @@ import lombok.ToString;
 public class Voucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer voucher_id;
+    @Column(name = "voucher_id", nullable = false, updatable = false)
+    private Integer voucherId;
 
     @Column(nullable = false, updatable = false, unique = true, length = 50)
     @NotBlank
@@ -42,32 +43,32 @@ public class Voucher {
 
     @PositiveOrZero
     @NotNull
-    @Column(nullable = false)
-    private Float discount_value;
+    @Column(name = "discount_value", nullable = false)
+    private Float discountValue;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(name = "started_at", nullable = false)
     @FutureOrPresent
-    private LocalDate started_at;
+    private LocalDate startedAt;
 
     @NotNull
-    @Column(nullable = false)
-    private LocalDate expired_at;
+    @Column(name = "expired_at", nullable = false)
+    private LocalDate expiredAt;
 
     @Column(nullable = false, updatable = true)
     @PositiveOrZero
     @NotNull
     private Integer quantity;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     @NotNull
-    private Boolean is_active = true;
+    private Boolean isActive = true;
 
     @AssertTrue(message = "Expired date must be after or equal started date")
     public boolean isDateValid() {
-        if (started_at == null || expired_at == null) {
+        if (startedAt == null || expiredAt == null) {
             return true;
         }
-        return !expired_at.isBefore(started_at);
+        return !expiredAt.isBefore(startedAt);
     }
 }

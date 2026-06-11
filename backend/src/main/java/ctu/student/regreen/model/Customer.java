@@ -18,9 +18,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer extends User{
-    @Column(nullable = false)
+    @Column(name = "accumulated_eco_points", nullable = false)
     @PositiveOrZero
-    private Integer accumulated_eco_points =  0;
+    private Integer accumulatedEcoPoints =  0;
 
     @OneToOne(
         mappedBy = "customer",

@@ -15,15 +15,17 @@ import lombok.Setter;
 @Setter
 public class RefundSlip {
     @Id
-    private Integer refund_slip_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "refund_slip_id", nullable = false, updatable = false)
+    private Integer refundSlipId;
 
-    @NotBlank(message = "So tai khoản ngân hàng không được để trống")
-    @Column(nullable = false)
-    private String bank_number;
+    @NotBlank(message = "Số tài khoản ngân hàng không được để trống")
+    @Column(name = "bank_number", nullable = false)
+    private String bankNumber;
     
     @NotBlank(message = "Tên chủ tài khoản ngân hàng không được để trống")
-    @Column(nullable = false)
-    private String account_bank_name;
+    @Column(name = "account_bank_name", nullable = false)
+    private String accountBankName;
 
     @NotBlank(message = "Vui lòng nhập lý do hoàn tiền")
     @Column(nullable = false)

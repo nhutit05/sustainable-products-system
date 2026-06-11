@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class Admin extends User{
 
-    @Column(nullable = false)
+    @Column(name = "hire_date", nullable = false)
     @PastOrPresent
-    private LocalDate hire_date;
+    private LocalDate hireDate;
 }

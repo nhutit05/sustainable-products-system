@@ -1,5 +1,6 @@
 package ctu.student.regreen.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
@@ -12,6 +13,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class FavoriteProductId  implements Serializable {
-    private Integer product_id;
-    private Integer user_id;
+    @Column(name = "product_id")
+    private Integer productId;
+    @Column(name = "user_id")
+    private Integer userId;
 }
