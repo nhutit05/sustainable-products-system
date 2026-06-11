@@ -44,5 +44,5 @@ public class File {
 
     @NotNull
     @Column(name = "update_mechanism", nullable = false)
-    private Boolean updateMechanism;
+    private Boolean updateMerchanism;
 }
