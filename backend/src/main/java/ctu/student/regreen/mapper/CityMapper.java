@@ -19,6 +19,8 @@ public class CityMapper {
     public static City toEntity(CityRequest request) {
         City city = new City();
         city.setCityName(request.getCityName());
+        city.setCityId(request.getCityId());
+        city.setCityLevel(request.getCityLevel());
         return city;
     }
 

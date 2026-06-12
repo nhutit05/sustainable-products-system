@@ -16,7 +16,9 @@ public enum ErrorCode {
     PAYMENT_STATUS_ALREADY_EXISTS("USR_003", "Payment status already exists"),
     PAYMENT_STATUS_NOT_FOUND("USR_004", "Payment status not found"),
 
-    CITY_NOT_FOUND("USR_005", "City not found");
+
+    CITY_NOT_FOUND("USR_005", "City not found"),
+    VILLAGE_NOT_FOUND("USR_006", "Village not found");
 
     private final String code;
     private final String message;

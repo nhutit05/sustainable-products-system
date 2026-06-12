@@ -1,7 +1,12 @@
 package ctu.student.regreen.controller;
 
+import ctu.student.regreen.dto.request.CityRequest;
+import ctu.student.regreen.dto.request.VillageRequest;
+import ctu.student.regreen.dto.response.VillageResponse;
+import ctu.student.regreen.mapper.CityMapper;
 import ctu.student.regreen.model.Village;
-import ctu.student.regreen.service.VillageService;
+import ctu.student.regreen.service.implement.CityServiceImpl;
+import ctu.student.regreen.service.interfaces.VillageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,37 +22,31 @@ public class VillageController {
 
     // [GET] /api/villages
     @GetMapping
-    public List<Village> getAllVillages() {
+    public List<VillageResponse> getAllVillages() {
         return service.getAllVillages();
     }
 
     // [GET] /api/villages/{id}
     @GetMapping("{id}")
-    public Village getVillageById(@PathVariable Integer id) {
+    public VillageResponse getVillageById(@PathVariable Integer id) {
         return service.getVillageById(id);
     }
 
     // [GET] /api/villages/count
     @GetMapping("/count")
     public Integer countVillages() {
-        return service.countVillages();
+        return service.getCountVillages();
     }
 
     // [POST] /api/villages
     @PostMapping
-    public Village createVillage(@RequestBody Village village) {
-        return service.createVillage(village);
-    }
-
-    // [POST] /api/villages/bulk
-    @PostMapping("/bulk")
-    public List<Village> createVillages(@RequestBody List<Village> villages) {
-        return service.createVillages(villages);
+    public VillageResponse createVillage(@RequestBody VillageRequest village) {
+        return service.create(village);
     }
 
     // PUT] /api/villages/{id}
     @PutMapping("{id}")
-    public Village updateVillage(@PathVariable Integer id,@RequestBody Village village) {
+    public VillageResponse updateVillage(@PathVariable Integer id,@RequestBody VillageRequest village) {
         return service.updateVillage(id, village);
     }
 
@@ -57,9 +56,4 @@ public class VillageController {
         return service.deleteVillage(id);
     }
 
-    // [DELETE] /api/villages
-    @DeleteMapping
-    public void deleteAllVillages() {
-        service.deleteAllVillages();
-    }
 }
