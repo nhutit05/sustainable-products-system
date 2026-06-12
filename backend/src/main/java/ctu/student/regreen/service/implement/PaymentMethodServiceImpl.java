@@ -17,18 +17,19 @@ import lombok.RequiredArgsConstructor;
 public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     private final PaymentMethodRepository repository;
+    private final PaymentMethodMapper mapper;
 
     @Override
     public PaymentMethodResponse create(PaymentMethodRequest request) {
-        PaymentMethod entity = PaymentMethodMapper.toEntity(request);
-        return PaymentMethodMapper.toResponse(repository.save(entity));
+        PaymentMethod entity = mapper.toEntity(request);
+        return mapper.toResponse(repository.save(entity));
     }
 
     @Override
     public List<PaymentMethodResponse> getAll() {
         return repository.findAll()
                 .stream()
-                .map(PaymentMethodMapper::toResponse)
+                .map(mapper::toResponse)
                 .toList();
     }
 
@@ -37,7 +38,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         PaymentMethod entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
-        return PaymentMethodMapper.toResponse(entity);
+        return mapper.toResponse(entity);
     }
 
     @Override
@@ -45,9 +46,9 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
         PaymentMethod entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found exception"));
 
-        PaymentMethodMapper.update(entity, request);
+        mapper.update(entity, request);
 
-        return PaymentMethodMapper.toResponse(repository.save(entity));
+        return mapper.toResponse(repository.save(entity));
     }
 
     @Override
