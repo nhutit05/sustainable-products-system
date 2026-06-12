@@ -14,7 +14,9 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR("COM_999", "Internal server error"),
 
     PAYMENT_STATUS_ALREADY_EXISTS("USR_003", "Payment status already exists"),
-    PAYMENT_STATUS_NOT_FOUND("USR_004", "Payment status not found");
+    PAYMENT_STATUS_NOT_FOUND("USR_004", "Payment status not found"),
+
+    CITY_NOT_FOUND("USR_005", "City not found");
 
     private final String code;
     private final String message;
