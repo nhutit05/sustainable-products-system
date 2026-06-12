@@ -18,7 +18,9 @@ public enum ErrorCode {
 
 
     CITY_NOT_FOUND("USR_005", "City not found"),
-    VILLAGE_NOT_FOUND("USR_006", "Village not found");
+    VILLAGE_NOT_FOUND("USR_006", "Village not found"),
+    FILE_NOT_FOUND("USR_007", "File not found"),
+    FILE_ALREADY_EXISTS("USR_008", "File already exists");
 
     private final String code;
     private final String message;
