@@ -45,4 +45,16 @@ public class File {
     @NotNull
     @Column(name = "update_mechanism", nullable = false)
     private Boolean updateMerchanism;
+
+    @Override
+    public String toString() {
+        return "File{" +
+                "fileId=" + fileId +
+                ", fileName='" + fileName + '\'' +
+                ", fileTitle='" + fileTitle + '\'' +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", fileFormat='" + fileFormat + '\'' +
+                ", updateMerchanism=" + updateMerchanism +
+                '}';
+    }
 }

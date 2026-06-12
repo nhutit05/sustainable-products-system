@@ -1,5 +1,8 @@
 package ctu.student.regreen.dto.request;
 
+import lombok.Data;
+
+@Data
 public class AddressRequest {
     private String address_name;
     private String address_street;
