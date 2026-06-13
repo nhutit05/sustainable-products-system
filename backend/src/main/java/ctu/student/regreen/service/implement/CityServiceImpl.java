@@ -3,7 +3,6 @@ package ctu.student.regreen.service.implement;
 import ctu.student.regreen.dto.request.CityRequest;
 import ctu.student.regreen.dto.response.CityResponse;
 import ctu.student.regreen.exception.ErrorCode;
-import ctu.student.regreen.exception.ErrorResponse;
 import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.CityMapper;
 import ctu.student.regreen.model.City;
@@ -12,7 +11,6 @@ import ctu.student.regreen.service.interfaces.CityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service

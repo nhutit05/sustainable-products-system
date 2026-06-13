@@ -2,10 +2,8 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.CityRequest;
 import ctu.student.regreen.dto.response.CityResponse;
-import ctu.student.regreen.model.City;
 import ctu.student.regreen.service.interfaces.CityService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

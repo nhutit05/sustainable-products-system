@@ -19,11 +19,8 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(callSuper = true)
 public class Admin extends User{
 
-    @NotNull
     @Column(nullable = false, name = "hire_date")
-    @PastOrPresent
     private LocalDate hireDate;
 }
