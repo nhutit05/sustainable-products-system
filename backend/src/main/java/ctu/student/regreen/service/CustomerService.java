@@ -1,5 +1,7 @@
 package ctu.student.regreen.service;
 
+import ctu.student.regreen.dto.request.CustomerRequest;
+import ctu.student.regreen.dto.response.CustomerResponse;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,52 +9,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
-public class CustomerService {
 
-    @Autowired
-    CustomerRepository repository;
+public interface CustomerService {
+    CustomerResponse create(CustomerRequest request);
 
-    // [GET] /api/customers
-    public List<Customer> getAllCustomers() {
-        return repository.findAll();
-    }
+    List<CustomerResponse> getAll();
 
-    // [GET] /api/customers/{id}
-    public Customer getCustomerById(Integer id) {
-        return repository.findById(id).orElse(null);
-    }
+    CustomerResponse getById(Integer id);
 
-    // [POST] /api/customers
-    public Customer createCustomer(Customer customer) {
-        return repository.save(customer);
-    }
+    CustomerResponse getByUsername(String username);
 
-    // [POST] /api/customers/bulk
-    public List<Customer> createCustomers(List<Customer> customers) {
-        return repository.saveAll(customers);
-    }
+    CustomerResponse getByEmail(String email);
 
-    // [PUT] /api/customers/{id}
-    public Customer updateCustomer(Integer id, Customer customer) {
-        Customer existingCustomer = repository.findById(id).orElse(null);
-        if (existingCustomer != null) {
-            return repository.save(customer);
-        }
-        return null;
-    }
+    CustomerResponse update(Integer id, CustomerRequest request);
 
-    // [DELETE] /api/customers/{id}
-    public boolean deleteCustomer(Integer id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
-    // [DELETE] /api/customers
-    public void deleteAllCustomers() {
-        repository.deleteAll();
-    }
+    Boolean delete(Integer id);
 }
