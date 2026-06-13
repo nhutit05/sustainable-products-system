@@ -1,8 +1,9 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.model.Customer;
+import ctu.student.regreen.dto.request.CustomerRequest;
+import ctu.student.regreen.dto.response.CustomerResponse;
 import ctu.student.regreen.service.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,49 +11,39 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customers")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@RequiredArgsConstructor
 public class CustomerController {
 
-    @Autowired
-    CustomerService service;
+    private final CustomerService service;
 
     // [GET] /api/customers
     @GetMapping
-    public List<Customer> getAllCustomers() {
-        return service.getAllCustomers();
+    public List<CustomerResponse> getAllCustomers() {
+        return service.getAll();
     }
 
     // [GET] /api/customers/{id}
     @GetMapping("{id}")
-    public Customer getCustomerById(@PathVariable Integer id) {
-        return service.getCustomerById(id);
+    public CustomerResponse getCustomerById(@PathVariable Integer id) {
+        return service.getById(id);
     }
 
     // [POST] /api/customers
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
-        return service.createCustomer(customer);
-    }
-    // [POST] /api/customers/bulk
-    @PostMapping("/bulk")
-    public List<Customer> createCustomers(@RequestBody List<Customer> customers) {
-        return service.createCustomers(customers);
+    public CustomerResponse createCustomer(@RequestBody CustomerRequest request) {
+        return service.create(request);
     }
 
     // [PUT] /api/customers/{id}
     @PutMapping("{id}")
-    public Customer updateCustomer(@PathVariable Integer id, @RequestBody Customer customer) {
-        return service.updateCustomer(id, customer);
+    public CustomerResponse updateCustomer(@PathVariable Integer id, @RequestBody CustomerRequest customer) {
+        return service.update(id, customer);
     }
 
     // [DELETE] /api/customers/{id}
     @DeleteMapping("{id}")
     public boolean deleteCustomer(@PathVariable Integer id) {
-        return service.deleteCustomer(id);
+        return service.delete(id);
     }
 
-    // [DELETE] /api/customers
-    @DeleteMapping
-    public void deleteAllCustomers() {
-        service.deleteAllCustomers();
-    }
 }

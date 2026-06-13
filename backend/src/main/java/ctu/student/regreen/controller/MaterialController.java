@@ -1,7 +1,10 @@
 package ctu.student.regreen.controller;
 
+import ctu.student.regreen.dto.request.MaterialRequest;
+import ctu.student.regreen.dto.response.MaterialResponse;
 import ctu.student.regreen.model.Material;
-import ctu.student.regreen.service.MaterialService;
+import ctu.student.regreen.service.interfaces.MaterialService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,50 +13,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/materials")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@RequiredArgsConstructor
 public class MaterialController {
 
-    @Autowired
-    MaterialService service;
+    private final MaterialService service;
 
     // [GET] /api/materials
     @GetMapping
-    public List<Material> getAllMaterials() {
-        return service.getAllMaterials();
+    public List<MaterialResponse> getAllMaterials() {
+        return service.getAll();
     }
 
     // [GET] /api/materials/{id}
     @GetMapping("/{id}")
-    public Material getMaterialById(@PathVariable Integer id) {
-        return service.getMaterialById(id);
+    public MaterialResponse getMaterialById(@PathVariable Integer id) {
+        return service.getById(id);
     }
 
     // [POST] /api/materials
     @PostMapping
-    public Material createMaterial(@RequestBody Material material) {
-        return service.createMaterial(material);
-    }
-
-    // [POST] /api/materials/bulk
-    @PostMapping("/bulk")
-    public List<Material> createMaterials(@RequestBody List<Material> materials) {
-        return service.createMaterials(materials);
+    public MaterialResponse createMaterial(@RequestBody MaterialRequest material) {
+        return service.create(material);
     }
 
     // [PUT] /api/materials/{id}
     @PutMapping("/{id}")
-    public Material updateMaterial(@PathVariable Integer id, @RequestBody Material material) {
-        return service.updateMaterial(id, material);
+    public MaterialResponse updateMaterial(@PathVariable Integer id, @RequestBody MaterialRequest material) {
+        return service.update(id, material);
     }
 
     // [DELETE] /api/materials/{id}
     @DeleteMapping("/{id}")
-    public boolean deleteMaterial(@PathVariable Integer id) {
-        return service.deleteMaterial(id);
-    }
-
-    // [DELETE] /api/materials
-    @DeleteMapping
-    public void deleteAllMaterials() {
-        service.deleteAllMaterials();
+    public Boolean deleteMaterial(@PathVariable Integer id) {
+        return service.delete(id);
     }
 }
