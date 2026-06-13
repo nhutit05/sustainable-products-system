@@ -2,7 +2,7 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
-import ctu.student.regreen.service.CustomerService;
+import ctu.student.regreen.service.interfaces.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

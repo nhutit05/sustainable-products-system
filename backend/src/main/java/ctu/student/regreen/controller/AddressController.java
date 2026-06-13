@@ -2,10 +2,8 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.AddressRequest;
 import ctu.student.regreen.dto.response.AddressResponse;
-import ctu.student.regreen.model.Address;
-import ctu.student.regreen.service.AddressService;
+import ctu.student.regreen.service.interfaces.AddressService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

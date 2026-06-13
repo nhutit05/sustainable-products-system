@@ -5,7 +5,7 @@ import ctu.student.regreen.dto.response.AddressResponse;
 import ctu.student.regreen.mapper.AddressMapper;
 import ctu.student.regreen.model.Address;
 import ctu.student.regreen.repository.AddressRepository;
-import ctu.student.regreen.service.AddressService;
+import ctu.student.regreen.service.interfaces.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
