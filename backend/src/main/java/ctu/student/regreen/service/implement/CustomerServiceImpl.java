@@ -3,7 +3,9 @@ package ctu.student.regreen.service.implement;
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
 import ctu.student.regreen.mapper.CustomerMapper;
+import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.Customer;
+import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -18,29 +20,32 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CartRepository cartRepository;
+
+    private final CustomerMapper customerMapper;
 
     public List<CustomerResponse> getAll() {
         return customerRepository.findAll()
                 .stream()
-                .map(CustomerMapper::toResponse)
+                .map(customerMapper::toResponse)
                 .toList();
     }
 
     public CustomerResponse getById(Integer id) {
         return customerRepository.findById(id)
-                .map(CustomerMapper::toResponse)
+                .map(customerMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
     public CustomerResponse getByUsername(String username) {
         return customerRepository.findByUsername(username)
-                .map(CustomerMapper::toResponse)
+                .map(customerMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
     public CustomerResponse getByEmail(String email) {
         return customerRepository.findByEmail(email)
-                .map(CustomerMapper::toResponse)
+                .map(customerMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
@@ -57,27 +62,32 @@ public class CustomerServiceImpl implements CustomerService {
             throw new RuntimeException("Phone number already exists");
         }
 
-        Customer customer = CustomerMapper.toEntity(request);
+        Customer customer = customerMapper.toEntity(request);
+
+        Cart cart = new Cart();
+        cart.setCustomer(customer);
 
         customer.setPassword(
                 passwordEncoder.encode(request.getPassword()));
 
         customer = customerRepository.save(customer);
 
-        return CustomerMapper.toResponse(customer);
+        cart = cartRepository.save(cart);
+
+        return customerMapper.toResponse(customer);
     }
 
     public CustomerResponse update(Integer id, CustomerRequest request) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found by id: " + id));
 
-        CustomerMapper.update(customer, request);
+        customerMapper.update(customer, request);
         customer.setPassword(
                 passwordEncoder.encode(request.getPassword()));
 
         customer = customerRepository.save(customer);
 
-        return CustomerMapper.toResponse(customer);
+        return customerMapper.toResponse(customer);
     }
 
     public Boolean delete(Integer id) {

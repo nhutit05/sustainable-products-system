@@ -1,5 +1,6 @@
 package ctu.student.regreen.dto.request;
 
+import ctu.student.regreen.model.Village;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -16,8 +17,8 @@ public class AddressRequest {
     private Boolean isDefault = false;
 
     @NotBlank
-    private Integer villageId;
+    private VillageRequest villageRequest;
 
     @NotBlank
-    private Integer userId;
+    private CustomerRequest customerRequest;
 }
