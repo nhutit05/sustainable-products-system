@@ -20,5 +20,5 @@ public class ReviewResponse {
 
     private Integer productId;
 
-    private List<ReviewImage> reviewImages;
+    private List<ReviewImageResponse> reviewImages;
 }

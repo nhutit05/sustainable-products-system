@@ -2,12 +2,16 @@ package ctu.student.regreen.service.implement;
 
 import ctu.student.regreen.dto.request.ReviewRequest;
 import ctu.student.regreen.dto.response.ReviewResponse;
+import ctu.student.regreen.mapper.ReviewImageMapper;
 import ctu.student.regreen.mapper.ReviewMapper;
+import ctu.student.regreen.model.Review;
+import ctu.student.regreen.model.ReviewImage;
 import ctu.student.regreen.repository.ReviewRepository;
 import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,48 +19,76 @@ import java.util.List;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository repository;
+    private final ReviewMapper mapper;
 
     public List<ReviewResponse> getAll() {
-        List<ReviewResponse> reviewResponses = null;
-        return reviewResponses;
+        return repository.findAll()
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    public List<ReviewResponse> getAllByCustomerAndProduct(Integer customerId, Integer productId) {
-        List<ReviewResponse> reviewResponses = null;
-        return reviewResponses;
+    public List<ReviewResponse> getAllByCustomerAndProduct(
+            Integer customerId,
+            Integer productId) {
+
+        return repository
+                .findByCustomerUserIdAndProductProductId(
+                        customerId,
+                        productId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    public List<ReviewResponse> geAllByProductId(Integer productId) {
-        List<ReviewResponse> reviewResponses = null;
-        return reviewResponses;
+    public List<ReviewResponse> getAllByProductId(Integer productId) {
+        return repository.findByProductProductId(productId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     public List<ReviewResponse> getAllByCustomerId(Integer customerId) {
-        List<ReviewResponse> reviewResponses = null;
-        return reviewResponses;
+        return repository.findByCustomerUserId(customerId)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     public List<ReviewResponse> getAllByRating(Integer rating) {
-        List<ReviewResponse> reviewResponses = null;
-        return reviewResponses;
+        return repository.findByReviewRating(rating)
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     public ReviewResponse getById(Integer reviewId) {
-        ReviewResponse reviewResponse = null;
-        return reviewResponse;
+        Review review = repository.findById(reviewId)
+                .orElseThrow(() ->
+                        new RuntimeException("Review not found"));
+        return mapper.toResponse(review);
     }
 
     public ReviewResponse create(ReviewRequest request) {
-        ReviewResponse reviewResponse = null;
-        return reviewResponse;
+        Review review = mapper.toEntity(request);
+        return mapper.toResponse(repository.save(review));
     }
 
     public ReviewResponse update(Integer reviewId, ReviewRequest request) {
-        ReviewResponse reviewResponse = null;
-        return reviewResponse;
+        Review review = repository.findById(reviewId)
+                .orElseThrow(() ->
+                        new RuntimeException("Review not found"));
+
+        mapper.update(review, request);
+
+        return mapper.toResponse(repository.save(review));
     }
 
     public Boolean delete(Integer id) {
-        return false;
+        Review review = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Review not found"));
+        repository.delete(review);
+        return true;
     }
 }
