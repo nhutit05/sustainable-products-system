@@ -2,10 +2,8 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.response.FileRequest;
 import ctu.student.regreen.dto.response.FileResponse;
-import ctu.student.regreen.model.File;
 import ctu.student.regreen.service.interfaces.FileService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

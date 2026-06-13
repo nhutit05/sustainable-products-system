@@ -1,11 +1,7 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.dto.request.CityRequest;
 import ctu.student.regreen.dto.request.VillageRequest;
 import ctu.student.regreen.dto.response.VillageResponse;
-import ctu.student.regreen.mapper.CityMapper;
-import ctu.student.regreen.model.Village;
-import ctu.student.regreen.service.implement.CityServiceImpl;
 import ctu.student.regreen.service.interfaces.VillageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
