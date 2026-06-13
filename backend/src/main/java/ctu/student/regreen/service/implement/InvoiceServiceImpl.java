@@ -16,21 +16,27 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class InvoiceServiceImpl implements InvoiceService {
+public class InvoiceServiceImpl
+        implements InvoiceService {
 
     private final InvoiceRepository repository;
+
     private final OrderRepository orderRepository;
+
     private final InvoiceMapper mapper;
 
     @Override
-    public InvoiceResponse create(InvoiceRequest request) {
+    public InvoiceResponse create(
+            InvoiceRequest request) {
 
         Order order = orderRepository.findById(
                 request.getOrderId())
                 .orElseThrow(() ->
-                        new RuntimeException("Order not found"));
+                        new RuntimeException(
+                                "Order not found"));
 
-        repository.findByOrderOrderId(order.getOrderId())
+        repository.findByOrderOrderId(
+                order.getOrderId())
                 .ifPresent(invoice -> {
                     throw new RuntimeException(
                             "Invoice already exists");
@@ -55,21 +61,26 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public InvoiceResponse getById(Integer id) {
+    public InvoiceResponse getById(
+            Integer id) {
 
         Invoice invoice = repository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Invoice not found"));
+                        new RuntimeException(
+                                "Invoice not found"));
 
         return mapper.toResponse(invoice);
     }
 
     @Override
-    public InvoiceResponse getByOrder(Integer orderId) {
+    public InvoiceResponse getByOrder(
+            Integer orderId) {
 
-        Invoice invoice = repository.findByOrderOrderId(orderId)
-                .orElseThrow(() ->
-                        new RuntimeException("Invoice not found"));
+        Invoice invoice =
+                repository.findByOrderOrderId(orderId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Invoice not found"));
 
         return mapper.toResponse(invoice);
     }

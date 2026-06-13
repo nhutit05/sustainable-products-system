@@ -20,7 +20,8 @@ public class InvoiceController {
 
     @PostMapping
     public InvoiceResponse create(
-            @Valid @RequestBody InvoiceRequest request) {
+            @Valid @RequestBody
+            InvoiceRequest request) {
 
         return service.create(request);
     }

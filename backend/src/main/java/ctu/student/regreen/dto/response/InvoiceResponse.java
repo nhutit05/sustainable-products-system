@@ -20,4 +20,8 @@ public class InvoiceResponse {
     private String orderReceiverPhone;
 
     private Float totalAmount;
+
+    private Float discountAmount;
+
+    private Float finalAmount;
 }
