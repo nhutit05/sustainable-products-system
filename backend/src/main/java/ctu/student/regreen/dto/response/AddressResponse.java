@@ -8,7 +8,12 @@ import lombok.Data;
 public class AddressResponse {
 
     private String addressName;
+
     private String addressStreet;
-    private Integer villageId;
-    private String userEmail;
+
+    private Boolean isDefault;
+
+    private VillageResponse village;
+
+    private CustomerResponse customer;
 }

@@ -14,17 +14,18 @@ public class VillageMapper {
         return new VillageResponse(
                 village.getVillageId(),
                 village.getVillageName(),
-                village.getVillageLevel()
+                village.getVillageLevel(),
+                CityMapper.toResponse(village.getCity())
         );
     }
 
-    public static Village toEntity(VillageRequest request, City city) {
+    public static Village toEntity(VillageRequest request) {
         Village village = new Village();
         village.setVillageId(request.getVillageId());
         village.setVillageLevel(request.getVillageLevel());
         village.setVillageName(request.getVillageName());
 
-        village.setCity(city);
+        village.setCity(CityMapper.toEntity(request.getCityRequest()));
 
         return village;
     }

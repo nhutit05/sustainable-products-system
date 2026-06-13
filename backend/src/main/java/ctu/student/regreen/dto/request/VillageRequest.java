@@ -15,6 +15,6 @@ public class VillageRequest {
     private String villageLevel;
 
     @NotBlank(message = "Mã thành phố không được trống")
-    private Integer cityId;
+    private CityRequest cityRequest;
 }
 
