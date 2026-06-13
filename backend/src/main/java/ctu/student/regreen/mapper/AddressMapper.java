@@ -12,10 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AddressMapper {
+
     private final VillageMapper villageMapper;
     private final CustomerMapper customerMapper;
 
-    public  AddressResponse toResponse(Address address) {
+    public AddressResponse toResponse(Address address) {
         return new AddressResponse(
                 address.getAddressName(),
                 address.getAddressStreet(),
