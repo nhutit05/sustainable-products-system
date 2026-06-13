@@ -3,13 +3,17 @@ package ctu.student.regreen.mapper;
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
 import ctu.student.regreen.model.Customer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@RequiredArgsConstructor
 public class CustomerMapper {
 
-    public static Customer toEntity(CustomerRequest request) {
+    private final CartMapper cartMapper;
+
+    public Customer toEntity(CustomerRequest request) {
         Customer entity = new Customer();
 
         entity.setEmail(request.getEmail());
@@ -22,7 +26,7 @@ public class CustomerMapper {
         return entity;
     }
 
-    public static CustomerResponse toResponse(Customer customer) {
+    public CustomerResponse toResponse(Customer customer) {
         return new CustomerResponse(
                 customer.getUserId(),
                 customer.getEmail(),
@@ -33,7 +37,7 @@ public class CustomerMapper {
         );
     }
 
-    public static void update(Customer customer, CustomerRequest request) {
+    public void update(Customer customer, CustomerRequest request) {
         customer.setEmail(request.getEmail());
         customer.setUsername(request.getUsername());
         customer.setNumberPhone(request.getNumberPhone());

@@ -6,41 +6,43 @@ import ctu.student.regreen.model.Address;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Village;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AddressMapper {
+    private final VillageMapper villageMapper;
+    private final CustomerMapper customerMapper;
 
-
-    public static AddressResponse toResponse(Address address) {
+    public  AddressResponse toResponse(Address address) {
         return new AddressResponse(
                 address.getAddressName(),
                 address.getAddressStreet(),
                 address.getIsDefault(),
-                VillageMapper.toResponse(address.getVillage()),
-                CustomerMapper.toResponse(address.getCustomer())
+                villageMapper.toResponse(address.getVillage()),
+                customerMapper.toResponse(address.getCustomer())
         );
     }
 
-    public static Address toEntity(AddressRequest request) {
+    public Address toEntity(AddressRequest request) {
         Address entity = new Address();
 
         entity.setAddressName(request.getAddressName());
         entity.setAddressStreet(request.getAddressStreet());
         entity.setIsDefault(request.getIsDefault());
-        entity.setVillage(VillageMapper.toEntity(request.getVillageRequest()));
-        entity.setCustomer(CustomerMapper.toEntity(request.getCustomerRequest()));
+        entity.setVillage(villageMapper.toEntity(request.getVillageRequest()));
+        entity.setCustomer(customerMapper.toEntity(request.getCustomerRequest()));
 
         return entity;
     }
 
-    public static void update(Address address, AddressRequest request) {
+    public void update(Address address, AddressRequest request) {
         address.setAddressName(request.getAddressName());
         address.setAddressStreet(request.getAddressStreet());
         address.setIsDefault(request.getIsDefault());
-        address.setVillage(VillageMapper.toEntity(request.getVillageRequest()));
-        address.setCustomer(CustomerMapper.toEntity(request.getCustomerRequest()));
+        address.setVillage(villageMapper.toEntity(request.getVillageRequest()));
+        address.setCustomer(customerMapper.toEntity(request.getCustomerRequest()));
     }
 
 }
