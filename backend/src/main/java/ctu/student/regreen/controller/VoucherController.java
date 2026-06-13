@@ -47,8 +47,7 @@ public class VoucherController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(
-            @PathVariable Integer id) {
+    public void delete(@PathVariable Integer id) {
 
         service.delete(id);
     }

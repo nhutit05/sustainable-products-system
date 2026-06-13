@@ -32,6 +32,10 @@ public class Address {
     @Column(nullable = false, name = "address_street")
     private String addressStreet;
 
+    @NotBlank
+    @Column(nullable = false, name = "is_default")
+    private Boolean isDefault = false;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "village_id", nullable = false)
     private Village village;

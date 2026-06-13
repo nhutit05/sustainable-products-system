@@ -23,6 +23,10 @@ public class Bank {
     @Column(name = "bank_id", nullable = false, length = 20)
     private String bankId;
 
+    @NotBlank(message = "Tên viết tắt của ngân hàng không được để trống")
+    @Column(nullable = false, name = "bank_short_name", length = 20)
+    private String bankShortName;
+
     @NotBlank(message = "Tên ngân hàng không được để trống")
     @Column(nullable = false, name = "bank_name")
     private String bankName;
