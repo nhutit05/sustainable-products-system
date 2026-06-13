@@ -9,26 +9,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class VillageMapper {
 
-    public static VillageResponse toResponse(Village village) {
+    public  VillageResponse toResponse(Village village) {
         return new VillageResponse(
                 village.getVillageId(),
                 village.getVillageName(),
-                village.getVillageLevel()
+                village.getVillageLevel(),
+                CityMapper.toResponse(village.getCity())
         );
     }
 
-    public static Village toEntity(VillageRequest request, City city) {
+    public  Village toEntity(VillageRequest request) {
         Village village = new Village();
         village.setVillageId(request.getVillageId());
         village.setVillageLevel(request.getVillageLevel());
         village.setVillageName(request.getVillageName());
 
-        village.setCity(city);
+        village.setCity(CityMapper.toEntity(request.getCityRequest()));
 
         return village;
     }
 
-    public static void update(Village village, VillageRequest request) {
+    public  void update(Village village, VillageRequest request) {
         village.setVillageName(request.getVillageName());
     }
 }

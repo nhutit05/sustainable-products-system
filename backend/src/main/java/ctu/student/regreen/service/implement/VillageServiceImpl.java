@@ -23,16 +23,18 @@ public class VillageServiceImpl implements VillageService {
     private final VillageRepository repository;
     private final CityRepository cityRepository;
 
+    private final VillageMapper villageMapper;
+
     public VillageResponse create(VillageRequest request) {
-        City city = cityRepository.findById(request.getCityId()).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.CITY_NOT_FOUND));
-        Village entity = VillageMapper.toEntity(request, city);
-        return VillageMapper.toResponse(repository.save(entity));
+        City city = cityRepository.findById(request.getCityRequest().getCityId()).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.CITY_NOT_FOUND));
+        Village entity = villageMapper.toEntity(request);
+        return villageMapper.toResponse(repository.save(entity));
     }
 
     public List<VillageResponse> getAllVillages() {
         return repository.findAll()
                 .stream()
-                .map(VillageMapper::toResponse).toList();
+                .map(villageMapper::toResponse).toList();
     }
 
     public int getCountVillages() {
@@ -41,13 +43,13 @@ public class VillageServiceImpl implements VillageService {
 
     public VillageResponse getVillageById(Integer id) {
         Village entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.VILLAGE_NOT_FOUND));
-        return VillageMapper.toResponse(entity);
+        return villageMapper.toResponse(entity);
     }
 
     public VillageResponse updateVillage(Integer id, VillageRequest request) {
         Village entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Not found exception"));
-        VillageMapper.update(entity, request);
-        return VillageMapper.toResponse(repository.save(entity));
+        villageMapper.update(entity, request);
+        return villageMapper.toResponse(repository.save(entity));
     }
 
     public boolean deleteVillage(Integer id) {
