@@ -2,7 +2,6 @@ package ctu.student.regreen.service.implement;
 
 import ctu.student.regreen.dto.request.ReviewRequest;
 import ctu.student.regreen.dto.response.ReviewResponse;
-import ctu.student.regreen.mapper.ReviewMapper;
 import ctu.student.regreen.repository.ReviewRepository;
 import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.AllArgsConstructor;

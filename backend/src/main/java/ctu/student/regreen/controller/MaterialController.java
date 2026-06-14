@@ -2,10 +2,8 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.MaterialRequest;
 import ctu.student.regreen.dto.response.MaterialResponse;
-import ctu.student.regreen.model.Material;
 import ctu.student.regreen.service.interfaces.MaterialService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

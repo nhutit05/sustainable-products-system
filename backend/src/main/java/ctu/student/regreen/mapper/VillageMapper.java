@@ -2,7 +2,6 @@ package ctu.student.regreen.mapper;
 
 import ctu.student.regreen.dto.request.VillageRequest;
 import ctu.student.regreen.dto.response.VillageResponse;
-import ctu.student.regreen.model.City;
 import ctu.student.regreen.model.Village;
 import org.springframework.stereotype.Component;
 

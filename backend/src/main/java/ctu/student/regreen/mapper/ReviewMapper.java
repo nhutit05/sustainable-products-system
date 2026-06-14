@@ -5,7 +5,6 @@ import ctu.student.regreen.dto.response.ReviewResponse;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.Review;
-import ctu.student.regreen.repository.CustomerRepository;
 import org.springframework.stereotype.Component;
 
 @Component
