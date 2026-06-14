@@ -22,6 +22,13 @@ public class VillageController {
         return service.getAllVillages();
     }
 
+    // [GET] /api/villages?name={name}
+    @GetMapping(params = "name")
+    public VillageResponse getAllVillagesByName(@RequestParam String name) {
+        return service.getVillageByName(name);
+    }
+
+
     // [GET] /api/villages/{id}
     @GetMapping("{id}")
     public VillageResponse getVillageById(@PathVariable Integer id) {

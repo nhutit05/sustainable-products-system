@@ -45,6 +45,11 @@ public class VillageServiceImpl implements VillageService {
         return villageMapper.toResponse(entity);
     }
 
+    public VillageResponse getVillageByName(String name) {
+        Village entity = repository.findByVillageName(name).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.VILLAGE_NOT_FOUND));
+        return villageMapper.toResponse(entity);
+    }
+
     public VillageResponse updateVillage(Integer id, VillageRequest request) {
         Village entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Not found exception"));
         villageMapper.update(entity, request);

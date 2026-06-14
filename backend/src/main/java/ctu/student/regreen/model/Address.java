@@ -30,7 +30,6 @@ public class Address {
     @Column(nullable = false, name = "address_street")
     private String addressStreet;
 
-    @NotBlank
     @Column(nullable = false, name = "is_default")
     private Boolean isDefault = false;
 

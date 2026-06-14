@@ -23,9 +23,21 @@ public class AddressController {
     }
 
     // [GET] /api/addresses/{id}
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public AddressResponse getAddressById(@PathVariable Integer id) {
-        return service.getsById(id);
+        return service.getsByAddressId(id);
+    }
+
+    // [GET] /api/addresses?customerId={customerId}
+    @GetMapping(params = "customerId")
+    public List<AddressResponse> getAllAddressesByCustomerId(@RequestParam Integer customerId) {
+        return service.getAllByCustomerId(customerId);
+    }
+    // [GET] /api/addresses?villageId={villageId}
+    @GetMapping(params = "villageId")
+    public List<AddressResponse> getAllAddressesByVillageId(@RequestParam Integer villageId)
+    {
+        return service.getAllByVillageId(villageId);
     }
 
     // [GET] /api/addresses/count

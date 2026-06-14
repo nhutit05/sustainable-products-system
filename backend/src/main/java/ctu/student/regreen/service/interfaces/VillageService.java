@@ -8,9 +8,16 @@ import java.util.List;
 
 public interface VillageService {
     VillageResponse create(VillageRequest request);
+
     List<VillageResponse> getAllVillages();
+
     VillageResponse getVillageById(Integer id);
+
+    VillageResponse getVillageByName(String name);
+
     VillageResponse updateVillage(Integer id, VillageRequest request);
+
     boolean deleteVillage(Integer id);
+
     int getCountVillages();
 }
