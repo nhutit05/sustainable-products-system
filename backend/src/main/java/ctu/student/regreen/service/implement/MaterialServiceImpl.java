@@ -6,7 +6,6 @@ import ctu.student.regreen.mapper.MaterialMapper;
 import ctu.student.regreen.model.Material;
 import ctu.student.regreen.repository.MaterialRepository;
 import ctu.student.regreen.service.interfaces.MaterialService;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

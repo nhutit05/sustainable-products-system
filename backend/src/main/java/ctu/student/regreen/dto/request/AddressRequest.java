@@ -1,6 +1,5 @@
 package ctu.student.regreen.dto.request;
 
-import ctu.student.regreen.model.Village;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

@@ -3,9 +3,6 @@ package ctu.student.regreen.mapper;
 import ctu.student.regreen.dto.request.AddressRequest;
 import ctu.student.regreen.dto.response.AddressResponse;
 import ctu.student.regreen.model.Address;
-import ctu.student.regreen.model.Customer;
-import ctu.student.regreen.model.Village;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

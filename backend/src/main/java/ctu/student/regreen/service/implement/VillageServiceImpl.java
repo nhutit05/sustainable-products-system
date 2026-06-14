@@ -1,6 +1,5 @@
 package ctu.student.regreen.service.implement;
 
-import ctu.student.regreen.dto.request.CityRequest;
 import ctu.student.regreen.dto.request.VillageRequest;
 import ctu.student.regreen.dto.response.VillageResponse;
 import ctu.student.regreen.exception.ErrorCode;
