@@ -1,8 +1,15 @@
 package ctu.student.regreen.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,32 +18,33 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "refund_slips")
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString(exclude = {"order", "bank"})
 public class RefundSlip {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "refund_slip_id")
     private Integer refundSlipId;
 
-    @NotBlank(message = "So tai khoản ngân hàng không được để trống")
-    @Pattern(regexp = "^[0-9]{6,20}$")
-    @Column(nullable = false, name = "bank_number")
+    @Column(name = "bank_number", nullable = false, length = 20)
     private String bankNumber;
 
-    @NotBlank(message = "Tên chủ tài khoản ngân hàng không được để trống")
-    @Column(nullable = false, name = "account_bank_name")
+    @Column(name = "account_bank_name", nullable = false)
     private String accountBankName;
 
-    @NotBlank(message = "Vui lòng nhập lý do hoàn tiền")
-    @Column(nullable = false, name = "reason")
+    @Column(name = "reason", nullable = false)
     private String reason;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @JoinColumn(
+            name = "order_id",
+            nullable = false,
+            unique = true
+    )
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
