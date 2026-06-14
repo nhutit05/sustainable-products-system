@@ -40,6 +40,11 @@ public class ReviewController {
         return service.update(reviewId, request);
     }
 
+    @DeleteMapping("/api/reviews/{reviewId}")
+    public Boolean delete(@PathVariable Integer reviewId) {
+        return service.delete(reviewId);
+    }
+
     // Find review by product
 
     // [GET/ /api/products/{productId}/reviews
@@ -55,5 +60,7 @@ public class ReviewController {
             @RequestBody ReviewRequest request) {
         return service.create(request);
     }
+
+
 
 }
