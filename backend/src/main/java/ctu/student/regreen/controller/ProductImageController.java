@@ -1,66 +1,59 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.model.ProductImage;
-import ctu.student.regreen.service.ProductImageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import ctu.student.regreen.dto.request.ProductImageRequest;
+import ctu.student.regreen.dto.response.ProductImageResponse;
+import ctu.student.regreen.service.interfaces.ProductImageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/product-images")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@RequiredArgsConstructor
 public class ProductImageController {
 
-    @Autowired
-    ProductImageService service;
+    private final ProductImageService service;
 
-    // [GET] /api/product-images
-    @GetMapping
-    public List<ProductImage> getAllProductImages() {
-        return service.getAllProductImages();
+    // [GET] /api/products/{productId}/images
+    @GetMapping("/products/{productId}/images")
+    public List<ProductImageResponse> getAllByProductId(@PathVariable Integer productId) {
+        return service.getAllProductImagesByProductId(productId);
     }
 
-    // [GET] /api/product-images/{id}
-    @GetMapping("/{id}")
-    public ProductImage getProductImageById(Integer id) {
-        return service.getProductImageById(id);
+    // [GET] /api/products/{productId}/images/{productImageId}
+    @GetMapping("/products/{productId}/images/{productImageId}")
+    public ProductImageResponse getByProductImageIdAndProductId(
+            @PathVariable Integer productImageId,
+            @PathVariable Integer productId) {
+        return service.getByProductImageIdAndProductId(productImageId, productId);
     }
 
-    // [GET] /api/product-images/count
-    @GetMapping("/count")
-    public Integer countProductImages() {
-        return service.countProductImages();
+    // [POST] /api/products/{productId}/images
+    @PostMapping("/products/{productId}/images")
+    public ProductImageResponse createProductImage(
+            @PathVariable Integer productId,
+            @RequestBody ProductImageRequest request) {
+        return service.createProductImage(request);
     }
 
-    // [POST] /api/product-images
-    @PostMapping
-    public ProductImage createProductImage(@RequestBody ProductImage productImage) {
-        return service.createProductImage(productImage);
+    // [PUT] /api/products/{productId}/images/{productImageId}
+    @PutMapping("/products/{productId}/images/{productImageId}")
+    public ProductImageResponse updateProductImage(
+            @PathVariable Integer productImageId,
+            @PathVariable Integer productId,
+            @RequestBody ProductImageRequest request) {
+        return service.updateProductImage(productImageId, productId, request);
     }
 
-    // [POST] /api/product-images/bulk
-    @PostMapping("/bulk")
-    public List<ProductImage> createProductImages(@RequestBody List<ProductImage> productImages){
-        return service.createProductImages(productImages);
+    // [DELETE] /api/products/{productId}/images/{productImageId}
+    @DeleteMapping("/products/{productId}/images/{productImageId}")
+    public Boolean deleteByProductImageIdAndProductId(
+            @PathVariable Integer productImageId,
+            @PathVariable Integer productId) {
+        return service.deleteByProductImageIdAndProductId(productImageId, productId);
     }
 
-    // [PUT] /api/product-images/{id}
-    @PutMapping("/{id}")
-    public ProductImage updateProductImage(@PathVariable Integer id, @RequestBody ProductImage productImage) {
-        return service.updateProductImage(id, productImage);
-    }
-
-    // [DELETE] /api/product-images/{id}
-    @DeleteMapping("/{id}")
-    public boolean deleteProductImage(@PathVariable Integer id) {
-        return service.deleteProductImage(id);
-    }
-
-    // [DELETE] /api/product-images
-    @DeleteMapping
-    public void deleteAllProductImages() {
-        service.deleteAllProductImages();
-    }
 }
 
