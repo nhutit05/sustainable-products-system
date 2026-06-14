@@ -12,12 +12,9 @@ public class AddressRequest {
     @NotBlank
     private String addressStreet;
 
-    @NotBlank
-    private Boolean isDefault = false;
+    private Boolean isDefault;
 
-    @NotBlank
-    private VillageRequest villageRequest;
+    private Integer villageId;
 
-    @NotBlank
-    private CustomerRequest customerRequest;
+    private Integer userId;
 }

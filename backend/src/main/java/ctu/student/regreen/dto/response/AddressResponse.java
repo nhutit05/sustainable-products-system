@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AddressResponse {
+    private Integer addressId;
 
     private String addressName;
 

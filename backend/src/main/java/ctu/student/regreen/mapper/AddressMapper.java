@@ -3,6 +3,8 @@ package ctu.student.regreen.mapper;
 import ctu.student.regreen.dto.request.AddressRequest;
 import ctu.student.regreen.dto.response.AddressResponse;
 import ctu.student.regreen.model.Address;
+import ctu.student.regreen.model.Customer;
+import ctu.student.regreen.model.Village;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,7 @@ public class AddressMapper {
 
     public AddressResponse toResponse(Address address) {
         return new AddressResponse(
+                address.getAddressId(),
                 address.getAddressName(),
                 address.getAddressStreet(),
                 address.getIsDefault(),
@@ -23,24 +26,31 @@ public class AddressMapper {
         );
     }
 
-    public Address toEntity(AddressRequest request) {
+    public Address toEntity(AddressRequest request,
+                            Village village,
+                            Customer customer) {
         Address entity = new Address();
 
         entity.setAddressName(request.getAddressName());
         entity.setAddressStreet(request.getAddressStreet());
         entity.setIsDefault(request.getIsDefault());
-        entity.setVillage(villageMapper.toEntity(request.getVillageRequest()));
-        entity.setCustomer(customerMapper.toEntity(request.getCustomerRequest()));
+
+        entity.setVillage(village);
+        entity.setCustomer(customer);
 
         return entity;
     }
 
-    public void update(Address address, AddressRequest request) {
+    public void update(Address address,
+                       AddressRequest request,
+                       Village village,
+                       Customer customer) {
         address.setAddressName(request.getAddressName());
         address.setAddressStreet(request.getAddressStreet());
         address.setIsDefault(request.getIsDefault());
-        address.setVillage(villageMapper.toEntity(request.getVillageRequest()));
-        address.setCustomer(customerMapper.toEntity(request.getCustomerRequest()));
+
+        address.setVillage(village);
+        address.setCustomer(customer);
     }
 
 }

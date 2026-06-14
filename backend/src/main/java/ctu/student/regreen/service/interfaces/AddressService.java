@@ -9,7 +9,11 @@ import java.util.List;
 public interface AddressService {
     List<AddressResponse> getAll();
 
-    AddressResponse getsById(Integer id);
+    List<AddressResponse> getAllByCustomerId(Integer customerId);
+
+    List<AddressResponse> getAllByVillageId(Integer villageId);
+
+    AddressResponse getsByAddressId(Integer id);
 
     Integer count();
 
