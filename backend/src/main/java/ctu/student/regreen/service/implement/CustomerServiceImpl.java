@@ -7,7 +7,7 @@ import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
-import ctu.student.regreen.service.CustomerService;
+import ctu.student.regreen.service.interfaces.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

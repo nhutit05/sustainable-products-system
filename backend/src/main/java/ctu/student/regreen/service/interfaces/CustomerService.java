@@ -1,7 +1,8 @@
-package ctu.student.regreen.service;
+package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
+
 import java.util.List;
 
 
