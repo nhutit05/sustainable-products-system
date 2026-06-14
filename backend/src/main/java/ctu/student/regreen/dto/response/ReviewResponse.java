@@ -16,9 +16,9 @@ public class ReviewResponse {
 
     private Integer reviewRating;
 
-    private Integer customerId;
+    private CustomerResponse customer;
 
-    private Integer productId;
+    private ProductResponse product;
 
     private List<ReviewImageResponse> reviewImages;
 }

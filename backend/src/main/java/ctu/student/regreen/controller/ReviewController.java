@@ -28,18 +28,32 @@ public class ReviewController {
         return service.getById(reviewId);
     }
 
-    // [POST] /api/products/{productId}/reviews
     @PostMapping("/api/reviews")
     public ReviewResponse create(@RequestBody ReviewRequest request) {
         return service.create(request);
     }
 
-    // [PUT] /api/products/{productId}/reviews?reviewId={reviewId}
     @PutMapping("/api/reviews/{reviewId}")
     public ReviewResponse update(
             @PathVariable Integer reviewId,
             @RequestBody ReviewRequest request) {
         return service.update(reviewId, request);
+    }
+
+    // Find review by product
+
+    // [GET/ /api/products/{productId}/reviews
+    @GetMapping("/api/products/{productId}/reviews")
+    public List<ReviewResponse> getAllByProductId(@PathVariable Integer productId) {
+        return service.getAllByProductId(productId);
+    }
+
+    // [POST] /api/products/{productId}/reviews
+    @PostMapping("/api/products/{productId}/reviews")
+    public ReviewResponse createByProductId(
+            @PathVariable Integer productId,
+            @RequestBody ReviewRequest request) {
+        return service.create(request);
     }
 
 }

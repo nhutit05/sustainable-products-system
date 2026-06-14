@@ -21,6 +21,8 @@ import static java.util.stream.Collectors.toList;
 public class ReviewMapper {
 
     private final ReviewImageMapper reviewImageMapper;
+    private final CustomerMapper customerMapper;
+    private final ProductMapper productMapper;
 
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
@@ -49,12 +51,13 @@ public class ReviewMapper {
                 .map(reviewImageMapper::toResponse)
                 .toList();
 
+
         return new ReviewResponse(
                 review.getReviewId(),
                 review.getReviewContent(),
                 review.getReviewRating(),
-                review.getCustomer().getUserId(),
-                review.getProduct().getProductId(),
+                customerMapper.toResponse(review.getCustomer()),
+                productMapper.toResponse(review.getProduct()),
                 reviewImageResponses
         );
     }
