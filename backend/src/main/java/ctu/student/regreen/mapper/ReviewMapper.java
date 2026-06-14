@@ -1,15 +1,14 @@
 package ctu.student.regreen.mapper;
 
 import ctu.student.regreen.dto.request.ReviewRequest;
-import ctu.student.regreen.dto.response.ReviewImageResponse;
 import ctu.student.regreen.dto.response.ReviewResponse;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.Review;
-import ctu.student.regreen.model.ReviewImage;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;

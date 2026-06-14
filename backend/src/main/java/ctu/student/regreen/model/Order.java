@@ -17,54 +17,40 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "orders")
 @Getter
 @Setter
-@ToString(exclude = {
-    "voucher",
-    "paymentMethod",
-    "orderStatus",
-    "paymentStatus",
-    "orderItems",
-    "customer"
-})
 @NoArgsConstructor
 @AllArgsConstructor
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
     private Integer orderId;
 
-    @NotNull
-    @Column(nullable = false, updatable = false, name = "ordered_at")
     @CreationTimestamp
+    @Column(name = "ordered_at", nullable = false, updatable = false)
     private LocalDateTime orderedAt;
 
-    @Size(max = 100)
-    @NotBlank
-    @Column(nullable = false, updatable = false, length = 100, name = "order_receiver")
+    @Column(name = "order_receiver", nullable = false, length = 100)
     private String orderReceiver;
 
-    @NotBlank
-    @Size(max = 10)
-    @Column(nullable = false, updatable = false, length = 10, name = "order_receiver_phone" )
-    @Pattern(regexp = "^[0-9]{10}$")
+    @Column(name = "order_receiver_phone", nullable = false, length = 10)
     private String orderReceiverPhone;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "payment_method_id", nullable = false)
+    @JoinColumn(name = "user_id")
+    private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "payment_method_id")
     private PaymentMethod paymentMethod;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -72,19 +58,13 @@ public class Order {
     private Voucher voucher;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_status_id", nullable = false)
+    @JoinColumn(name = "order_status_id")
     private OrderStatus orderStatus;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "payment_status_id", nullable = false)
+    @JoinColumn(name = "payment_status_id")
     private PaymentStatus paymentStatus;
 
-    @OneToMany(mappedBy = "order", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Customer customer;
-
 }
-
