@@ -8,8 +8,8 @@ import java.util.List;
 public interface ReviewImageService {
     List<ReviewImageResponse> getAll();
     List<ReviewImageResponse> getAllByReviewId(Integer reviewId);
-    ReviewImageResponse getById(Integer id);
+    ReviewImageResponse getReviewByIdReviewImageById(Integer reviewId, Integer id);
     ReviewImageResponse create(ReviewImageRequest request);
     ReviewImageResponse update(Integer id, ReviewImageRequest request);
-    Boolean delete(Integer id);
+    Boolean deleteReviewImageByReviewId(Integer reviewId, Integer id);
 }

@@ -26,16 +26,18 @@ public class ReviewImageServiceImpl implements ReviewImageService {
     }
 
     public List<ReviewImageResponse> getAllByReviewId(Integer reviewId) {
-        return repository.findByReviewImageId(reviewId)
+        return repository.findByReviewReviewId(reviewId)
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
-    public ReviewImageResponse getById(Integer id) {
-        return repository.findByReviewImageId(id)
-                .map(mapper::toResponse)
-                .orElseThrow(() -> new RuntimeException("Review image not found with id: " + id));
+    @Override
+    public ReviewImageResponse getReviewByIdReviewImageById(Integer reviewId, Integer id) {
+        return mapper.toResponse(
+                repository.findByReviewReviewIdAndReviewImageId(reviewId, id)
+                        .orElseThrow(() -> new RuntimeException("Review image not found with review id: " + reviewId + " and review image id: " + id))
+        );
     }
 
     @Override
@@ -53,10 +55,9 @@ public class ReviewImageServiceImpl implements ReviewImageService {
     }
 
     @Override
-    public Boolean delete(Integer id) {
-        ReviewImage entity = repository.findByReviewImageId(id)
-                .orElseThrow(() -> new RuntimeException("Review image not found with id: " + id));
-        repository.delete(entity);
+    public Boolean deleteReviewImageByReviewId(Integer reviewId, Integer id) {
+        repository.deleteByReviewReviewIdAndReviewImageId(reviewId, id)
+                .orElseThrow(() -> new RuntimeException("Review image not found with review id: " + reviewId + " and review image id: " + id));
         return true;
     }
 }

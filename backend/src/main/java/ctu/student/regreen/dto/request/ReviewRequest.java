@@ -20,7 +20,4 @@ public class ReviewRequest {
 
     @NotBlank
     private Integer productId;
-
-    private List<ReviewImageRequest> reviewImages;
-
 }

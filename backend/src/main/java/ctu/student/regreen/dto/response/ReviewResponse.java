@@ -20,5 +20,4 @@ public class ReviewResponse {
 
     private ProductResponse product;
 
-    private List<ReviewImageResponse> reviewImages;
 }

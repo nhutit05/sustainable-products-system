@@ -18,8 +18,14 @@ public class ReviewImageController {
 
     // [GET] /api/reviews/{reviewId}/review-images
     @GetMapping("/api/reviews/{reviewId}/review-images")
-    public List<ReviewImageResponse> getAll(@PathVariable Integer reviewId) {
-        return service.getAll();
+    public List<ReviewImageResponse> getAllByReviewId(@PathVariable Integer reviewId) {
+        return service.getAllByReviewId(reviewId);
+    }
+
+    // [GET] /api/reviews/{reviewId}/review-images/{id}
+    @GetMapping("/api/reviews/{reviewId}/review-images/{id}")
+    public ReviewImageResponse getReviewImageIdFromReview(@PathVariable Integer reviewId, @PathVariable Integer id) {
+        return service.getReviewByIdReviewImageById(reviewId, id);
     }
 
     // [POST] /api/reviews/{reviewId}/review-images
@@ -28,9 +34,18 @@ public class ReviewImageController {
         return service.create(request);
     }
 
+    // [PUT] /api/reviews/{reviewId}/review-images/{id}
+    @PutMapping("/api/reviews/{reviewId}/review-images/{id}")
+    public ReviewImageResponse update(
+            @PathVariable Integer reviewId,
+            @PathVariable Integer id,
+            @RequestBody ReviewImageRequest request) {
+        return service.update(id, request);
+    }
+
     // [DELETE] /api/reviews/{reviewId}/review-images/{id}
     @DeleteMapping("/api/reviews/{reviewId}/review-images/{id}")
     public Boolean delete(@PathVariable Integer reviewId, @PathVariable Integer id) {
-        return service.delete(id);
+        return service.deleteReviewImageByReviewId(reviewId, id);
     }
 }

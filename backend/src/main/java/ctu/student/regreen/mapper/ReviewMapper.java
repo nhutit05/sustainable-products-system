@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class ReviewMapper {
 
-    private final ReviewImageMapper reviewImageMapper;
     private final CustomerMapper customerMapper;
     private final ProductMapper productMapper;
 
@@ -47,18 +46,12 @@ public class ReviewMapper {
     }
 
     public ReviewResponse toResponse(Review review) {
-        List<ReviewImageResponse> reviewImageResponses = review.getReviewImages().stream()
-                .map(reviewImageMapper::toResponse)
-                .toList();
-
-
         return new ReviewResponse(
                 review.getReviewId(),
                 review.getReviewContent(),
                 review.getReviewRating(),
                 customerMapper.toResponse(review.getCustomer()),
-                productMapper.toResponse(review.getProduct()),
-                reviewImageResponses
+                productMapper.toResponse(review.getProduct())
         );
     }
 
@@ -71,13 +64,8 @@ public class ReviewMapper {
                 .orElseThrow(() ->
                         new RuntimeException("Product not found with id: " + request.getProductId()));
 
-        List<ReviewImage> reviewImages = request.getReviewImages().stream()
-                .map(reviewImageMapper::toEntity)
-                .toList();
-
         review.setReviewRating(request.getReviewRating());
         review.setReviewContent(request.getReviewContent());
-        review.setReviewImages(reviewImages);
         review.setProduct(product);
         review.setCustomer(customer);
 
