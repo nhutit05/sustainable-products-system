@@ -1,9 +1,9 @@
 package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.AddressRequest;
-import ctu.student.regreen.model.Address;
-import ctu.student.regreen.service.AddressService;
-import org.springframework.beans.factory.annotation.Autowired;
+import ctu.student.regreen.dto.response.AddressResponse;
+import ctu.student.regreen.service.interfaces.AddressService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,56 +11,45 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/addresses")
 @CrossOrigin
+@RequiredArgsConstructor
 public class AddressController {
 
-    @Autowired
-    AddressService service;
+    private final AddressService service;
 
     // [GET] /api/addresses
     @GetMapping
-    public List<Address> getAllAddresses() {
-        return service.getAllAddresses();
+    public List<AddressResponse> getAllAddresses() {
+        return service.getAll();
     }
 
     // [GET] /api/addresses/{id}
     @GetMapping("{id}")
-    public Address getAddressById(@PathVariable Integer id) {
-        return service.getAddressById(id);
+    public AddressResponse getAddressById(@PathVariable Integer id) {
+        return service.getsById(id);
     }
 
     // [GET] /api/addresses/count
     @GetMapping("/count")
     public Integer countAddresses() {
-        return service.countAddresses();
+        return service.count();
     }
 
     // [POST] /api/addresses
     @PostMapping
-    public void createAddress(@RequestBody AddressRequest address) {
-        service.createAddress(address);
-    }
-
-    // [POST] /api/addresses/bulk
-    @PostMapping("/bulk")
-    public void createAddresses(@RequestBody List<Address> addresses) {
-        service.createAddresses(addresses);
+    public AddressResponse createAddress(@RequestBody AddressRequest address) {
+        return service.create(address);
     }
 
     // PUT] /api/addresses/{id}
     @PutMapping("{id}")
-    public void updateAddress(@PathVariable Integer id, @RequestBody Address address) {
-        service.updateAddress(id, address);
+    public AddressResponse updateAddress(@PathVariable Integer id, @RequestBody AddressRequest address) {
+        return service.update(id, address);
     }
 
     // [DELETE] /api/addresses/{id}
     @DeleteMapping("{id}")
     public void deleteAddress(@PathVariable Integer id) {
-        service.deleteAddress(id);
+        service.delete(id);
     }
 
-    // [DELETE] /api/addresses
-    @DeleteMapping
-    public void deleteAllAddresses() {
-        service.deleteAllAddresses();
-    }
 }
