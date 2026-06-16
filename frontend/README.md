@@ -1,73 +1,38 @@
-# React + TypeScript + Vite
+# 🛒 Sustainable Products System — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Mã nguồn phía Client (Frontend) của hệ thống Quản lý Sản phẩm Bền vững (**Sustainable Products System**). Dự án được xây dựng dựa trên các tiêu chuẩn phát triển phần mềm doanh nghiệp, sử dụng cấu trúc chia theo thành phần kỹ thuật (**Technical/Component-Based Architecture**), kiểm soát chất lượng mã nguồn tự động và tối ưu hóa kết nối bất đồng bộ với hệ thống **Java Spring Boot API**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
 
-## React Compiler
+* **Core Framework:** ReactJS (v18+) & TypeScript (v5+)
+* **Build Tool:** Vite (Siêu tốc độ, cấu hình tối ưu)
+* **Quản lý State API:** TanStack Query v5 (React Query) — Caching, Tự động Refetch, Giảm tải Server.
+* **HTTP Client:** Axios (Cấu hình luồng Interceptors, Tự động gài JWT Bearer Token, Xử lý Refresh Token).
+* **Định dạng & Linting:** ESLint (Flat Config) + Prettier + Husky + Lint-staged (Chặn commit code bẩn).
+* **Kiểm soát Form:** React Hook Form + Zod Schema Validation.
+* **Styling:** Tailwind CSS.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 📁 Kiến Trúc Thư Mục (Component-Based Architecture)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Mã nguồn được tổ chức theo vai trò kỹ thuật (Folders by Technical Role). Toàn bộ các file cùng loại (như giao diện, logic gọi api, định nghĩa kiểu) sẽ được gom chung về một thư mục tổng:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+```text
+src/
+├── apis/               # Nơi chứa tất cả các file gọi API tới Spring Boot (productApi.ts, userApi.ts...)
+├── assets/             # Hình ảnh, icons, fonts, svg tĩnh
+├── components/         # Giao diện (UI Components) chia theo mức độ tái sử dụng
+│   ├── common/         # Các nút bấm, ô nhập liệu dùng chung toàn sàn (Button, Input, Modal...)
+│   ├── products/       # Các component liên quan tới sản phẩm (ProductCard, ProductGrid...)
+│   └── users/          # Các component liên quan tới người dùng (UserTable, UserAvatar...)
+├── config/             # Biến môi trường, cấu hình SDK bên thứ 3
+├── hooks/              # Custom hooks toàn cục xử lý logic (useAuth, useDebounce, useLocalStorage...)
+├── layouts/            # Các khung bọc giao diện (MainLayout, AuthLayout, AdminLayout)
+├── lib/                # Cấu hình khởi tạo thư viện bên thứ 3 (axios.ts, queryClient.ts)
+├── pages/              # Các màn hình lớn/trang hoàn chỉnh (HomePage, ProductDetailPage, LoginPage...)
+├── routes/             # Cấu hình định tuyến, phân quyền URL (React Router Dom)
+├── types/              # Định nghĩa các Interface/Type TypeScript (product.ts, user.ts...)
+└── utils/              # Các hàm bổ trợ helper (format tiền tệ, xử lý date-time...)
