@@ -1,0 +1,29 @@
+.page-customer {
+  display: grid;
+  grid-template-areas:
+    "header-cus"
+    "main-cus"
+    "footer-cus";
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  gap: 10px;
+}
+
+.page-customer .header-cus {
+  grid-area: header-cus;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.page-customer .main-cus {
+  grid-area: main-cus;
+  background-color: #ffffff;
+  padding: 20px;
+}
+
+.page-customer .footer-cus {
+  grid-area: footer-cus;
+  background-color: #f0f0f0;
+  padding: 20px;
+}
