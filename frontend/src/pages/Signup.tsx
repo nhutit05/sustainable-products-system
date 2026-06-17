@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { UserRegister } from '../model/userRegister'
 
-export default function Login() {
+export default function Signup() {
   const [formData, setFormData] = useState<UserRegister>()
 
   const [username, setUsername] = useState<string>('')
@@ -47,9 +47,9 @@ export default function Login() {
 
   return (
     <>
-      <div className="page-cus_login">
-        <aside className="login-aside_left lg:flex flex-col justify-between p-12 mt-5">
-          <div className="login-aside_content relative z-10 text-left">
+      <div className="page-cus_signup">
+        <aside className="signup-aside_left lg:flex flex-col justify-between p-12 mt-5">
+          <div className="signup-aside_content relative z-10 text-left">
             <h2 className="text-4xl pb-4 font-bold leading-tight text-white ">
               Chào mừng bạn <br /> trở lại hành trình sống xanh.
             </h2>
@@ -60,11 +60,11 @@ export default function Login() {
             </p>
           </div>
 
-          <div className="login-aside_summary grid grid-cols-2 gap-4">
+          <div className="signup-aside_summary grid grid-cols-2 gap-4">
             {contentSummary.map((item, index) => (
               <div
                 key={index}
-                className="login-aside_summary-item text-left p-4 rounded-2xl bg-white/10 border border-white/15"
+                className="signup-aside_summary-item text-left p-4 rounded-2xl bg-white/10 border border-white/15"
               >
                 <h3 className="text-2xl font-bold text-white">{item.value}</h3>
                 <p className="text-green-200/70 text-sm">{item.content}</p>
@@ -72,24 +72,24 @@ export default function Login() {
             ))}
           </div>
 
-          <div className="login-aside_author">
+          <div className="signup-aside_author">
             <p className="text-green-200/70 text-sm">
               &copy; 2026 ReGreenShop - Can Tho University. All rights reserved.
             </p>
           </div>
         </aside>
 
-        <main className="login-main_right flex-1 flex flex-col justify-center items-center p-12 w-full">
+        <main className="signup-main_right flex-1 flex flex-col justify-center items-center p-12 w-full">
           <div className="max-w-md w-full">
-            <h2 className="login-form--title text-2xl font-bold text-green-900 mb-6">Đăng ký</h2>
-            <div className="login_google rounded-2xl bg-white p-2.5 mb-2 flex justify-center items-center cursor-pointer hover:shadow-lg transition-shadow duration-300 hover:scale-101 border border-green-200">
-              <button className="login_google-btn flex items-center gap-2 text-green-900 ">
-                <img src="/google.svg" alt="" className="login_google-icon h-6 w-6" />
+            <h2 className="signup-form--title text-2xl font-bold text-green-900 mb-6">Đăng ký</h2>
+            <div className="signup_google rounded-2xl bg-white p-2.5 mb-2 flex justify-center items-center cursor-pointer hover:shadow-lg transition-shadow duration-300 hover:scale-101 border border-green-200">
+              <button className="signup_google-btn flex items-center gap-2 text-green-900 ">
+                <img src="/google.svg" alt="" className="signup_google-icon h-6 w-6" />
                 Đăng ký với Google
               </button>
             </div>
             <p className="text-sm text-green-900">or</p>
-            <form className="login-form mt-4 text-left" onSubmit={handleSubmit}>
+            <form className="signup-form mt-4 text-left" onSubmit={handleSubmit}>
               <div className="gap-4 grid grid-cols-2">
                 <div className="form-group ">
                   <label htmlFor="username" className="form-label my-2">
@@ -192,7 +192,7 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="login-form--submit bg-primary text-md font-bold text-white rounded-2xl p-2.5 w-full mt-6 hover:scale-101 transition-transform duration-300 active:scale-100 active:shadow-none active:bg-primary/90"
+                className="signup-form--submit bg-primary text-md font-bold text-white rounded-2xl p-2.5 w-full mt-6 hover:scale-101 transition-transform duration-300 active:scale-100 active:shadow-none active:bg-primary/90"
               >
                 Đăng ký
               </button>

@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router'
 import Navbar from '../components/Navbar'
 import '../styles/customer.css'
 import Homepage from '../pages/Homepage'
-import Login from '../pages/Login'
+import Signup from '../pages/Signup'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
@@ -25,8 +25,8 @@ export default function CustomerLayout() {
           <Route path="products" element={<h1>Products</h1>} />
           <Route path="cart" element={<h1>Cart</h1>} />
           <Route path="me" element={<h1>Me</h1>} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<h1>Register</h1>} />
+          <Route path="login" element={<h1>Login</h1>} />
+          <Route path="register" element={<Signup />} />
         </Routes>
       </main>
 
