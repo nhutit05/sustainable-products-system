@@ -1,6 +1,6 @@
 import { Bell, Heart, Leaf, Menu, Search, ShoppingCart, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 interface NavbarProps {
   NAV_LINKS: { label: string; to: string }[]
@@ -9,6 +9,7 @@ interface NavbarProps {
 export default function Navbar({ NAV_LINKS }: NavbarProps) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const navigate = useNavigate()
 
   const location = useLocation()
 
@@ -34,7 +35,10 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="header-navbar h-16 flex items-center justify-between gap-4  ">
           <div className="flex items-center gap-2">
-            <div className="navbar_logo p-2 rounded-2xl bg-primary shadow-md  hover:scale-105 transition-transform hover:cursor-pointer">
+            <div
+              className="navbar_logo p-2 rounded-2xl bg-primary shadow-md  hover:scale-105 transition-transform hover:cursor-pointer"
+              onClick={() => navigate('/')}
+            >
               <Leaf className="text-white" />
             </div>
             <span className="font-['Bricolage_Grotesque',sans-serif] text-xl font-extrabold text-green-800 tracking-tight">

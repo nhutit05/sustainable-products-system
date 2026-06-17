@@ -1,17 +1,17 @@
-import { Route, Routes } from "react-router";
-import Navbar from "../components/Navbar";
-import "../styles/customer.css";
-import Homepage from "../pages/Homepage";
-import Login from "../pages/Login";
+import { Route, Routes } from 'react-router'
+import Navbar from '../components/Navbar'
+import '../styles/customer.css'
+import Homepage from '../pages/Homepage'
+import Login from '../pages/Login'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
-    { label: "Home", to: "/" },
-    { label: "Products", to: "/products" },
-    { label: "Community", to: "/community" },
-    { label: "About Us", to: "/about" },
-    { label: "Contact", to: "/contact" },
-  ];
+    { label: 'Home', to: '/' },
+    { label: 'Products', to: '/products' },
+    { label: 'Community', to: '/community' },
+    { label: 'About Us', to: '/about' },
+    { label: 'Contact', to: '/contact' },
+  ]
 
   return (
     <div className="page-customer container">
@@ -32,5 +32,5 @@ export default function CustomerLayout() {
 
       <footer className="footer-cus">Footer</footer>
     </div>
-  );
+  )
 }

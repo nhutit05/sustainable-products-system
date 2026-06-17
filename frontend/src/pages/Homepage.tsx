@@ -5,5 +5,5 @@ export default function Homepage() {
         <h1>Homepage</h1>
       </div>
     </>
-  );
+  )
 }

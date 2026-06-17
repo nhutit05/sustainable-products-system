@@ -3,5 +3,5 @@ export default function AdminLayout() {
     <div className="page-admin">
       <h1>Admin Layout</h1>
     </div>
-  );
+  )
 }
