@@ -1,6 +1,5 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.config.SecurityConfig;
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.request.LoginRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
@@ -33,7 +32,7 @@ public class CustomerController {
     // [POST] /api/customers?email={email}
     @PostMapping("/auth")
     public CustomerResponse getCustomerByEmail(@RequestBody LoginRequest request) {
-        return service.getByEmail(request.getEmail(), request.getPassword());
+        return service.getByEmail(request.getUsername(), request.getPassword());
     }
 
     // [POST] /api/customers
