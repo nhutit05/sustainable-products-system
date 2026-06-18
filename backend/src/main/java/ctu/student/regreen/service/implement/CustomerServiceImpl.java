@@ -49,13 +49,7 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponse getByEmail(String email, String password) {
         Customer customerFound = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND));
-        SecurityConfig config = new SecurityConfig();
-        if(config.passwordEncoder().matches(password, customerFound.getPassword())) {
-            System.out.println("Password matches");
-            // Password matches, proceed with authentication
-        } else {
-            throw new ResourceNotFoundException(ErrorCode.PASSWORD_INCORRECT);
-        }
+       
         return customerMapper.toResponse(customerFound);
     }
 
