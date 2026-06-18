@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router'
 import Navbar from '../components/Navbar'
 import '../styles/customer.css'
 import Homepage from '../pages/Homepage'
+import Signup from '../pages/Signup'
 import Login from '../pages/Login'
 
 export default function CustomerLayout() {
@@ -26,7 +27,7 @@ export default function CustomerLayout() {
           <Route path="cart" element={<h1>Cart</h1>} />
           <Route path="me" element={<h1>Me</h1>} />
           <Route path="login" element={<Login />} />
-          <Route path="register" element={<h1>Register</h1>} />
+          <Route path="register" element={<Signup />} />
         </Routes>
       </main>
 
