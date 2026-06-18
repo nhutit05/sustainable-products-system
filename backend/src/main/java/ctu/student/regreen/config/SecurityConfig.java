@@ -46,9 +46,6 @@ public class SecurityConfig {
                                         "/api/auth/**")
                                 .permitAll()
 
-                                .requestMatchers("/api/admin/**")
-                                .hasRole("ADMIN")
-
                                 .requestMatchers(
                                         HttpMethod.GET,
                                         "/api/products/**")
@@ -68,6 +65,15 @@ public class SecurityConfig {
                                         "/api/refund-slips/**")
                                 .hasRole(
                                         "CUSTOMER")
+
+                                .requestMatchers(
+                                        "/api/banks/**")
+                                .hasAnyRole(
+                                        "CUSTOMER",
+                                        "ADMIN")
+
+                                .requestMatchers("/api/admin/**")
+                                .hasRole("ADMIN")
 
                                 .anyRequest()
                                 .authenticated())
