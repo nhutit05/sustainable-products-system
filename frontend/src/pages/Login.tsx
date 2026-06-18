@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import type { UserRegister } from '../model/userRegister'
+import { Eye, EyeOff } from 'lucide-react'
+import { data, useNavigate } from 'react-router-dom'
 
 type loginForm = {
   email: string
@@ -8,22 +9,53 @@ type loginForm = {
 
 export default function Login() {
   const [formData, setFormData] = useState<loginForm>()
+  const navigate = useNavigate()
 
   const [password, setPassword] = useState<string>('')
   const [email, setEmail] = useState<string>('')
+
+  const [showPassword, setShowPassword] = useState<boolean>(false)
 
   const clear = () => {
     setPassword('')
     setEmail('')
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleShowPassword = () => {
+    setShowPassword(!showPassword)
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     setFormData({
-      password: password,
       email: email,
+      password: password,
     })
+
+    const response = await fetch('http://localhost:8080/api/customers/auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    })
+
+    const data = await response.json()
+    if (response.ok) {
+      localStorage.setItem('isLogin', 'true')
+      alert('Đăng nhập thành công')
+      navigate('/')
+    } else {
+      if (data.code == 'USR_003') {
+        alert('Mật khẩu không chính xác vui lòng thử lại')
+      } else if (data.code == 'USR_001') {
+        alert('Email không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
+      }
+    }
 
     clear()
   }
@@ -99,14 +131,28 @@ export default function Login() {
                   <label htmlFor="password" className="form-label my-2">
                     Mật khẩu:{' '}
                   </label>
-                  <input
-                    type="password"
-                    id="password"
-                    className="form-input text-md w-full bg-white border border-green-200 rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none focus:border-green-800"
-                    placeholder="Nhập mật khẩu ..."
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      className="form-input text-md w-full bg-white border border-green-200 rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none focus:border-green-800"
+                      placeholder="Nhập mật khẩu ..."
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                    {showPassword ? (
+                      <Eye
+                        className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                        onClick={handleShowPassword}
+                      />
+                    ) : (
+                      <EyeOff
+                        className="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                        onClick={handleShowPassword}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 

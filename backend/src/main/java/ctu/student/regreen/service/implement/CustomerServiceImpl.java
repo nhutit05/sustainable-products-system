@@ -1,7 +1,10 @@
 package ctu.student.regreen.service.implement;
 
+import ctu.student.regreen.config.SecurityConfig;
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
+import ctu.student.regreen.exception.ErrorCode;
+import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.CustomerMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.Customer;
@@ -43,10 +46,17 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
-    public CustomerResponse getByEmail(String email) {
-        return customerRepository.findByEmail(email)
-                .map(customerMapper::toResponse)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+    public CustomerResponse getByEmail(String email, String password) {
+        Customer customerFound = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND));
+        SecurityConfig config = new SecurityConfig();
+        if(config.passwordEncoder().matches(password, customerFound.getPassword())) {
+            System.out.println("Password matches");
+            // Password matches, proceed with authentication
+        } else {
+            throw new ResourceNotFoundException(ErrorCode.PASSWORD_INCORRECT);
+        }
+        return customerMapper.toResponse(customerFound);
     }
 
     public CustomerResponse create(CustomerRequest request) {
