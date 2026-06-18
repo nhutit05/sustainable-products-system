@@ -1,6 +1,8 @@
 package ctu.student.regreen.controller;
 
+import ctu.student.regreen.config.SecurityConfig;
 import ctu.student.regreen.dto.request.CustomerRequest;
+import ctu.student.regreen.dto.request.LoginRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
 import ctu.student.regreen.service.interfaces.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,12 @@ public class CustomerController {
     @GetMapping("/{id}")
     public CustomerResponse getCustomerById(@PathVariable Integer id) {
         return service.getById(id);
+    }
+
+    // [POST] /api/customers?email={email}
+    @PostMapping("/auth")
+    public CustomerResponse getCustomerByEmail(@RequestBody LoginRequest request) {
+        return service.getByEmail(request.getEmail(), request.getPassword());
     }
 
     // [POST] /api/customers
