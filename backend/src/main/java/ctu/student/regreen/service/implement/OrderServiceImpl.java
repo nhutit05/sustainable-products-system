@@ -3,10 +3,12 @@ package ctu.student.regreen.service.implement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import ctu.student.regreen.dto.request.OrderRequest;
 import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.enums.OrderStatusName;
 import ctu.student.regreen.mapper.OrderMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
@@ -38,104 +40,188 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
+        private final OrderRepository orderRepository;
+        private final CustomerRepository customerRepository;
+        private final ProductRepository productRepository;
+        private final CartRepository cartRepository;
+        private final CartItemRepository cartItemRepository;
 
-    private final CustomerRepository customerRepository;
-    private final ProductRepository productRepository;
-    private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
+        private final PaymentMethodRepository paymentMethodRepository;
+        private final VoucherRepository voucherRepository;
+        private final OrderStatusRepository orderStatusRepository;
+        private final PaymentStatusRepository paymentStatusRepository;
 
-    private final PaymentMethodRepository paymentMethodRepository;
-    private final VoucherRepository voucherRepository;
-    private final OrderStatusRepository orderStatusRepository;
-    private final PaymentStatusRepository paymentStatusRepository;
+        private final OrderMapper orderMapper;
 
-    private final OrderMapper orderMapper;
+        private Customer getCurrentCustomer() {
 
-    @Override
-    public OrderResponse checkout(OrderRequest request) {
+                String username = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
 
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow();
-
-        Cart cart = cartRepository.findByCustomerUserId(customer.getUserId())
-                .orElseThrow();
-
-        PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
-                .orElseThrow();
-
-        Voucher voucher = request.getVoucherId() != null
-                ? voucherRepository.findById(request.getVoucherId()).orElse(null)
-                : null;
-
-        OrderStatus pending = orderStatusRepository.findById(1).orElseThrow();
-        PaymentStatus unpaid = paymentStatusRepository.findById(1).orElseThrow();
-
-        Order order = new Order();
-        order.setCustomer(customer);
-        order.setOrderReceiver(request.getOrderReceiver());
-        order.setOrderReceiverPhone(request.getOrderReceiverPhone());
-        order.setPaymentMethod(paymentMethod);
-        order.setVoucher(voucher);
-        order.setOrderStatus(pending);
-        order.setPaymentStatus(unpaid);
-
-        List<OrderItem> items = new ArrayList<>();
-
-        for (Integer productId : request.getProductIds()) {
-
-            CartItem cartItem = cartItemRepository
-                    .findById(new CartItemId(cart.getCartId(), productId))
-                    .orElseThrow();
-
-            Product product = productRepository.findById(productId)
-                    .orElseThrow();
-
-            OrderItem item = new OrderItem();
-
-            // IMPORTANT: KHÔNG SET ID MANUAL
-            item.setOrder(order);
-            item.setProduct(product);
-            item.setQuantity(cartItem.getQuantity());
-            item.setPurchasedPrice(product.getProductPrice());
-
-            items.add(item);
-
-            cartItemRepository.delete(cartItem);
+                return customerRepository
+                                .findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Customer not found"));
         }
 
-        order.setOrderItems(items);
+        private OrderStatus getOrderStatus(
+                        OrderStatusName statusName) {
 
-        orderRepository.save(order);
+                return orderStatusRepository
+                                .findByOrderStatusName(
+                                                statusName.name())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Order status not found"));
+        }
 
-        return orderMapper.toResponse(order);
-    }
+        @Override
+        public OrderResponse checkout(OrderRequest request) {
 
-    @Override
-    public OrderResponse getById(Integer id) {
-        return orderMapper.toResponse(
-                orderRepository.findById(id).orElseThrow()
-        );
-    }
+                Customer customer = getCurrentCustomer();
 
-    @Override
-    public List<OrderResponse> getAll() {
-        return orderRepository.findAll()
-                .stream()
-                .map(orderMapper::toResponse)
-                .toList();
-    }
+                Cart cart = cartRepository.findByCustomerUserId(customer.getUserId())
+                                .orElseThrow();
 
-    @Override
-    public OrderResponse cancel(Integer id) {
+                PaymentMethod paymentMethod = paymentMethodRepository.findById(request.getPaymentMethodId())
+                                .orElseThrow();
 
-        Order order = orderRepository.findById(id).orElseThrow();
+                Voucher voucher = null;
 
-        OrderStatus cancelled = orderStatusRepository.findById(5).orElseThrow();
+                if (request.getVoucherId() != null) {
 
-        order.setOrderStatus(cancelled);
+                        voucher = voucherRepository
+                                        .findById(
+                                                        request.getVoucherId())
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "Voucher not found"));
+                }
 
-        return orderMapper.toResponse(orderRepository.save(order));
-    }
+                OrderStatus pending = getOrderStatus(
+                                OrderStatusName.PENDING);
+                PaymentStatus unpaid = paymentStatusRepository.findById(1).orElseThrow();
+
+                Order order = new Order();
+                order.setCustomer(customer);
+                order.setOrderReceiver(request.getOrderReceiver());
+                order.setOrderReceiverPhone(request.getOrderReceiverPhone());
+                order.setPaymentMethod(paymentMethod);
+                order.setVoucher(voucher);
+                order.setOrderStatus(pending);
+                order.setPaymentStatus(unpaid);
+
+                List<OrderItem> items = new ArrayList<>();
+
+                if (request.getProductIds() == null
+                                || request.getProductIds().isEmpty()) {
+
+                        throw new RuntimeException(
+                                        "No products selected");
+                }
+
+                for (Integer productId : request.getProductIds()) {
+
+                        CartItem cartItem = cartItemRepository
+                                        .findById(new CartItemId(cart.getCartId(), productId))
+                                        .orElseThrow();
+
+                        Product product = productRepository.findById(productId)
+                                        .orElseThrow();
+
+                        OrderItem item = new OrderItem();
+
+                        // IMPORTANT: KHÔNG SET ID MANUAL
+                        item.setOrder(order);
+                        item.setProduct(product);
+                        item.setQuantity(cartItem.getQuantity());
+                        item.setPurchasedPrice(product.getProductPrice());
+
+                        items.add(item);
+
+                        cartItemRepository.delete(cartItem);
+                }
+
+                order.setOrderItems(items);
+
+                orderRepository.save(order);
+
+                return orderMapper.toResponse(order);
+        }
+
+        @Override
+        public OrderResponse getById(Integer id) {
+
+                String username = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                Customer customer = customerRepository
+                                .findByUsername(username)
+                                .orElseThrow();
+
+                Order order = orderRepository
+                                .findById(id)
+                                .orElseThrow();
+
+                if (!order.getCustomer()
+                                .getUserId()
+                                .equals(customer.getUserId())) {
+
+                        throw new RuntimeException(
+                                        "Access denied");
+                }
+
+                return orderMapper.toResponse(order);
+        }
+
+        @Override
+        public List<OrderResponse> getMyOrders() {
+
+                String username = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                Customer customer = customerRepository
+                                .findByUsername(username)
+                                .orElseThrow();
+
+                return orderRepository
+                                .findByCustomerUserId(
+                                                customer.getUserId())
+                                .stream()
+                                .map(orderMapper::toResponse)
+                                .toList();
+        }
+
+        @Override
+        public OrderResponse cancel(Integer id) {
+
+                String username = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+                                .getName();
+
+                Customer customer = customerRepository
+                                .findByUsername(username)
+                                .orElseThrow();
+
+                Order order = orderRepository.findById(id).orElseThrow();
+
+                if (!order.getCustomer()
+                                .getUserId()
+                                .equals(customer.getUserId())) {
+
+                        throw new RuntimeException(
+                                        "Access denied");
+                }
+
+                OrderStatus cancelled = orderStatusRepository.findById(5).orElseThrow();
+
+                order.setOrderStatus(cancelled);
+
+                return orderMapper.toResponse(orderRepository.save(order));
+        }
 }

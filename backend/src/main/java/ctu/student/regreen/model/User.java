@@ -25,6 +25,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@DiscriminatorColumn(name = "user_type")
 public abstract class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,4 +60,6 @@ public abstract class User {
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
+
+    public abstract String getRole();
 }

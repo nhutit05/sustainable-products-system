@@ -18,9 +18,6 @@ public class OrderRequest {
     private String orderReceiverPhone;
 
     @NotNull
-    private Integer customerId;
-
-    @NotNull
     private Integer paymentMethodId;
 
     private Integer voucherId;
