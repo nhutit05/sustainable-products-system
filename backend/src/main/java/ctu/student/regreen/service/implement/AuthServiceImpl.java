@@ -1,5 +1,7 @@
 package ctu.student.regreen.service.implement;
 
+import ctu.student.regreen.exception.ErrorCode;
+import ctu.student.regreen.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -66,15 +68,13 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository
                 .findByUsername(
                         request.getUsername())
-                .orElseThrow(() -> new RuntimeException(
-                        "User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
 
-            throw new RuntimeException(
-                    "Invalid password");
+            throw new ResourceNotFoundException(ErrorCode.PASSWORD_INCORRECT);
         }
 
         String token = jwtService.generateToken(

@@ -29,10 +29,10 @@ public class CustomerController {
         return service.getById(id);
     }
 
-    // [POST] /api/customers?email={email}
+    // [POST] /api/customers/auth
     @PostMapping("/auth")
-    public CustomerResponse getCustomerByEmail(@RequestBody LoginRequest request) {
-        return service.getByEmail(request.getUsername(), request.getPassword());
+    public CustomerResponse getCustomerByUsername(@RequestBody LoginRequest request) {
+        return service.getByUsername(request.getUsername(), request.getPassword());
     }
 
     // [POST] /api/customers

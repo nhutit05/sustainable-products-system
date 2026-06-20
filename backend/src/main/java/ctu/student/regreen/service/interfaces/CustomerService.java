@@ -14,9 +14,7 @@ public interface CustomerService {
 
     CustomerResponse getById(Integer id);
 
-    CustomerResponse getByUsername(String username);
-
-    CustomerResponse getByEmail(String email, String password);
+    CustomerResponse getByUsername(String username, String password);
 
     CustomerResponse update(Integer id, CustomerRequest request);
 
