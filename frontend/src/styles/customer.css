@@ -59,3 +59,8 @@
   margin: 5px 0;
   box-sizing: border-box;
 }
+
+/* ============= HOME PAGE ========== */
+.homepage_banner {
+  background: linear-gradient(135deg, #f8fff4 0%, #e8f5e9 35%, #e0f2f1 70%, #f0fdf4 100%);
+}

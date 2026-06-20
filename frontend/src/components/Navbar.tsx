@@ -91,7 +91,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
               </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
+                className="px-4 py-2 text-sm font-semibold text-white bg-primary from-emerald-500 to-teal-600 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
               >
                 Sign Up
               </Link>
