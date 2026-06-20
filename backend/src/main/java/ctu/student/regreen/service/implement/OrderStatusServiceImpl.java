@@ -3,6 +3,7 @@ package ctu.student.regreen.service.implement;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.OrderStatusRequest;
 import ctu.student.regreen.dto.response.OrderStatusResponse;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderStatusServiceImpl implements OrderStatusService {
 
     private final OrderStatusRepository repository;
@@ -28,9 +30,7 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
         OrderStatus orderStatus = mapper.toEntity(request);
 
-        orderStatus = repository.save(orderStatus);
-
-        return mapper.toResponse(orderStatus);
+        return mapper.toResponse(repository.save(orderStatus));
     }
 
     @Override
@@ -63,8 +63,6 @@ public class OrderStatusServiceImpl implements OrderStatusService {
         }
 
         mapper.update(orderStatus, request);
-
-        orderStatus = repository.save(orderStatus);
 
         return mapper.toResponse(orderStatus);
     }

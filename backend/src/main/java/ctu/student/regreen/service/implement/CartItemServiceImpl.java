@@ -2,6 +2,7 @@ package ctu.student.regreen.service.implement;
 
 import java.util.List;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import ctu.student.regreen.dto.request.CartItemRequest;
@@ -26,84 +27,77 @@ public class CartItemServiceImpl implements CartItemService {
     private final ProductRepository productRepository;
     private final CartItemMapper mapper;
 
+    private Cart getCurrentCart() {
+
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return cartRepository.findByCustomerUsername(username)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
+    }
+
     @Override
     public CartItemResponse add(CartItemRequest request) {
 
-        Cart cart = cartRepository.findById(request.getCartId())
-                .orElseThrow(() ->
-                        new RuntimeException("Cart not found"));
+        Cart cart = getCurrentCart();
 
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new RuntimeException("Product not found"));
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        CartItemId id = new CartItemId(
-                request.getCartId(),
-                request.getProductId());
+        CartItemId id = new CartItemId(cart.getCartId(), product.getProductId());
 
-        CartItem item = repository.findById(id)
-                .orElse(null);
+        CartItem item = repository.findById(id).orElse(null);
 
         if (item != null) {
-
-            item.setQuantity(
-                    item.getQuantity() + request.getQuantity());
-
+            item.setQuantity(item.getQuantity() + request.getQuantity());
         } else {
-
             item = new CartItem();
-
             item.setId(id);
             item.setCart(cart);
             item.setProduct(product);
             item.setQuantity(request.getQuantity());
         }
 
-        item = repository.save(item);
-
-        return mapper.toResponse(item);
+        return mapper.toResponse(repository.save(item));
     }
 
     @Override
-    public List<CartItemResponse> getByCart(Integer cartId) {
+    public List<CartItemResponse> getMyCartItems() {
 
-        return repository.findByCartCartId(cartId)
+        Cart cart = getCurrentCart();
+
+        return repository.findByCartCartId(cart.getCartId())
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Override
-    public CartItemResponse update(
-            Integer cartId,
-            Integer productId,
-            Integer quantity) {
+    public CartItemResponse update(Integer productId, Integer quantity) {
 
-        CartItemId id =
-                new CartItemId(cartId, productId);
+        Cart cart = getCurrentCart();
+
+        CartItemId id = new CartItemId(cart.getCartId(), productId);
 
         CartItem item = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
         item.setQuantity(quantity);
 
-        item = repository.save(item);
-
-        return mapper.toResponse(item);
+        return mapper.toResponse(repository.save(item));
     }
 
     @Override
-    public void delete(
-            Integer cartId,
-            Integer productId) {
+    public void delete(Integer productId) {
 
-        CartItemId id =
-                new CartItemId(cartId, productId);
+        Cart cart = getCurrentCart();
+
+        CartItemId id = new CartItemId(cart.getCartId(), productId);
 
         CartItem item = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
         repository.delete(item);
     }

@@ -11,5 +11,5 @@ public interface MaterialService {
     MaterialResponse create(MaterialRequest request);
     MaterialResponse getById(Integer id);
     MaterialResponse update(Integer id, MaterialRequest request);
-    Boolean delete(Integer id);
+    void delete(Integer id);
 }

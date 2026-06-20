@@ -1,10 +1,7 @@
 package ctu.student.regreen.dto.response;
 
-import ctu.student.regreen.model.ReviewImage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor

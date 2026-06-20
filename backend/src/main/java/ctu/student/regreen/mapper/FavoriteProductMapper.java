@@ -13,10 +13,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FavoriteProductMapper {
 
-    private final ProductMapper productMapper;
-
-    private final CustomerMapper customerMapper;
-
     public FavoriteProduct toEntity(FavoriteProductRequest request,
                                     Product product,
                                     Customer customer) {

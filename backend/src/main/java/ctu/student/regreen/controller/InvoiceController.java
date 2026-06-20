@@ -1,48 +1,44 @@
 package ctu.student.regreen.controller;
-
 import java.util.List;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import ctu.student.regreen.dto.request.InvoiceRequest;
 import ctu.student.regreen.dto.response.InvoiceResponse;
 import ctu.student.regreen.service.interfaces.InvoiceService;
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class InvoiceController {
 
     private final InvoiceService service;
 
-    @PostMapping
-    public InvoiceResponse create(
-            @Valid @RequestBody
-            InvoiceRequest request) {
+    @GetMapping("/my")
+    public List<InvoiceResponse>
+    getMyInvoices() {
 
-        return service.create(request);
+        return service.getMyInvoices();
     }
 
-    @GetMapping
-    public List<InvoiceResponse> getAll() {
-
-        return service.getAll();
-    }
-
-    @GetMapping("/{id}")
+    @GetMapping("/{invoiceId}")
     public InvoiceResponse getById(
-            @PathVariable Integer id) {
+            @PathVariable Integer invoiceId) {
 
-        return service.getById(id);
+        return service.getById(
+                invoiceId);
     }
 
     @GetMapping("/order/{orderId}")
     public InvoiceResponse getByOrder(
             @PathVariable Integer orderId) {
 
-        return service.getByOrder(orderId);
+        return service.getByOrder(
+                orderId);
     }
 }

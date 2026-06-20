@@ -1,6 +1,6 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.dto.response.FileRequest;
+import ctu.student.regreen.dto.request.FileRequest;
 import ctu.student.regreen.dto.response.FileResponse;
 import ctu.student.regreen.service.interfaces.FileService;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api/admin/files")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @AllArgsConstructor
 public class FileController {

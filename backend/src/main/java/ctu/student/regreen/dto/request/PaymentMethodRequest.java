@@ -9,4 +9,6 @@ public class PaymentMethodRequest {
     @NotBlank(message = "Tên phương thức thanh toán không được trống")
     @Size(max = 50)
     private String paymentMethodName;
+
+    private Boolean online;
 }

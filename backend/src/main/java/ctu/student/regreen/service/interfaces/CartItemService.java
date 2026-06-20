@@ -9,14 +9,9 @@ public interface CartItemService {
 
     CartItemResponse add(CartItemRequest request);
 
-    List<CartItemResponse> getByCart(Integer cartId);
+    List<CartItemResponse> getMyCartItems();
 
-    CartItemResponse update(
-            Integer cartId,
-            Integer productId,
-            Integer quantity);
+    CartItemResponse update(Integer productId, Integer quantity);
 
-    void delete(
-            Integer cartId,
-            Integer productId);
+    void delete(Integer productId);
 }

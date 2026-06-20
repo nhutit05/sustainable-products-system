@@ -2,8 +2,6 @@ package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.request.ProductImageRequest;
 import ctu.student.regreen.dto.response.ProductImageResponse;
-import ctu.student.regreen.model.ProductImage;
-
 import java.util.List;
 
 public interface ProductImageService {
