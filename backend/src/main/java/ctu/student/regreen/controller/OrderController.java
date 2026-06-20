@@ -39,9 +39,9 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<OrderResponse> getAll() {
+    public List<OrderResponse> getMyOrders() {
 
-        return service.getAll();
+        return service.getMyOrders();
     }
 
     @PatchMapping("/{id}/cancel")

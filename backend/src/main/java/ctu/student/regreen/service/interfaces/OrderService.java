@@ -13,7 +13,7 @@ public interface OrderService {
     OrderResponse getById(
             Integer id);
 
-    List<OrderResponse> getAll();
+    List<OrderResponse> getMyOrders();
 
     OrderResponse cancel(
             Integer id);

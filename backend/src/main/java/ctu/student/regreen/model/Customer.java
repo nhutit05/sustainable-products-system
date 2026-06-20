@@ -18,6 +18,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@DiscriminatorValue("CUSTOMER")
 public class Customer extends User{
     @NonNull
     @Column(nullable = false, name = "accumulated_eco_points")
@@ -31,4 +32,9 @@ public class Customer extends User{
         orphanRemoval = true
     )
     private Cart cart;
+
+    @Override
+    public String getRole() {
+        return "ROLE_CUSTOMER";
+    }
 }
