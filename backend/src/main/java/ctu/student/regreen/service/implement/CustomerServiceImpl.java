@@ -39,16 +39,16 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
-    public CustomerResponse getByUsername(String username) {
-        return customerRepository.findByUsername(username)
-                .map(customerMapper::toResponse)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
-    }
+//    public CustomerResponse getByUsername(String username) {
+//        return customerRepository.findByUsername(username)
+//                .map(customerMapper::toResponse)
+//                .orElseThrow(() -> new RuntimeException("Customer not found"));
+//    }
 
-    public CustomerResponse getByEmail(String email, String password) {
-        Customer customerFound = customerRepository.findByEmail(email)
+    public CustomerResponse getByUsername(String username, String password) {
+        Customer customerFound = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND));
-       
+        System.out.println(customerFound.getPassword());
         return customerMapper.toResponse(customerFound);
     }
 

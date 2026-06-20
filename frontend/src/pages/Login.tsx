@@ -1,24 +1,18 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { data, useNavigate } from 'react-router-dom'
-
-type loginForm = {
-  email: string
-  password: string
-}
+import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
-  const [formData, setFormData] = useState<loginForm>()
   const navigate = useNavigate()
 
   const [password, setPassword] = useState<string>('')
-  const [email, setEmail] = useState<string>('')
+  const [username, setUsername] = useState<string>('')
 
   const [showPassword, setShowPassword] = useState<boolean>(false)
 
   const clear = () => {
     setPassword('')
-    setEmail('')
+    setUsername('')
   }
 
   const handleShowPassword = () => {
@@ -28,32 +22,32 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    setFormData({
-      email: email,
+    const dataForm = {
+      username: username,
       password: password,
-    })
+    }
 
-    const response = await fetch('http://localhost:8080/api/customers/auth', {
+    console.log(JSON.stringify(dataForm))
+
+    const response = await fetch('http://localhost:8080/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
+      body: JSON.stringify(dataForm),
     })
 
     const data = await response.json()
     if (response.ok) {
-      localStorage.setItem('isLogin', 'true')
+      localStorage.setItem('token', data.token)
       alert('Đăng nhập thành công')
-      navigate('/')
+      if (data.role === 'ROLE_CUSTOMER') navigate('/')
+      else if (data.role === 'ROLE_ADMIN') navigate('/admin')
     } else {
       if (data.code == 'USR_003') {
         alert('Mật khẩu không chính xác vui lòng thử lại')
       } else if (data.code == 'USR_001') {
-        alert('Email không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
+        alert('Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
       }
     }
 
@@ -113,16 +107,16 @@ export default function Login() {
             <p className="text-sm text-green-900">or</p>
             <form className="signup-form text-left" onSubmit={handleSubmit}>
               <div className="form-group grid grid-cols-1 text-left">
-                <label htmlFor="email" className="form-label">
-                  Email:{' '}
+                <label htmlFor="username" className="form-label">
+                  Tên đăng nhập:{' '}
                 </label>
                 <input
-                  type="email"
-                  id="email"
+                  type="text"
+                  id="username"
                   className="form-input text-md bg-white border border-green-200 rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none focus:border-green-800"
-                  placeholder="Nhập email của bạn ..."
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Nhập tên đăng nhập của bạn ..."
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
 
