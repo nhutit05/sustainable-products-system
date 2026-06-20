@@ -5,7 +5,6 @@ import ctu.student.regreen.dto.response.FavoriteProductResponse;
 import ctu.student.regreen.mapper.FavoriteProductMapper;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.FavoriteProduct;
-import ctu.student.regreen.model.FavoriteProductId;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.FavoriteProductRepository;

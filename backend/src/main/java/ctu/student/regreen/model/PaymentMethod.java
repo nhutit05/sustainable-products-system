@@ -25,4 +25,7 @@ public class PaymentMethod {
 
     @Column(nullable = false, unique = true, length = 50, name = "payment_method_name")
     private String paymentMethodName;
+
+    @Column(nullable = false)
+    private Boolean online;
 }

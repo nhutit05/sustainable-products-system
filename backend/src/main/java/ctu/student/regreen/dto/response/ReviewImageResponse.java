@@ -1,6 +1,5 @@
 package ctu.student.regreen.dto.response;
 
-import ctu.student.regreen.model.Review;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

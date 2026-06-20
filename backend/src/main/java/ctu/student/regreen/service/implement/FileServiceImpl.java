@@ -1,6 +1,6 @@
 package ctu.student.regreen.service.implement;
 
-import ctu.student.regreen.dto.response.FileRequest;
+import ctu.student.regreen.dto.request.FileRequest;
 import ctu.student.regreen.dto.response.FileResponse;
 import ctu.student.regreen.exception.ErrorCode;
 import ctu.student.regreen.exception.ResourceNotFoundException;

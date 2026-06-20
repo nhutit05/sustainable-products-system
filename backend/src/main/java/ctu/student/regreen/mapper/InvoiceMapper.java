@@ -10,24 +10,28 @@ import ctu.student.regreen.model.OrderItem;
 @Component
 public class InvoiceMapper {
 
+        
+
     public InvoiceResponse toResponse(Invoice invoice) {
 
         Order order = invoice.getOrder();
 
-        Float totalAmount = order.getOrderItems()
-                .stream()
-                .map(this::calculateSubtotal)
-                .reduce(0f, Float::sum);
+        Float totalAmount = order.getOrderItems() == null
+                ? 0f
+                : order.getOrderItems()
+                        .stream()
+                        .map(this::calculateSubtotal)
+                        .reduce(0f, Float::sum);
 
         Float discountAmount = 0f;
 
-        if (order.getVoucher() != null) {
-            discountAmount = order.getVoucher()
-                    .getDiscountValue();
+        if (order.getVoucher() != null
+                && order.getVoucher().getDiscountValue() != null) {
+
+            discountAmount = order.getVoucher().getDiscountValue();
         }
 
-        Float finalAmount =
-                Math.max(totalAmount - discountAmount, 0);
+        Float finalAmount = Math.max(totalAmount - discountAmount, 0f);
 
         return new InvoiceResponse(
                 invoice.getInvoiceId(),
@@ -43,7 +47,19 @@ public class InvoiceMapper {
 
     private Float calculateSubtotal(OrderItem item) {
 
-        return item.getPurchasedPrice()
-                * item.getQuantity();
+        if (item.getPurchasedPrice() == null || item.getQuantity() == null) {
+            return 0f;
+        }
+
+        return item.getPurchasedPrice() * item.getQuantity();
+    }
+
+    public Invoice toEntity(Order order) {
+
+        Invoice invoice = new Invoice();
+        invoice.setOrder(order);
+
+        return invoice;
     }
 }
+

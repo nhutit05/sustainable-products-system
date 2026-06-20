@@ -7,7 +7,6 @@ import ctu.student.regreen.model.Bank;
 import ctu.student.regreen.repository.BankRepository;
 import ctu.student.regreen.service.interfaces.BankService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

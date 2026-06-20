@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MaterialMapper {
 
-    public static Material toEntity(MaterialRequest request) {
+    public Material toEntity(MaterialRequest request) {
         Material material = new Material();
 
         material.setMaterialName(request.getMaterialName());
@@ -17,7 +17,7 @@ public class MaterialMapper {
         return material;
     }
 
-    public static MaterialResponse toResponse(Material material) {
+    public  MaterialResponse toResponse(Material material) {
         return new MaterialResponse(
                 material.getMaterialId(),
                 material.getMaterialName(),
@@ -25,7 +25,7 @@ public class MaterialMapper {
         );
     }
 
-    public static void update(Material material, MaterialRequest request) {
+    public  void update(Material material, MaterialRequest request) {
         material.setMaterialName(request.getMaterialName());
         material.setEmissionIndex(request.getEmissionIndex());
     }

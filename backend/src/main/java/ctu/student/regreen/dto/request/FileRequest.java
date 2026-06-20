@@ -1,6 +1,7 @@
-package ctu.student.regreen.dto.response;
+package ctu.student.regreen.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -18,6 +19,6 @@ public class FileRequest {
     @NotBlank(message = "Định dạng file không được trống")
     private String fileFormat;
 
-    @NotBlank(message = "Cơ chế cập nhật không được trống")
+    @NotNull(message = "Cơ chế cập nhật không được trống")
     private Boolean updateMerchanism;
 }

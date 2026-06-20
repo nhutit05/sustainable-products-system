@@ -1,5 +1,6 @@
 package ctu.student.regreen.service.implement;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import ctu.student.regreen.dto.response.CartResponse;
@@ -7,7 +8,6 @@ import ctu.student.regreen.mapper.CartMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.service.interfaces.CartService;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,12 +18,16 @@ public class CartServiceImpl implements CartService {
     private final CartMapper mapper;
 
     @Override
-    public CartResponse getByCustomerId(Integer customerId) {
+    public CartResponse getMyCart() {
 
-        Cart cart = repository.findByCustomerUserId(customerId)
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Cart cart = repository.findByCustomerUsername(username)
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Cart not found for customer id: " + customerId));
+                        new RuntimeException("Cart not found"));
 
         return mapper.toResponse(cart);
     }

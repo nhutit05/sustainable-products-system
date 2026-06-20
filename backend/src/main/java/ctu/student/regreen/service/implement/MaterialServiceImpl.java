@@ -8,47 +8,64 @@ import ctu.student.regreen.repository.MaterialRepository;
 import ctu.student.regreen.service.interfaces.MaterialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class MaterialServiceImpl implements MaterialService {
 
     private final MaterialRepository repository;
+    private final MaterialMapper mapper;
 
+    @Override
     public MaterialResponse create(MaterialRequest request) {
-        Material material = MaterialMapper.toEntity(request);
-        material = repository.save(material);
-        return MaterialMapper.toResponse(material);
+
+        Material material = mapper.toEntity(request);
+
+        return mapper.toResponse(repository.save(material));
     }
 
+    @Override
     public List<MaterialResponse> getAll() {
+
         return repository.findAll()
                 .stream()
-                .map(MaterialMapper::toResponse)
+                .map(mapper::toResponse)
                 .toList();
     }
 
+    @Override
     public MaterialResponse getById(Integer id) {
+
         Material material = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Material not found with id: " + id));
-        return MaterialMapper.toResponse(material);
+                .orElseThrow(() ->
+                        new RuntimeException("Material not found with id: " + id));
+
+        return mapper.toResponse(material);
     }
 
+    @Override
     public MaterialResponse update(Integer id, MaterialRequest request) {
+
         Material material = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Material not found with id: " + id));
-        MaterialMapper.update(material, request);
-        material = repository.save(material);
-        return MaterialMapper.toResponse(material);
+                .orElseThrow(() ->
+                        new RuntimeException("Material not found with id: " + id));
+
+        mapper.update(material, request);
+
+        return mapper.toResponse(material);
     }
 
-    public Boolean delete(Integer id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Material not found with id: " + id);
-        }
-        repository.deleteById(id);
-        return true;
+    @Override
+    public void delete(Integer id) {
+
+        Material material = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Material not found with id: " + id));
+
+        repository.delete(material);
     }
 }

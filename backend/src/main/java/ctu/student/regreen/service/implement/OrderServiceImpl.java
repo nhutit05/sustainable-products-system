@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import ctu.student.regreen.dto.request.OrderRequest;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.enums.OrderStatusName;
+import ctu.student.regreen.enums.PaymentStatusName;
 import ctu.student.regreen.mapper.OrderMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
 import ctu.student.regreen.model.CartItemId;
 import ctu.student.regreen.model.Customer;
+import ctu.student.regreen.model.Invoice;
 import ctu.student.regreen.model.Order;
 import ctu.student.regreen.model.OrderItem;
 import ctu.student.regreen.model.OrderStatus;
@@ -24,7 +26,7 @@ import ctu.student.regreen.model.Voucher;
 import ctu.student.regreen.repository.CartItemRepository;
 import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
-import ctu.student.regreen.repository.OrderItemRepository;
+import ctu.student.regreen.repository.InvoiceRepository;
 import ctu.student.regreen.repository.OrderRepository;
 import ctu.student.regreen.repository.OrderStatusRepository;
 import ctu.student.regreen.repository.PaymentMethodRepository;
@@ -51,29 +53,31 @@ public class OrderServiceImpl implements OrderService {
         private final OrderStatusRepository orderStatusRepository;
         private final PaymentStatusRepository paymentStatusRepository;
 
+        private final InvoiceRepository invoiceRepository;
+
         private final OrderMapper orderMapper;
 
         private Customer getCurrentCustomer() {
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-                String username = SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getName();
-
-                return customerRepository
-                                .findByUsername(username)
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Customer not found"));
+                return customerRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException("Customer not found"));
         }
 
-        private OrderStatus getOrderStatus(
-                        OrderStatusName statusName) {
+        private void checkOwnership(Order order, Customer customer) {
+                if (!order.getCustomer().getUserId().equals(customer.getUserId())) {
+                        throw new RuntimeException("Access denied");
+                }
+        }
 
-                return orderStatusRepository
-                                .findByOrderStatusName(
-                                                statusName.name())
-                                .orElseThrow(() -> new RuntimeException(
-                                                "Order status not found"));
+        private OrderStatus getOrderStatus(OrderStatusName statusName) {
+                return orderStatusRepository.findByOrderStatusName(statusName.name())
+                                .orElseThrow(() -> new RuntimeException("Order status not found"));
+        }
+
+        private PaymentStatus getPaymentStatus(PaymentStatusName name) {
+                return paymentStatusRepository.findByPaymentStatusName(name.name())
+                                .orElseThrow(() -> new RuntimeException("Payment status not found"));
         }
 
         @Override
@@ -90,17 +94,13 @@ public class OrderServiceImpl implements OrderService {
                 Voucher voucher = null;
 
                 if (request.getVoucherId() != null) {
-
-                        voucher = voucherRepository
-                                        .findById(
-                                                        request.getVoucherId())
-                                        .orElseThrow(() -> new RuntimeException(
-                                                        "Voucher not found"));
+                        voucher = voucherRepository.findById(request.getVoucherId())
+                                        .orElseThrow(() -> new RuntimeException("Voucher not found"));
                 }
 
-                OrderStatus pending = getOrderStatus(
-                                OrderStatusName.PENDING);
-                PaymentStatus unpaid = paymentStatusRepository.findById(1).orElseThrow();
+                OrderStatus pending = getOrderStatus(OrderStatusName.PENDING);
+
+                PaymentStatus unpaid = getPaymentStatus(PaymentStatusName.UNPAID);
 
                 Order order = new Order();
                 order.setCustomer(customer);
@@ -111,14 +111,11 @@ public class OrderServiceImpl implements OrderService {
                 order.setOrderStatus(pending);
                 order.setPaymentStatus(unpaid);
 
-                List<OrderItem> items = new ArrayList<>();
-
-                if (request.getProductIds() == null
-                                || request.getProductIds().isEmpty()) {
-
-                        throw new RuntimeException(
-                                        "No products selected");
+                if (request.getProductIds() == null || request.getProductIds().isEmpty()) {
+                        throw new RuntimeException("No products selected");
                 }
+
+                List<OrderItem> items = new ArrayList<>();
 
                 for (Integer productId : request.getProductIds()) {
 
@@ -129,9 +126,19 @@ public class OrderServiceImpl implements OrderService {
                         Product product = productRepository.findById(productId)
                                         .orElseThrow();
 
-                        OrderItem item = new OrderItem();
+                        // Kiểm tra tồn kho
+                        if (product.getInventory() < cartItem.getQuantity()) {
+                                throw new RuntimeException(
+                                                product.getProductName() + " is out of stock");
+                        }
 
-                        // IMPORTANT: KHÔNG SET ID MANUAL
+                        // Trừ kho
+                        product.setInventory(
+                                        product.getInventory() - cartItem.getQuantity());
+
+                        productRepository.save(product);
+
+                        OrderItem item = new OrderItem();
                         item.setOrder(order);
                         item.setProduct(product);
                         item.setQuantity(cartItem.getQuantity());
@@ -144,34 +151,29 @@ public class OrderServiceImpl implements OrderService {
 
                 order.setOrderItems(items);
 
-                orderRepository.save(order);
+                Order savedOrder = orderRepository.save(order);
 
-                return orderMapper.toResponse(order);
+                Invoice invoice = new Invoice();
+
+                invoice.setOrder(
+                                savedOrder);
+
+                invoiceRepository.save(
+                                invoice);
+
+                return orderMapper.toResponse(
+                                savedOrder);
         }
 
         @Override
         public OrderResponse getById(Integer id) {
 
-                String username = SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getName();
+                Customer customer = getCurrentCustomer();
 
-                Customer customer = customerRepository
-                                .findByUsername(username)
+                Order order = orderRepository.findById(id)
                                 .orElseThrow();
 
-                Order order = orderRepository
-                                .findById(id)
-                                .orElseThrow();
-
-                if (!order.getCustomer()
-                                .getUserId()
-                                .equals(customer.getUserId())) {
-
-                        throw new RuntimeException(
-                                        "Access denied");
-                }
+                checkOwnership(order, customer);
 
                 return orderMapper.toResponse(order);
         }
@@ -179,18 +181,9 @@ public class OrderServiceImpl implements OrderService {
         @Override
         public List<OrderResponse> getMyOrders() {
 
-                String username = SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getName();
+                Customer customer = getCurrentCustomer();
 
-                Customer customer = customerRepository
-                                .findByUsername(username)
-                                .orElseThrow();
-
-                return orderRepository
-                                .findByCustomerUserId(
-                                                customer.getUserId())
+                return orderRepository.findByCustomerUserId(customer.getUserId())
                                 .stream()
                                 .map(orderMapper::toResponse)
                                 .toList();
@@ -199,29 +192,56 @@ public class OrderServiceImpl implements OrderService {
         @Override
         public OrderResponse cancel(Integer id) {
 
-                String username = SecurityContextHolder
-                                .getContext()
-                                .getAuthentication()
-                                .getName();
+                Customer customer = getCurrentCustomer();
 
-                Customer customer = customerRepository
-                                .findByUsername(username)
+                Order order = orderRepository.findById(id)
                                 .orElseThrow();
 
-                Order order = orderRepository.findById(id).orElseThrow();
+                checkOwnership(order, customer);
 
-                if (!order.getCustomer()
-                                .getUserId()
-                                .equals(customer.getUserId())) {
+                OrderStatus cancelled = getOrderStatus(OrderStatusName.CANCELLED);
 
-                        throw new RuntimeException(
-                                        "Access denied");
+                for (OrderItem item : order.getOrderItems()) {
+                        Product product = item.getProduct();
+
+                        product.setInventory(
+                                        product.getInventory() + item.getQuantity());
                 }
 
-                OrderStatus cancelled = orderStatusRepository.findById(5).orElseThrow();
+                if (!order.getOrderStatus()
+                                .getOrderStatusName()
+                                .equals(OrderStatusName.PENDING.name())) {
+                        throw new RuntimeException("Order cannot be cancelled");
+                }
+
+                if (order.getOrderStatus().getOrderStatusName()
+                                .equals(OrderStatusName.CANCELLED.name())) {
+                        throw new RuntimeException("Order already cancelled");
+                }
 
                 order.setOrderStatus(cancelled);
 
                 return orderMapper.toResponse(orderRepository.save(order));
+        }
+
+        public OrderResponse pay(Integer orderId) {
+
+                Customer customer = getCurrentCustomer();
+
+                Order order = orderRepository.findById(orderId)
+                                .orElseThrow();
+
+                checkOwnership(order, customer);
+
+                if (!order.getPaymentMethod().getOnline()) {
+                        throw new RuntimeException(
+                                        "COD order cannot be paid online");
+                }
+
+                order.setPaymentStatus(
+                                getPaymentStatus(PaymentStatusName.PAID));
+
+                return orderMapper.toResponse(
+                                orderRepository.save(order));
         }
 }

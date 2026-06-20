@@ -6,17 +6,12 @@ import ctu.student.regreen.model.Material;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.ProductMaterial;
 import ctu.student.regreen.model.ProductMaterialId;
-import ctu.student.regreen.repository.MaterialRepository;
-import ctu.student.regreen.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class ProductMaterialMapper {
-
-    private final ProductMapper productMapper;
-    private final MaterialMapper materialMapper;
 
     public ProductMaterial toEntity(ProductMaterialRequest request, Product product, Material material) {
         ProductMaterial entity = new ProductMaterial();

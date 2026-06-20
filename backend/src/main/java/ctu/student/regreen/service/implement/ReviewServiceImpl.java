@@ -9,7 +9,6 @@ import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

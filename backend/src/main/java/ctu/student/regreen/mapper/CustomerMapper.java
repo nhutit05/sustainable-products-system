@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerMapper {
 
-    private final CartMapper cartMapper;
-
     public Customer toEntity(CustomerRequest request) {
         Customer entity = new Customer();
 

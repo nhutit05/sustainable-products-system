@@ -11,13 +11,10 @@ public interface RefundSlipService {
             RefundSlipRequest request);
 
     RefundSlipResponse getById(
-            Integer id);
+            Integer refundSlipId);
 
     RefundSlipResponse getByOrder(
             Integer orderId);
 
-    List<RefundSlipResponse> getAll();
-
-    void delete(
-            Integer id);
+    List<RefundSlipResponse> getMyRefundSlips();
 }

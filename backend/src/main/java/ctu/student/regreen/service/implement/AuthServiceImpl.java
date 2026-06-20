@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import ctu.student.regreen.dto.request.LoginRequest;
 import ctu.student.regreen.dto.request.RegisterRequest;
 import ctu.student.regreen.dto.response.AuthResponse;
+import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.User;
+import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.UserRepository;
 import ctu.student.regreen.service.interfaces.AuthService;
@@ -21,44 +23,39 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    @Override
-    public AuthResponse register(
-            RegisterRequest request) {
+    private final CartRepository cartRepository;
 
-        if (userRepository.existsByUsername(
-                request.getUsername())) {
+ @Override
+public AuthResponse register(RegisterRequest request) {
 
-            throw new RuntimeException(
-                    "Username already exists");
-        }
-
-        Customer customer = new Customer();
-
-        customer.setUsername(
-                request.getUsername());
-
-        customer.setEmail(
-                request.getEmail());
-
-        customer.setNumberPhone(
-                request.getNumberPhone());
-
-        customer.setPassword(
-                passwordEncoder.encode(
-                        request.getPassword()));
-
-        customerRepository.save(
-                customer);
-
-        String token = jwtService.generateToken(
-                customer);
-
-        return new AuthResponse(
-                token,
-                customer.getUsername(),
-                customer.getRole());
+    if (userRepository.existsByUsername(request.getUsername())) {
+        throw new RuntimeException("Username already exists");
     }
 
+    Customer customer = new Customer();
+
+    customer.setUsername(request.getUsername());
+    customer.setEmail(request.getEmail());
+    customer.setNumberPhone(request.getNumberPhone());
+    customer.setPassword(passwordEncoder.encode(request.getPassword()));
+
+    // save customer trước
+    customer = customerRepository.save(customer);
+
+    // 🔥 CREATE CART AUTOMATICALLY
+    Cart cart = new Cart();
+    cart.setCustomer(customer);
+
+    cartRepository.save(cart);
+
+    String token = jwtService.generateToken(customer);
+
+    return new AuthResponse(
+            token,
+            customer.getUsername(),
+            customer.getRole()
+    );
+}
     @Override
     public AuthResponse login(
             LoginRequest request) {

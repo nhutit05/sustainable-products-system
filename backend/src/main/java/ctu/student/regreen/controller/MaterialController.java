@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/materials")
+@RequestMapping("/api/admin/materials")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
 public class MaterialController {
@@ -42,7 +42,7 @@ public class MaterialController {
 
     // [DELETE] /api/materials/{id}
     @DeleteMapping("/{id}")
-    public Boolean deleteMaterial(@PathVariable Integer id) {
-        return service.delete(id);
+    public void deleteMaterial(@PathVariable Integer id) {
+        service.delete(id);
     }
 }

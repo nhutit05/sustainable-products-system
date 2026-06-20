@@ -2,53 +2,46 @@ package ctu.student.regreen.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import ctu.student.regreen.dto.request.CartItemRequest;
 import ctu.student.regreen.dto.response.CartItemResponse;
 import ctu.student.regreen.service.interfaces.CartItemService;
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/cart-items")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class CartItemController {
 
     private final CartItemService service;
 
+    // ADD ITEM TO MY CART
     @PostMapping
-    public CartItemResponse add(
-            @Valid @RequestBody CartItemRequest request) {
-
+    public CartItemResponse add(@RequestBody CartItemRequest request) {
         return service.add(request);
     }
 
-    @GetMapping("/cart/{cartId}")
-    public List<CartItemResponse> getByCart(
-            @PathVariable Integer cartId) {
-
-        return service.getByCart(cartId);
+    // GET MY CART ITEMS
+    @GetMapping
+    public List<CartItemResponse> getMyCartItems() {
+        return service.getMyCartItems();
     }
 
-    @PutMapping("/{cartId}/{productId}")
+    // UPDATE QUANTITY (ONLY PRODUCT ID)
+    @PutMapping("/{productId}")
     public CartItemResponse update(
-            @PathVariable Integer cartId,
             @PathVariable Integer productId,
-            @RequestParam Integer quantity) {
-
-        return service.update(
-                cartId,
-                productId,
-                quantity);
+            @RequestParam Integer quantity
+    ) {
+        return service.update(productId, quantity);
     }
 
-    @DeleteMapping("/{cartId}/{productId}")
-    public void delete(
-            @PathVariable Integer cartId,
-            @PathVariable Integer productId) {
-
-        service.delete(cartId, productId);
+    // DELETE ITEM FROM MY CART
+    @DeleteMapping("/{productId}")
+    public void delete(@PathVariable Integer productId) {
+        service.delete(productId);
     }
 }

@@ -2,8 +2,6 @@ package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.request.ProductMaterialRequest;
 import ctu.student.regreen.dto.response.ProductMaterialResponse;
-import ctu.student.regreen.model.ProductMaterial;
-
 import java.util.List;
 
 public interface ProductMaterialService {
