@@ -13,8 +13,8 @@ public class ReviewResponse {
 
     private Integer reviewRating;
 
-    private CustomerResponse customer;
+    private Integer customerId;
 
-    private ProductResponse product;
+    private Integer productId;
 
 }

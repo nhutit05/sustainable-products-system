@@ -46,8 +46,8 @@ public class ReviewMapper {
                 review.getReviewId(),
                 review.getReviewContent(),
                 review.getReviewRating(),
-                customerMapper.toResponse(review.getCustomer()),
-                productMapper.toResponse(review.getProduct())
+                review.getCustomer().getUserId(),
+                review.getProduct().getProductId()
         );
     }
 
