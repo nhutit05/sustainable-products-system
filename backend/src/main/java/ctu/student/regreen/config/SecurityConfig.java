@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/refund-slips/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
 
                         // ================= PUBLIC READ (CUSTOMER + ADMIN) =================
                         .requestMatchers("/api/categories/**").permitAll()
