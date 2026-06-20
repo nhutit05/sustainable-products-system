@@ -48,7 +48,7 @@ export default function Signup() {
   return (
     <>
       <div className="page-cus_signup">
-        <aside className="signup-aside_left lg:flex flex-col justify-between p-12 mt-5">
+        <aside className="signup-aside_left lg:flex flex-col justify-between p-12">
           <div className="signup-aside_content relative z-10 text-left">
             <h2 className="text-4xl pb-4 font-bold leading-tight text-white ">
               Chào mừng bạn <br /> trở lại hành trình sống xanh.
@@ -79,7 +79,7 @@ export default function Signup() {
           </div>
         </aside>
 
-        <main className="signup-main_right flex-1 flex flex-col justify-center items-center p-12 w-full">
+        <main className="signup-main_right flex-1 flex flex-col justify-center items-center px-12 w-full">
           <div className="max-w-md w-full">
             <h2 className="signup-form--title text-2xl font-bold text-green-900 mb-6">Đăng ký</h2>
             <div className="signup_google rounded-2xl bg-white p-2.5 mb-2 flex justify-center items-center cursor-pointer hover:shadow-lg transition-shadow duration-300 hover:scale-101 border border-green-200">
