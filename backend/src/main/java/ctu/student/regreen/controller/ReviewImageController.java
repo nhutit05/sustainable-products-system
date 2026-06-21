@@ -5,6 +5,7 @@ import ctu.student.regreen.dto.response.ReviewImageResponse;
 import ctu.student.regreen.service.interfaces.ReviewImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,8 +31,10 @@ public class ReviewImageController {
 
     // [POST] /api/reviews/{reviewId}/review-images
     @PostMapping("/api/reviews/{reviewId}/review-images")
-    public ReviewImageResponse create(@PathVariable Integer reviewId, @RequestBody ReviewImageRequest request) {
-        return service.create(request);
+    public ReviewImageResponse create(
+            @PathVariable Integer reviewId,
+            @RequestParam("image") MultipartFile image) {
+        return service.create(reviewId, image);
     }
 
     // [PUT] /api/reviews/{reviewId}/review-images/{id}
@@ -39,7 +42,7 @@ public class ReviewImageController {
     public ReviewImageResponse update(
             @PathVariable Integer reviewId,
             @PathVariable Integer id,
-            @RequestBody ReviewImageRequest request) {
+            @RequestParam("image") MultipartFile request) {
         return service.update(id, request);
     }
 
