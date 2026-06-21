@@ -22,77 +22,80 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        private final JwtAuthenticationFilter filter;
+    private final JwtAuthenticationFilter filter;
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-                http
-                                .csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
 
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                                                // ================= AUTH =================
-                                                .requestMatchers("/api/auth/**").permitAll()
+                        // ================= AUTH =================
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                                                // ================= ADMIN ONLY =================
-                                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // ================= ADMIN ONLY =================
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                                                // ================= CUSTOMER AUTH REQUIRED =================
-                                                .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
-                                                .requestMatchers("/api/refund-slips/**").hasRole("CUSTOMER")
-                                                .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
-                                                .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
+                        // ================= CUSTOMER AUTH REQUIRED =================
+                        .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/refund-slips/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
 
-                                                // ================= PUBLIC READ (CUSTOMER + ADMIN) =================
-                                                .requestMatchers("/api/categories/**").permitAll()
-                                                .requestMatchers("/api/vouchers/**").permitAll()
-                                                .requestMatchers("/api/products/**").permitAll()
+                        // ================= PUBLIC READ (CUSTOMER + ADMIN) =================
+                        .requestMatchers("/api/categories/**").permitAll()
+                        .requestMatchers("/api/vouchers/**").permitAll()
+                        .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/reviews/**").permitAll()
+                        .requestMatchers("/api/cloudinary/**").permitAll()
 
                                                 .requestMatchers(
                                                                 "/swagger-ui/**",
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
+                        .requestMatchers("/jacoco/**").permitAll()
+                        // fallback
+                        .anyRequest().authenticated())
 
-                                                .requestMatchers("/jacoco/**").permitAll() 
+                .addFilterBefore(
+                        filter,
+                        UsernamePasswordAuthenticationFilter.class);
 
-                                                // fallback
-                                                .anyRequest().authenticated())
+        return http.build();
+    }
 
-                                .addFilterBefore(
-                                                filter,
-                                                UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-                return http.build();
-        }
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173"));
 
-        @Bean
-        CorsConfigurationSource corsConfigurationSource() {
-                CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedMethods(
+                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-                configuration.setAllowedOrigins(
-                                List.of("http://localhost:5173"));
+        configuration.setAllowedHeaders(List.of("*"));
 
-                configuration.setAllowedMethods(
-                                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowCredentials(true);
 
-                configuration.setAllowedHeaders(List.of("*"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-                configuration.setAllowCredentials(true);
+        source.registerCorsConfiguration("/**", configuration);
 
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
-                source.registerCorsConfiguration("/**", configuration);
-
-                return source;
-        }
+        return source;
+    }
 }

@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ReviewMapper {
 
-    private final CustomerMapper customerMapper;
-    private final ProductMapper productMapper;
 
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
@@ -46,8 +44,8 @@ public class ReviewMapper {
                 review.getReviewId(),
                 review.getReviewContent(),
                 review.getReviewRating(),
-                customerMapper.toResponse(review.getCustomer()),
-                productMapper.toResponse(review.getProduct())
+                review.getCustomer().getUserId(),
+                review.getProduct().getProductId()
         );
     }
 

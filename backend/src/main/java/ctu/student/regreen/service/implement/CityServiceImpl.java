@@ -18,6 +18,7 @@ import java.util.List;
 public class CityServiceImpl implements CityService {
 
     private final CityRepository repository;
+    private final CityMapper CityMapper;
 
     public CityResponse create(CityRequest request) {
         City entity = CityMapper.toEntity(request);

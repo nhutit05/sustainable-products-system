@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CityMapper {
 
-    public static CityResponse toResponse(City city) {
+    public CityResponse toResponse(City city) {
         return new CityResponse(
                 city.getCityId(),
                 city.getCityName(),
@@ -16,7 +16,7 @@ public class CityMapper {
         );
     }
 
-    public static City toEntity(CityRequest request) {
+    public City toEntity(CityRequest request) {
         City city = new City();
         city.setCityName(request.getCityName());
         city.setCityId(request.getCityId());
@@ -24,7 +24,7 @@ public class CityMapper {
         return city;
     }
 
-        public static void update(City city, CityRequest request) {
-            city.setCityName(request.getCityName());
-        }
+    public void update(City city, CityRequest request) {
+        city.setCityName(request.getCityName());
+    }
 }
