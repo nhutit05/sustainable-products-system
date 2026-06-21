@@ -49,6 +49,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="header-navbar h-16 flex items-center justify-between gap-4  ">
+          {/* LOGO */}
           <div className="flex items-center gap-2">
             <div
               className="navbar_logo p-2 rounded-2xl bg-primary shadow-md  hover:scale-105 transition-transform hover:cursor-pointer"

@@ -5,14 +5,15 @@ import Homepage from '../pages/Homepage'
 import Signup from '../pages/Signup'
 import Login from '../pages/Login'
 import Profile from '../pages/Profile'
+import Footer from '../components/Footer'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
     { label: 'Home', to: '/' },
     { label: 'Products', to: '/products' },
-    { label: 'Community', to: '/community' },
+    { label: 'Blog', to: '/blog' },
+    { label: 'Carbon-Calculator', to: '/carbon-calculator' },
     { label: 'About Us', to: '/about' },
-    { label: 'Contact', to: '/contact' },
   ]
 
   return (
@@ -29,10 +30,13 @@ export default function CustomerLayout() {
           <Route path="profile" element={<Profile />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />
+          <Route path="carbon-calculator" element={<h1>Carbon Calculator</h1>} />
         </Routes>
       </main>
 
-      <footer className="footer-cus">Footer</footer>
+      <footer className="footer-cus">
+        <Footer />
+      </footer>
     </div>
   )
 }

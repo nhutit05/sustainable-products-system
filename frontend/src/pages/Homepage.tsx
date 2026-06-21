@@ -4,7 +4,6 @@ import {
   Calculator,
   CheckCircle,
   Heart,
-  Link,
   BarChart3,
   Recycle,
   TrendingUp,
@@ -13,7 +12,7 @@ import {
   Sprout,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { ProductIntroduce, ProductDetail, ProductImage } from '../model/product'
 
 export default function Homepage() {
@@ -127,12 +126,12 @@ export default function Homepage() {
               </p>
 
               <div className="homepage_banner-explore flex items-center gap-4 flex-wrap w-full">
-                <div
-                  onClick={() => navigate('/products')}
+                <a
+                  href="#products"
                   className="inline-flex items-center gap-2 text-lg font-semibold px-6 py-3 shadow-lg text-white rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 hover:scale-105 hover:cursor-pointer transition-all duration-300"
                 >
                   Khám phá ngay <ArrowRight className="inline-block w-5 h-5 ml-2" />
-                </div>
+                </a>
 
                 <div
                   onClick={() => navigate('/carbon-calculator')}
@@ -223,7 +222,10 @@ export default function Homepage() {
                 Phù hợp nhất!
               </p>
             </div>
-            <p className="text-lg text-emerald-600 font-medium leading-relaxed absolute bottom-0 right-0">
+            <p
+              className="text-lg text-emerald-600 font-medium leading-relaxed absolute bottom-0 right-0 hover:text-emerald-400 hover:cursor-pointer transition-colors"
+              onClick={() => navigate('/products')}
+            >
               Xem tất cả <ArrowRight className="inline-block w-5 h-5 ml-2" />
             </p>
           </header>
