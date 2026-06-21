@@ -63,6 +63,8 @@ public class SecurityConfig {
                                                                 "/swagger-ui.html")
                                                 .permitAll()
 
+                                                .requestMatchers("/jacoco/**").permitAll() 
+
                                                 // fallback
                                                 .anyRequest().authenticated())
 
