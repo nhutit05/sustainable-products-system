@@ -1,6 +1,5 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.dto.request.ReviewImageRequest;
 import ctu.student.regreen.dto.response.ReviewImageResponse;
 import ctu.student.regreen.service.interfaces.ReviewImageService;
 import lombok.RequiredArgsConstructor;

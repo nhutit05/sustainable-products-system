@@ -208,17 +208,18 @@ public class OrderServiceImpl implements OrderService {
                                         product.getInventory() + item.getQuantity());
                 }
 
+                if (order.getOrderStatus().getOrderStatusName()
+                                .equals(OrderStatusName.CANCELLED.name())) {
+                        throw new RuntimeException("Order already cancelled");
+                }
+
                 if (!order.getOrderStatus()
                                 .getOrderStatusName()
                                 .equals(OrderStatusName.PENDING.name())) {
                         throw new RuntimeException("Order cannot be cancelled");
                 }
 
-                if (order.getOrderStatus().getOrderStatusName()
-                                .equals(OrderStatusName.CANCELLED.name())) {
-                        throw new RuntimeException("Order already cancelled");
-                }
-
+                
                 order.setOrderStatus(cancelled);
 
                 return orderMapper.toResponse(orderRepository.save(order));

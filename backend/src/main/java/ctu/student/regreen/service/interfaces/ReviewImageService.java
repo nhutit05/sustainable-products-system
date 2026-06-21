@@ -1,6 +1,5 @@
 package ctu.student.regreen.service.interfaces;
 
-import ctu.student.regreen.dto.request.ReviewImageRequest;
 import ctu.student.regreen.dto.response.ReviewImageResponse;
 import org.springframework.web.multipart.MultipartFile;
 

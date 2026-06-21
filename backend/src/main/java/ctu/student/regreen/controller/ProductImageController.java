@@ -1,15 +1,12 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.dto.request.ProductImageRequest;
 import ctu.student.regreen.dto.response.ProductImageResponse;
 import ctu.student.regreen.service.interfaces.ProductImageService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.util.List;
 
 @RestController
