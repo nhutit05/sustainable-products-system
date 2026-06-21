@@ -1,6 +1,7 @@
 import { Bell, Heart, Leaf, Menu, Search, ShoppingCart, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import NavbarAccount from './NavbarAccount'
 
 interface NavbarProps {
   NAV_LINKS: { label: string; to: string }[]
@@ -15,11 +16,25 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
 
   const isHome = location.pathname === '/'
 
+  const [userExist, setUserExist] = useState<boolean>(false)
+
   useEffect(() => {
     const handlerScroll = () => {
       setScrolled(window.scrollY > 0)
     }
     window.addEventListener('scroll', handlerScroll)
+
+    const checkUserExist = () => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        setUserExist(true)
+      } else {
+        setUserExist(false)
+      }
+    }
+
+    checkUserExist()
+
     return () => {
       window.removeEventListener('scroll', handlerScroll)
     }
@@ -34,6 +49,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="header-navbar h-16 flex items-center justify-between gap-4  ">
+          {/* LOGO */}
           <div className="flex items-center gap-2">
             <div
               className="navbar_logo p-2 rounded-2xl bg-primary shadow-md  hover:scale-105 transition-transform hover:cursor-pointer"
@@ -82,20 +98,24 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
               <Bell className="w-5 h-5" />
               <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />
             </button>
-            <div className="hidden lg:flex items-center gap-2 ml-1">
-              <Link
-                to="/login"
-                className="px-3 py-1.5 text-sm font-semibold text-green-800 hover:text-emerald-600 transition-colors"
-              >
-                Log In
-              </Link>
-              <Link
-                to="/register"
-                className="px-4 py-2 text-sm font-semibold text-white bg-primary from-emerald-500 to-teal-600 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
-              >
-                Sign Up
-              </Link>
-            </div>
+            {userExist ? (
+              <NavbarAccount />
+            ) : (
+              <div className="hidden lg:flex items-center gap-2 ml-1">
+                <Link
+                  to="/login"
+                  className="px-3 py-1.5 text-sm font-semibold text-green-800 hover:text-emerald-600 transition-colors"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-primary from-emerald-500 to-teal-600 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
             <button
               onClick={() => setOpen(!open)}
               className="xl:hidden p-2 rounded-lg text-green-800 hover:bg-green-100 transition-colors"

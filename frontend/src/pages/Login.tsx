@@ -64,13 +64,13 @@ export default function Login() {
   return (
     <>
       <div className="page-cus_signup">
-        <aside className="signup-aside_left lg:flex flex-col justify-between p-12 mt-5">
+        <aside className="signup-aside_left lg:flex flex-col justify-between p-12 mt-4">
           <div className="signup-aside_content relative z-10 text-left">
             <h2 className="text-4xl pb-4 font-bold leading-tight text-white ">
               Chào mừng bạn <br /> trở lại hành trình sống xanh.
             </h2>
 
-            <p className="text-xl text-green-200/70 mt-4 mb-10">
+            <p className="text-xl text-green-200/70 mt-4">
               Mỗi sản phẩm bạn chọn hôm nay là một phần rác thải được cứu khỏi bãi chôn lấp, góp
               phần gieo mầm cho một tương lai bền vững. ♻️
             </p>
