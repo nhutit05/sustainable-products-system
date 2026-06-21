@@ -28,11 +28,6 @@ public class ReviewController {
         return service.getById(reviewId);
     }
 
-    @PostMapping("/api/reviews")
-    public ReviewResponse create(@RequestBody ReviewRequest request) {
-        return service.create(request);
-    }
-
     @PutMapping("/api/reviews/{reviewId}")
     public ReviewResponse update(
             @PathVariable Integer reviewId,
