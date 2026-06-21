@@ -5,7 +5,6 @@ import ctu.student.regreen.dto.response.VillageResponse;
 import ctu.student.regreen.exception.ErrorCode;
 import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.VillageMapper;
-import ctu.student.regreen.model.City;
 import ctu.student.regreen.model.Village;
 import ctu.student.regreen.repository.CityRepository;
 import ctu.student.regreen.repository.VillageRepository;
@@ -25,7 +24,7 @@ public class VillageServiceImpl implements VillageService {
     private final VillageMapper villageMapper;
 
     public VillageResponse create(VillageRequest request) {
-        City city = cityRepository.findById(request.getCityRequest().getCityId()).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.CITY_NOT_FOUND));
+        cityRepository.findById(request.getCityRequest().getCityId()).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.CITY_NOT_FOUND));
         Village entity = villageMapper.toEntity(request);
         return villageMapper.toResponse(repository.save(entity));
     }

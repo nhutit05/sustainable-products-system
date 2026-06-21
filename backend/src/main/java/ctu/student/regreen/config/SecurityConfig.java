@@ -30,49 +30,52 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return  http
-            .csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
 
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(
-                            SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                                .requestMatchers("/api/auth/**")
-                                .permitAll()
-                                
-                                .requestMatchers(
-                                        "/api/orders/**")
-                                .hasRole(
-                                        "CUSTOMER")
+                        // ================= AUTH =================
+                        .requestMatchers("/api/auth/**").permitAll()
 
-                                .requestMatchers(
-                                        "/api/refund-slips/**")
-                                .hasRole(
-                                        "CUSTOMER")
+                        // ================= ADMIN ONLY =================
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                                .requestMatchers(
-                                        "/api/banks/**")
-                                .hasAnyRole(
-                                        "CUSTOMER",
-                                        "ADMIN")
+                        // ================= CUSTOMER AUTH REQUIRED =================
+                        .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/refund-slips/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
 
-                                .requestMatchers("/api/admin/**")
-                                .hasRole("ADMIN")
+                        // ================= PUBLIC READ (CUSTOMER + ADMIN) =================
+                        .requestMatchers("/api/categories/**").permitAll()
+                        .requestMatchers("/api/vouchers/**").permitAll()
+                        .requestMatchers("/api/products/**").permitAll()
+                        .requestMatchers("/api/reviews/**").permitAll()
+                        .requestMatchers("/api/cloudinary/**").permitAll()
 
-                                .anyRequest()
-                                .authenticated())
+                                                .requestMatchers(
+                                                                "/swagger-ui/**",
+                                                                "/v3/api-docs/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
+                        .requestMatchers("/jacoco/**").permitAll()
+                        // fallback
+                        .anyRequest().authenticated())
 
                 .addFilterBefore(
                         filter,
-                        UsernamePasswordAuthenticationFilter.class)
+                        UsernamePasswordAuthenticationFilter.class);
 
-                .build();
+        return http.build();
     }
 
     @Bean
@@ -89,8 +92,7 @@ public class SecurityConfig {
 
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", configuration);
 

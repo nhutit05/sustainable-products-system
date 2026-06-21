@@ -8,4 +8,5 @@ import lombok.Data;
 public class PaymentMethodResponse {
     private Integer paymentMethodId;
     private String paymentMethodName;
+    private Boolean online;
 }

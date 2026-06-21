@@ -7,26 +7,36 @@ import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.ProductImage;
 import ctu.student.regreen.repository.ProductImageRepository;
 import ctu.student.regreen.repository.ProductRepository;
+import ctu.student.regreen.service.interfaces.CloudinaryService;
 import ctu.student.regreen.service.interfaces.ProductImageService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ProductImageServiceImpl implements ProductImageService {
+
+    private final CloudinaryService cloudinaryService;
 
     private final ProductImageRepository repository;
     private final ProductRepository productRepository;
 
     private final ProductImageMapper mapper;
 
-    public ProductImageResponse createProductImage(ProductImageRequest request) {
-        Product product = productRepository.findById(request.getProductId())
+    @Transactional
+    public ProductImageResponse createProductImage(Integer productId, MultipartFile file) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() ->
                         new RuntimeException("Product not found"));
 
+        Map upload = cloudinaryService.uploadImage(file);
+        String imageUrl = (String) upload.get("url");
+        ProductImageRequest request = new ProductImageRequest(imageUrl);
         ProductImage productImage = mapper.toEntity(request, product);
         return mapper.toResponse(repository.save(productImage));
     }
@@ -50,7 +60,9 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     @Override
-    public ProductImageResponse updateProductImage(Integer productImageId, Integer productId, ProductImageRequest request) {
+    public ProductImageResponse updateProductImage(Integer productImageId,
+                                                   Integer productId,
+                                                   MultipartFile image) {
         ProductImage existingProductImage = repository.findByProductImageIdAndProductProductId(
                 productImageId,
                 productId)
@@ -59,6 +71,10 @@ public class ProductImageServiceImpl implements ProductImageService {
 
         Product product = productRepository.findById(productId).orElseThrow(() ->
                 new RuntimeException("Product not found"));
+
+        Map upload = cloudinaryService.uploadImage(image);
+        String imageUrl = (String) upload.get("url");
+        ProductImageRequest request = new ProductImageRequest(imageUrl);
 
         mapper.update(existingProductImage, request, product);
 

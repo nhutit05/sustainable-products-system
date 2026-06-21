@@ -22,7 +22,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"order", "bank"})
+@ToString(exclude = { "order", "bank" })
 public class RefundSlip {
 
     @Id
@@ -40,14 +40,14 @@ public class RefundSlip {
     private String reason;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "order_id",
-            nullable = false,
-            unique = true
-    )
+    @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bank_id", nullable = false)
     private Bank bank;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "refund_status_id", nullable = false)
+    private RefundStatus refundStatus;
 }

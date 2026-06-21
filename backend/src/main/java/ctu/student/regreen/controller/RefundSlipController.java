@@ -1,13 +1,17 @@
 package ctu.student.regreen.controller;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import ctu.student.regreen.dto.request.RefundSlipRequest;
 import ctu.student.regreen.dto.response.RefundSlipResponse;
 import ctu.student.regreen.service.interfaces.RefundSlipService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/refund-slips")
@@ -18,7 +22,6 @@ public class RefundSlipController {
 
     @PostMapping
     public RefundSlipResponse create(
-            @Valid
             @RequestBody
             RefundSlipRequest request) {
 
@@ -40,15 +43,9 @@ public class RefundSlipController {
     }
 
     @GetMapping
-    public List<RefundSlipResponse> getAll() {
+    public List<RefundSlipResponse>
+    getMyRefundSlips() {
 
-        return service.getAll();
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(
-            @PathVariable Integer id) {
-
-        service.delete(id);
+        return service.getMyRefundSlips();
     }
 }

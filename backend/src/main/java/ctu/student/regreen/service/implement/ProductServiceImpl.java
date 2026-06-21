@@ -3,6 +3,7 @@ package ctu.student.regreen.service.implement;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.ProductRequest;
 import ctu.student.regreen.dto.response.ProductResponse;
@@ -18,8 +19,8 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl
-        implements ProductService {
+@Transactional
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
     private final CategoryRepository categoryRepository;
@@ -29,53 +30,37 @@ public class ProductServiceImpl
     @Override
     public ProductResponse create(ProductRequest request) {
 
-        Category category = categoryRepository.findById(
-                request.getCategoryId())
+        Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() ->
                         new RuntimeException("Category not found"));
 
-        File file = fileRepository.findById(
-                request.getFileId())
+        File file = fileRepository.findById(request.getFileId())
                 .orElseThrow(() ->
                         new RuntimeException("File not found"));
 
-        Product product =
-                mapper.toEntity(
-                        request,
-                        category,
-                        file);
+        Product product = mapper.toEntity(request, category, file);
 
-        return mapper.toResponse(
-                repository.save(product));
+        return mapper.toResponse(repository.save(product));
     }
 
     @Override
-    public ProductResponse update(
-            Integer id,
-            ProductRequest request) {
+    public ProductResponse update(Integer id, ProductRequest request) {
 
         Product product = repository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Product not found"));
 
-        Category category = categoryRepository.findById(
-                request.getCategoryId())
+        Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() ->
                         new RuntimeException("Category not found"));
 
-        File file = fileRepository.findById(
-                request.getFileId())
+        File file = fileRepository.findById(request.getFileId())
                 .orElseThrow(() ->
                         new RuntimeException("File not found"));
 
-        mapper.update(
-                product,
-                request,
-                category,
-                file);
+        mapper.update(product, request, category, file);
 
-        return mapper.toResponse(
-                repository.save(product));
+        return mapper.toResponse(product);
     }
 
     @Override

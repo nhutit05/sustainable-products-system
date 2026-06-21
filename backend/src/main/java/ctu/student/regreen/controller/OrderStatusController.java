@@ -11,7 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/order-statuses")
+@RequestMapping("/api/admin/order-statuses")
 @RequiredArgsConstructor
 public class OrderStatusController {
 

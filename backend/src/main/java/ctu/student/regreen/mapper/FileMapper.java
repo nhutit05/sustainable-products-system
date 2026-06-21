@@ -1,6 +1,6 @@
 package ctu.student.regreen.mapper;
 
-import ctu.student.regreen.dto.response.FileRequest;
+import ctu.student.regreen.dto.request.FileRequest;
 import ctu.student.regreen.dto.response.FileResponse;
 import ctu.student.regreen.model.File;
 import org.springframework.stereotype.Component;

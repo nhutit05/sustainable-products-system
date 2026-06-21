@@ -23,7 +23,11 @@ public class RefundSlipMapper {
 
                 refundSlip.getBank().getBankId(),
 
-                refundSlip.getBank().getBankName()
+                refundSlip.getBank().getBankName(),
+
+                refundSlip.getRefundStatus().getRefundStatusId(),
+
+                refundSlip.getRefundStatus().getRefundStatusName()
         );
     }
 }

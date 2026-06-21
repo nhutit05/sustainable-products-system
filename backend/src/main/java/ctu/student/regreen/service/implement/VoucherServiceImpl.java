@@ -14,23 +14,31 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class VoucherServiceImpl implements VoucherService {
+public class VoucherServiceImpl
+        implements VoucherService {
 
     private final VoucherRepository repository;
+
     private final VoucherMapper mapper;
 
     @Override
-    public VoucherResponse create(VoucherRequest request) {
+    public VoucherResponse create(
+            VoucherRequest request) {
 
-        if (repository.existsByCode(request.getCode())) {
-            throw new RuntimeException("Voucher code already exists");
+        validateVoucher(request);
+
+        if (repository.existsByCode(
+                request.getCode())) {
+
+            throw new RuntimeException(
+                    "Voucher code already exists");
         }
 
-        validateDate(request);
+        Voucher voucher =
+                mapper.toEntity(request);
 
-        Voucher voucher = mapper.toEntity(request);
-
-        voucher = repository.save(voucher);
+        voucher =
+                repository.save(voucher);
 
         return mapper.toResponse(voucher);
     }
@@ -45,46 +53,108 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public VoucherResponse getById(Integer id) {
+    public VoucherResponse getById(
+            Integer id) {
 
-        Voucher voucher = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Voucher not found with id: " + id));
-
-        return mapper.toResponse(voucher);
-    }
-
-    @Override
-    public VoucherResponse update(Integer id, VoucherRequest request) {
-
-        validateDate(request);
-
-        Voucher voucher = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Voucher not found with id: " + id));
-
-        mapper.update(voucher, request);
-
-        voucher = repository.save(voucher);
+        Voucher voucher =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Voucher not found with id: " + id));
 
         return mapper.toResponse(voucher);
     }
 
     @Override
-    public void delete(Integer id) {
+    public VoucherResponse update(
+            Integer id,
+            VoucherRequest request) {
 
-        Voucher voucher = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Voucher not found with id: " + id));
+        validateVoucher(request);
+
+        Voucher voucher =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Voucher not found with id: " + id));
+
+        Voucher existedVoucher =
+                repository.findByCode(
+                                request.getCode())
+                        .orElse(null);
+
+        if (existedVoucher != null
+                && !existedVoucher.getVoucherId()
+                        .equals(id)) {
+
+            throw new RuntimeException(
+                    "Voucher code already exists");
+        }
+
+        mapper.update(
+                voucher,
+                request);
+
+        voucher =
+                repository.save(voucher);
+
+        return mapper.toResponse(voucher);
+    }
+
+    @Override
+    public void delete(
+            Integer id) {
+
+        Voucher voucher =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Voucher not found with id: " + id));
 
         repository.delete(voucher);
     }
 
-    private void validateDate(VoucherRequest request) {
+    private void validateVoucher(
+            VoucherRequest request) {
 
-        if (request.getExpiredAt().isBefore(request.getStartedAt())) {
+        validateDate(request);
+
+        validateDiscount(request);
+
+        validateQuantity(request);
+    }
+
+    private void validateDate(
+            VoucherRequest request) {
+
+        if (!request.getExpiredAt()
+                .isAfter(
+                        request.getStartedAt())) {
+
             throw new RuntimeException(
-                    "Expired date must be after or equal started date");
+                    "Expired date must be after started date");
+        }
+    }
+
+    private void validateDiscount(
+            VoucherRequest request) {
+
+        if (request.getDiscountValue() == null
+                || request.getDiscountValue() <= 0) {
+
+            throw new RuntimeException(
+                    "Discount value must be greater than 0");
+        }
+    }
+
+    private void validateQuantity(
+            VoucherRequest request) {
+
+        if (request.getQuantity() == null
+                || request.getQuantity() <= 0) {
+
+            throw new RuntimeException(
+                    "Quantity must be greater than 0");
         }
     }
 }

@@ -4,7 +4,6 @@ import ctu.student.regreen.dto.request.ReviewImageRequest;
 import ctu.student.regreen.dto.response.ReviewImageResponse;
 import ctu.student.regreen.model.Review;
 import ctu.student.regreen.model.ReviewImage;
-import ctu.student.regreen.repository.ReviewImageRepository;
 import ctu.student.regreen.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,12 +14,7 @@ public class ReviewImageMapper {
     private final ReviewRepository repository;
     private final ReviewMapper reviewMapper;
 
-    public ReviewImage toEntity(ReviewImageRequest request) {
-
-        Review review = repository.findById(request.getReviewId())
-                .orElseThrow(() ->
-                        new RuntimeException("Review not found with id: " + request.getReviewId()));
-
+    public ReviewImage toEntity(Review review, ReviewImageRequest request) {
         ReviewImage entity = new ReviewImage();
         entity.setReviewImageUrl(request.getReviewImageUrl());
         entity.setReview(review);
@@ -36,12 +30,13 @@ public class ReviewImageMapper {
         );
     }
 
-    public void update(ReviewImage entity, ReviewImageRequest request) {
+    public void update(Integer reviewId,
+                       ReviewImage entity,
+                       ReviewImageRequest request) {
         entity.setReviewImageUrl(request.getReviewImageUrl());
-        Review review = repository.findById(request.getReviewId())
+        Review review = repository.findById(reviewId)
                 .orElseThrow(() ->
-                        new RuntimeException("Review not found with id: " + request.getReviewId()));
+                        new RuntimeException("Review not found with id: " + reviewId));
         entity.setReview(review);
-
     }
 }

@@ -1,19 +1,15 @@
 package ctu.student.regreen.mapper;
 
 import ctu.student.regreen.dto.request.ProductImageRequest;
-import ctu.student.regreen.dto.request.ProductRequest;
 import ctu.student.regreen.dto.response.ProductImageResponse;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.ProductImage;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class ProductImageMapper {
-
-    private final ProductMapper productMapper;
 
     public ProductImageResponse toResponse(ProductImage entity) {
         return new ProductImageResponse(

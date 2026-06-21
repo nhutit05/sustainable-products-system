@@ -20,4 +20,8 @@ public class RefundSlipResponse {
     private String bankId;
 
     private String bankName;
+
+    private Integer refundStatusId;
+
+    private String refundStatusName;
 }

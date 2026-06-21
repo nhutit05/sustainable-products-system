@@ -7,14 +7,16 @@ import ctu.student.regreen.dto.response.OrderResponse;
 
 public interface OrderService {
 
-    OrderResponse checkout(
-            OrderRequest request);
+        OrderResponse checkout(
+                        OrderRequest request);
 
-    OrderResponse getById(
-            Integer id);
+        OrderResponse getById(
+                        Integer id);
 
-    List<OrderResponse> getMyOrders();
+        List<OrderResponse> getMyOrders();
 
-    OrderResponse cancel(
-            Integer id);
+        OrderResponse cancel(
+                        Integer id);
+
+        OrderResponse pay(Integer id);
 }

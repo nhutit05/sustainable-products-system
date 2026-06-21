@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-RegreenApplication<regreen>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ctu.student.regreen.RegreenApplication",
+            "projectName": "regreen",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

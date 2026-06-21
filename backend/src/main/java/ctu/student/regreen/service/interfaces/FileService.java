@@ -1,6 +1,6 @@
 package ctu.student.regreen.service.interfaces;
 
-import ctu.student.regreen.dto.response.FileRequest;
+import ctu.student.regreen.dto.request.FileRequest;
 import ctu.student.regreen.dto.response.FileResponse;
 
 import java.util.List;

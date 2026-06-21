@@ -2,6 +2,8 @@ package ctu.student.regreen.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import ctu.student.regreen.dto.response.OrderResponse;
@@ -11,48 +13,38 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/orders")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminOrderController {
 
-    private final AdminOrderService service;
+    private final AdminOrderService adminOrderService;
 
     @GetMapping
-    public List<OrderResponse> getAllOrders() {
-
-        return service.getAllOrders();
+    public ResponseEntity<List<OrderResponse>> getAll() {
+        return ResponseEntity.ok(adminOrderService.getAllOrders());
     }
 
     @GetMapping("/{id}")
-    public OrderResponse getOrderById(
-            @PathVariable Integer id) {
-
-        return service.getOrderById(id);
+    public ResponseEntity<OrderResponse> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminOrderService.getOrderById(id));
     }
 
-    @PatchMapping("/{id}/confirm")
-    public OrderResponse confirmOrder(
-            @PathVariable Integer id) {
-
-        return service.confirmOrder(id);
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<OrderResponse> confirm(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminOrderService.confirmOrder(id));
     }
 
-    @PatchMapping("/{id}/shipping")
-    public OrderResponse shippingOrder(
-            @PathVariable Integer id) {
-
-        return service.shippingOrder(id);
+    @PutMapping("/{id}/shipping")
+    public ResponseEntity<OrderResponse> shipping(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminOrderService.shippingOrder(id));
     }
 
-    @PatchMapping("/{id}/complete")
-    public OrderResponse completeOrder(
-            @PathVariable Integer id) {
-
-        return service.completeOrder(id);
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<OrderResponse> complete(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminOrderService.completeOrder(id));
     }
 
-    @PatchMapping("/{id}/reject")
-    public OrderResponse rejectOrder(
-            @PathVariable Integer id) {
-
-        return service.rejectOrder(id);
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<OrderResponse> reject(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminOrderService.rejectOrder(id));
     }
 }
