@@ -2,6 +2,7 @@ package ctu.student.regreen.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -52,8 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/payment-methods/**").hasRole("CUSTOMER")
+                        // .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
+                        // .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
 
                         // ================= PUBLIC READ (CUSTOMER + ADMIN) =================
                         .requestMatchers("/api/categories/**").permitAll()
@@ -67,6 +70,9 @@ public class SecurityConfig {
                                                                 "/v3/api-docs/**",
                                                                 "/swagger-ui.html")
                                                 .permitAll()
+                        .requestMatchers("/api/banks").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/cities").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/villages").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/jacoco/**").permitAll()
                         // fallback
                         .anyRequest().authenticated())
