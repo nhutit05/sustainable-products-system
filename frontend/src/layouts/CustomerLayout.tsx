@@ -6,6 +6,8 @@ import Signup from '../pages/Signup'
 import Login from '../pages/Login'
 import Profile from '../pages/Profile'
 import Footer from '../components/Footer'
+import Products from '../pages/Products'
+import ProductDetail from '../pages/ProductDetail'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
@@ -25,7 +27,11 @@ export default function CustomerLayout() {
       <main className="main-cus ">
         <Routes>
           <Route path="" element={<Homepage />} />
-          <Route path="products" element={<h1>Products</h1>} />
+          <Route path="products">
+            <Route path="" element={<Products />} />
+            <Route path=":productId" element={<ProductDetail />} />
+          </Route>
+
           <Route path="cart" element={<h1>Cart</h1>} />
           <Route path="profile" element={<Profile />} />
           <Route path="login" element={<Login />} />
