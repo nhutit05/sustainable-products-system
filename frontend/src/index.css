@@ -7,7 +7,6 @@
   border-inline: 1px solid var(--border);
   min-height: 110vh;
   display: flex;
-  flex-direction: column;
   box-sizing: border-box;
 }
 
@@ -20,6 +19,7 @@ html {
   font-optical-sizing: auto;
   font-style: normal;
   font-variation-settings: 'wdth' 100;
+  scroll-behavior: smooth;
 }
 
 body {

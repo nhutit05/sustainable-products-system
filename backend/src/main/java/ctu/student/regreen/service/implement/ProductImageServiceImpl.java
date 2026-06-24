@@ -74,9 +74,11 @@ public class ProductImageServiceImpl implements ProductImageService {
 
         Map upload = cloudinaryService.uploadImage(image);
         String imageUrl = (String) upload.get("url");
-        ProductImageRequest request = new ProductImageRequest(imageUrl);
 
-        mapper.update(existingProductImage, request, product);
+        ProductImageRequest request = new ProductImageRequest(imageUrl);
+        System.out.println("before update: " + existingProductImage);
+        existingProductImage.setImageUrl(request.getImageUrl());
+        System.out.println(existingProductImage);
 
         return mapper.toResponse(repository.save(existingProductImage));
     }
