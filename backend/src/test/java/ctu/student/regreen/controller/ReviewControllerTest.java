@@ -15,8 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,8 +61,10 @@ public class ReviewControllerTest {
         );
     }
 
+//    ================= CREATE REVIEW =================
+
     @Test
-    void createReview() throws Exception {
+    void create_review_success() throws Exception {
         // GIVEN
         ObjectMapper objectMapper = new ObjectMapper();
         String content = objectMapper.writeValueAsString(reviewRequest);
@@ -76,5 +79,60 @@ public class ReviewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reviewId")
                         .value(reviewResponse.getReviewId()));
+    }
+
+//    ================ GET REVIEW BY ID =================
+
+    @Test
+    void get_review_by_id_success() throws Exception {
+        when(reviewService.getById(1))
+                .thenReturn(reviewResponse);
+
+        mockMvc.perform(get("/api/reviews/1"))
+                        .andExpect(status().isOk());
+
+        verify(reviewService).getById(1);
+    }
+
+    //    ================ GET ALL REVIEWS =================
+    @Test
+    void get_all_reviews_success() throws Exception {
+        when(reviewService.getAll())
+                .thenReturn(java.util.List.of(reviewResponse));
+
+        // WHEN
+        mockMvc.perform(
+                get("/api/reviews"))
+                .andExpect(status().isOk());
+
+        verify(reviewService).getAll();
+    }
+
+    //    ================ GET ALL REVIEWS BY PRODUCT ID =================
+    @Test
+    void getAllReviewsByProductId() throws Exception {
+        // GIVEN
+        when(reviewService.getAllByProductId(1))
+                .thenReturn(java.util.List.of(reviewResponse));
+
+        // WHEN
+        mockMvc.perform(get("/api/products/1/reviews"))
+                .andExpect(status().isOk());
+        verify(reviewService).getAllByProductId(1);
+    }
+
+    // ================ UPDATE REVIEW =================
+    @Test
+    void updateReview() throws Exception {
+
+        when(reviewService.update(1, reviewRequest))
+                .thenReturn(reviewResponse);
+
+        mockMvc.perform(put("/api/reviews/1")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(reviewRequest)))
+                .andExpect(status().isOk());
+
+        verify(reviewService).update(1, reviewRequest);
     }
 }
