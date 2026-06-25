@@ -10,6 +10,9 @@ public interface ReviewService {
     List<ReviewResponse> getAllByCustomerAndProduct(Integer customerId, Integer productId);
 
     List<ReviewResponse> getAllByProductId(Integer productId);
+
+    Integer getCountByProductId(Integer productId);
+
     List<ReviewResponse> getAllByCustomerId(Integer customerId);
     List<ReviewResponse> getAllByRating(Integer rating);
     ReviewResponse getById(Integer reviewId);

@@ -98,6 +98,8 @@ export default function Products() {
 
   const [activeCategory, setActiveCategory] = useState<number | null>(-1)
 
+  const [slideActive, setSlideActive] = useState(1)
+
   return (
     <div className="page-cus_products mt-14 min-h-screen bg-[#F8FFF4]">
       <header className="page_product-header py-6 text-left bg-white">
@@ -225,7 +227,7 @@ export default function Products() {
                 <button
                   className={`px-4 py-2 text-sm font-semibold rounded-xl hover:border-emerald-300 ${
                     activeCategory === category.id
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md'
+                      ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white shadow-md'
                       : 'bg-white border border-green-200 text-green-700 '
                   }`}
                   key={category.id}
@@ -236,15 +238,47 @@ export default function Products() {
               )
             })}
           </div>
+        </div>
+        {/* Product List */}
+        <div className="product_list--grid  mt-6 text-left">
+          {products.length > 0 ? (
+            <div className="grid grid-cols-4 gap-8">
+              {products.map((product) => (
+                <ProductCard key={product.productId} product={product} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-green-700 text-sm">Không có sản phẩm nào</p>
+          )}
+        </div>
 
-          {/* Product List */}
-          <div className="product_list--grid grid grid-cols-4 gap-8 mt-6">
-            {products.length > 0 ? (
-              products.map((product) => <ProductCard product={product} />)
-            ) : (
-              <p className="text-green-700 text-sm">Không có sản phẩm nào</p>
-            )}
-          </div>
+        <div className="product_list--slide flex items-center justify-center gap-3 mt-6">
+          <button
+            onClick={() => setSlideActive(slideActive - 1)}
+            className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors`}
+          >
+            Previous
+          </button>
+          <button
+            className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
+              ${slideActive === 1 ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white' : ''}`}
+            onClick={() => setSlideActive(1)}
+          >
+            1
+          </button>
+          <button
+            className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
+              ${slideActive === 2 ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white' : ''}`}
+            onClick={() => setSlideActive(2)}
+          >
+            2
+          </button>
+          <button
+            onClick={() => setSlideActive(slideActive + 1)}
+            className="product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+          >
+            Next
+          </button>
         </div>
       </main>
     </div>
