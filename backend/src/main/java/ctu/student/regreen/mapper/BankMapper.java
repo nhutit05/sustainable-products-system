@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BankMapper {
 
-    public static Bank toEntity(BankRequest request) {
+    public Bank toEntity(BankRequest request) {
         return new Bank(
                 request.getBankId(),
                 request.getBankShortName(),
@@ -16,7 +16,7 @@ public class BankMapper {
         );
     }
 
-    public static BankResponse toResponse(Bank bank) {
+    public BankResponse toResponse(Bank bank) {
         return new BankResponse(
                 bank.getBankId(),
                 bank.getBankShortName(),
@@ -24,7 +24,7 @@ public class BankMapper {
         );
     }
 
-    public static void update(Bank bank, BankRequest request) {
+    public void update(Bank bank, BankRequest request) {
         bank.setBankId(request.getBankId());
         bank.setBankName(request.getBankName());
     }
