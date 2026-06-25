@@ -9,6 +9,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class OrderResponse {
 
+    public OrderResponse() {
+        //TODO Auto-generated constructor stub
+    }
+
     private Integer orderId;
     private LocalDateTime orderedAt;
 

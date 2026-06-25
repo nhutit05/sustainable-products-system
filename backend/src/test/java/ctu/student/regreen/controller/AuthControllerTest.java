@@ -80,35 +80,7 @@ class AuthControllerTest {
                                                 .value("nhut"));
         }
 
-        // @Test
-        // @DisplayName("Login success")
-        // void login_success() throws Exception {
-
-        // LoginRequest request = new LoginRequest();
-
-        // request.setUsername("nhut");
-        // request.setPassword("123456");
-
-        // AuthResponse response = new AuthResponse(
-        // "jwt-token",
-        // "nhut",
-        // "CUSTOMER");
-
-        // when(authService.login(any(LoginRequest.class)))
-        // .thenReturn(response);
-
-        // mockMvc.perform(
-        // post("/api/auth/login")
-        // .contentType(MediaType.APPLICATION_JSON)
-        // .content(
-        // objectMapper.writeValueAsString(
-        // request)))
-        // .andExpect(status().isOk())
-        // .andExpect(jsonPath("$.token")
-        // .value("jwt-token"))
-        // .andExpect(jsonPath("$.username")
-        // .value("nhut"));
-        // }
+      
 
         @Test
         void login_success() throws Exception {
