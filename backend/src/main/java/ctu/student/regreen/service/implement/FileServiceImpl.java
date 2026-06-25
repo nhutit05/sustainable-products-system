@@ -18,6 +18,7 @@ import java.util.List;
 public class FileServiceImpl implements FileService {
 
     private final FileRepository repository;
+    private final FileMapper FileMapper;
 
     public List<FileResponse> getAllFiles() {
         return repository.findAll()
