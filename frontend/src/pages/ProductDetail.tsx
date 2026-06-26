@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import type { ProductDetail, ProductImage } from '../model/product'
-import { ChessKing, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
+import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
+import ProductCardSuggest from '../components/ProductCardSuggest'
 
 export default function ProductDetail() {
   const location = useLocation()
@@ -15,6 +16,9 @@ export default function ProductDetail() {
   const [activeImg, setActiveImg] = useState(0)
 
   const [countReviews, setCountReviews] = useState(0)
+
+  // Danh sach san pham goi y => lay tam tu products
+  const [suggestProducts, setSuggestProducts] = useState<ProductDetail[]>([])
 
   const contentSale = [
     {
@@ -73,9 +77,25 @@ export default function ProductDetail() {
       }
     }
 
+    // fetch tam toan bo product
+    const fetchSuggestProducts = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/products`)
+        if (response.ok) {
+          const data = await response.json()
+          setSuggestProducts(data)
+        }
+      } catch (error) {
+        console.error('Error fetching suggest products:', error)
+      }
+    }
+
     fetchProduct()
     fetchImageProduct()
     getCountReviews()
+
+    // fetch tam toan bo product de goi y
+    fetchSuggestProducts()
   }, [productId])
 
   return (
@@ -100,6 +120,7 @@ export default function ProductDetail() {
       {/* Product detail content */}
       {product ? (
         <div className="max-w-7xl mx-auto px-3 py-2 pb-16">
+          {/* Product Information */}
           <div className="grid lg:grid-cols-2 gap-12 mb-6">
             <aside className="product_detail--image pl-3">
               <div>
@@ -173,24 +194,32 @@ export default function ProductDetail() {
 
                 <div className="product_detail-button  mt-6 w-full">
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <button className="text-white font-bold px-4 py-3 rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 hover:from-emerald-500 hover:to-teal-600 hover:cursor-pointer transition-all duration-200">
+                    <button className="flex items-center justify-center text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200">
                       <ShoppingCart className="inline-block mr-2" size={20} />
                       Thêm vào giỏ hàng
                     </button>
-
-                    <button className=" text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200">
-                      <Zap className="inline-block mr-2" size={20} />
-                      Mua ngay
+                    <button className="flex items-center justify-center text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200">
+                      <Heart className="inline-block mr-2" size={20} />
+                      Thêm vào yêu thích
                     </button>
                   </div>
 
-                  <button className="w-full text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200">
+                  <button className="flex items-center w-full justify-center text-white font-bold px-4 py-3 rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 hover:from-emerald-500 hover:to-teal-600 hover:cursor-pointer transition-all duration-200">
                     <Zap className="inline-block mr-2" size={20} />
                     Mua ngay
                   </button>
                 </div>
               </div>
             </main>
+          </div>
+
+          {/* Products Description */}
+          <div className="product_infor--plus bg-white border border-emerald-100 rounded-2xl p-3 ml-4"></div>
+
+          {/* Products Suggestion */}
+          <div className="product_suggest-list">
+            <h2 className="text-lg font-semibold mb-4">Sản phẩm liên quan</h2>
+            <ProductCardSuggest products={suggestProducts} />
           </div>
         </div>
       ) : (

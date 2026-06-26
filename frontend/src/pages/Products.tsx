@@ -62,7 +62,6 @@ export default function Products() {
         if (reponse.ok) {
           const imageData = await reponse.json()
           imageData.sort((a: ProductImage, b: ProductImage) => a.productImageId - b.productImageId)
-          console.log(`Image data for product ${productId}:`, imageData)
           if (imageData && imageData.length > 0) {
             return imageData[0].imageUrl
           }
@@ -74,7 +73,7 @@ export default function Products() {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/products?page=1&limit=4')
+        const response = await fetch('http://localhost:8080/api/products?page=1&limit=15')
 
         if (response.ok) {
           const data = await response.json()

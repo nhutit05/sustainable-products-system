@@ -34,9 +34,12 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() ->
                         new RuntimeException("Category not found"));
 
-        File file = fileRepository.findById(request.getFileId())
-                .orElseThrow(() ->
-                        new RuntimeException("File not found"));
+        File file = new File();
+        if(request.getFileId() != null) {
+             file  = fileRepository.findById(request.getFileId())
+                    .orElseThrow(() ->
+                            new RuntimeException("File not found"));
+        }
 
         Product product = mapper.toEntity(request, category, file);
 

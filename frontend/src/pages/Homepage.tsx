@@ -28,7 +28,6 @@ export default function Homepage() {
         if (reponse.ok) {
           const imageData = await reponse.json()
           imageData.sort((a: ProductImage, b: ProductImage) => a.productImageId - b.productImageId)
-          console.log(`Image data for product ${productId}:`, imageData)
           if (imageData && imageData.length > 0) {
             return imageData[0].imageUrl
           }
