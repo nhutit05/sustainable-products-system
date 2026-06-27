@@ -27,8 +27,6 @@ export default function Login() {
       password: password,
     }
 
-    console.log(JSON.stringify(dataForm))
-
     const response = await fetch('http://localhost:8080/api/auth/login', {
       method: 'POST',
       headers: {
