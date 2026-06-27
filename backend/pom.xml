@@ -28,7 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
-		<spring-ai.version>2.0.0-M7</spring-ai.version>
+		<spring-ai.version>2.0.0</spring-ai.version>
 	</properties>
 	<dependencies>
 
@@ -47,6 +47,11 @@
     		<groupId>org.apache.poi</groupId>
     		<artifactId>poi-ooxml</artifactId>
     		<version>5.4.1</version>
+		</dependency>
+
+		<dependency>
+    		<groupId>org.hibernate.orm</groupId>
+    		<artifactId>hibernate-vector</artifactId>
 		</dependency>
 
 
@@ -85,8 +90,19 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <!-- <scope>runtime</scope> -->
         </dependency>
+
+		<dependency>
+    		<groupId>com.pgvector</groupId>
+    		<artifactId>pgvector</artifactId>
+    		<version>0.1.6</version>
+		</dependency>
+
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -123,10 +139,15 @@
             <scope>runtime</scope>
         </dependency>
 
-		<!-- <dependency>
+		<dependency>
     		<groupId>org.springframework.ai</groupId>
     		<artifactId>spring-ai-starter-model-google-genai</artifactId>
-		</dependency> -->
+		</dependency>
+
+		<dependency>
+    		<groupId>org.springframework.ai</groupId>
+    		<artifactId>spring-ai-starter-model-google-genai-embedding</artifactId>
+		</dependency>
 
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -148,6 +169,8 @@
     		<artifactId>spring-security-test</artifactId>
     		<scope>test</scope>
 		</dependency>
+
+
     </dependencies>
     <dependencyManagement>
         <dependencies>
