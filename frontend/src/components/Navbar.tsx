@@ -38,7 +38,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     return () => {
       window.removeEventListener('scroll', handlerScroll)
     }
-  }, [])
+  }, [userExist])
 
   const transparent = isHome && !scrolled
 

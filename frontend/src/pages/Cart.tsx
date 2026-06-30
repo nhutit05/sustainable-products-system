@@ -1,32 +1,58 @@
+import axios from 'axios'
 import { Leaf } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import type { CartItemResponse, Cart } from '../model/cart'
+import CartItem from '../components/CartItem'
 
 export default function Cart() {
-  const [currentUser, setCurrentUser] = useState(null)
+  // const [currentUser, setCurrentUser] = useState(null)
+  const token = localStorage.getItem('token')
+
+  const [cart, setCart] = useState<Cart | null>(null)
+
+  const [cartItems, setCartItems] = useState<CartItemResponse[]>([])
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const fetchUser = async () => {
+    // Fetch cart data from the backend API
+    const fetchCart = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/auth/me', {
+        const response = await fetch('http://localhost:8080/api/cart', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         })
-
-        if (response.ok) {
+        if (response.status === 200) {
           const data = await response.json()
-          setCurrentUser(data)
+          setCart(data)
+          console.log('Cart data:', data) // Log the cart data for debugging
         }
       } catch (error) {
-        console.error('Error fetching user:', error)
+        console.error('Error fetching cart:', error)
       }
     }
-    if (token) {
-      fetchUser()
+
+    const fetchCartItem = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/cart-items', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status === 200) {
+          const data = await response.json()
+          setCartItems(data)
+        }
+      } catch (error) {
+        console.error('Error fetching cart items:', error)
+      }
     }
-  }, [])
+
+    if (token) {
+      fetchCart()
+      fetchCartItem()
+    }
+  }, [token])
 
   return (
     <div className="page-cus_cart mt-14 min-h-screen bg-[#F8FFF4] text-left">
@@ -66,7 +92,13 @@ export default function Cart() {
             </div>
 
             {/* Cart list items */}
-            <div className="cart_list"></div>
+            <div className="cart_list">
+              {cartItems.length > 0 ? (
+                cartItems.map((item) => <CartItem key={item.productId} item={item} />)
+              ) : (
+                <p className="text-gray-500">Giỏ hàng của bạn đang trống.</p>
+              )}
+            </div>
           </main>
 
           <aside className="cart-aside grid col-s rounded-2xl">

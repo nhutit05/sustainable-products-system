@@ -31,13 +31,13 @@ function App() {
     }
   }, [navigate])
   return (
-    <>
+    <div className="app ">
       <Routes>
         <Route path="/*" element={<CustomerLayout />} />
 
         <Route path="/admin/*" element={<AdminLayout />} />
       </Routes>
-    </>
+    </div>
   )
 }
 

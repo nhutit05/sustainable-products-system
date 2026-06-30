@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { ProductDetail, ProductImage } from '../model/product'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/ProductCardSuggest'
+import type { Cart } from '../model/cart'
 
 export default function ProductDetail() {
   const location = useLocation()
+
+  const navigate = useNavigate()
 
   const productId = location.pathname.split('/').pop() // Lấy productId từ URL
 
@@ -19,6 +22,12 @@ export default function ProductDetail() {
 
   // Danh sach san pham goi y => lay tam tu products
   const [suggestProducts, setSuggestProducts] = useState<ProductDetail[]>([])
+
+  const [cart, setCart] = useState<Cart | null>(null)
+
+  const token = localStorage.getItem('token')
+
+  const locationPath = location.pathname
 
   const contentSale = [
     {
@@ -36,6 +45,7 @@ export default function ProductDetail() {
   ]
 
   useEffect(() => {
+    // Lay hinh anh san pham tu productId
     const fetchImageProduct = async () => {
       try {
         const reponse = await fetch(`http://localhost:8080/api/products/${productId}/images`)
@@ -51,6 +61,7 @@ export default function ProductDetail() {
       }
     }
 
+    // Lay so luong danh gia san pham tu productId
     const getCountReviews = async () => {
       try {
         const response = await fetch(
@@ -65,6 +76,7 @@ export default function ProductDetail() {
       }
     }
 
+    // Lay thong tin chi tiet san pham tu productId
     const fetchProduct = async () => {
       try {
         const response = await fetch(`http://localhost:8080/api/products/${productId}`)
@@ -90,13 +102,71 @@ export default function ProductDetail() {
       }
     }
 
+    // Lay cartId
+
+    const fetchCart = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/cart', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setCart(data)
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error)
+      }
+    }
+
     fetchProduct()
     fetchImageProduct()
     getCountReviews()
 
     // fetch tam toan bo product de goi y
     fetchSuggestProducts()
-  }, [productId])
+    // Lay cartId
+    fetchCart()
+  }, [productId, token])
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }, [locationPath]) // Scroll to top when pathname changes
+
+  // Add to cart
+  const addToCart = async (productId: number) => {
+    if (cart && token) {
+      try {
+        const data = {
+          cartId: cart.cartId,
+          productId: productId,
+          quantity: 1,
+        }
+
+        const response = await fetch('http://localhost:8080/api/cart-items', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        })
+
+        if (response.ok) {
+          alert('Sản phẩm đã được thêm vào giỏ hàng thành công!')
+        } else {
+          alert('Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.')
+          navigate(`/products/${productId}`)
+        }
+      } catch (error) {
+        console.error('Error adding product to cart:', error)
+      }
+    }
+  }
 
   return (
     <div className="page-cus_product-detail mt-14 min-h-screen bg-[#F8FFF4] text-left">
@@ -194,7 +264,10 @@ export default function ProductDetail() {
 
                 <div className="product_detail-button  mt-6 w-full">
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <button className="flex items-center justify-center text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200">
+                    <button
+                      onClick={() => addToCart(product.productId)}
+                      className="flex items-center justify-center text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200"
+                    >
                       <ShoppingCart className="inline-block mr-2" size={20} />
                       Thêm vào giỏ hàng
                     </button>

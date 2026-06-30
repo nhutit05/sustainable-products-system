@@ -38,7 +38,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
       <div className="product_card--content p-3">
         <h2 className="text-sm text-green-800 uppercase mb-2">{product.categoryName}</h2>
-        <h3 className="text-lg font-semibold text-green-900 mb-2">{product.productName}</h3>
+        <h3 className="text-lg font-semibold text-green-900 mb-2 line-clamp-1">
+          {product.productName}
+        </h3>
         <p className="text-2xl font-bold text-emerald-600 relative">
           {product.productPrice.toLocaleString('vi-VN')} ₫
           <span className="text-lg absolute bottom-0 right-2 flex items-center gap-2 bg-teal-50 px-3 rounded-full">

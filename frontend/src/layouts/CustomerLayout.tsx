@@ -8,6 +8,8 @@ import Profile from '../pages/Profile'
 import Footer from '../components/Footer'
 import Products from '../pages/Products'
 import ProductDetail from '../pages/ProductDetail'
+import Cart from '../pages/Cart'
+import { useEffect } from 'react'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
@@ -18,8 +20,17 @@ export default function CustomerLayout() {
     { label: 'About Us', to: '/about' },
   ]
 
+  const location = window.location.pathname
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }, [location])
+
   return (
-    <div className="page-customer container">
+    <div className="page-customer container mx-auto ">
       <header className="header-cus ">
         <Navbar NAV_LINKS={NAV_LINKS} />
       </header>
@@ -32,7 +43,7 @@ export default function CustomerLayout() {
             <Route path=":productId" element={<ProductDetail />} />
           </Route>
 
-          <Route path="cart" element={<h1>Cart</h1>} />
+          <Route path="cart" element={<Cart />} />
           <Route path="profile" element={<Profile />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />

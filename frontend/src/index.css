@@ -5,8 +5,7 @@
   margin: 0 auto;
   text-align: center;
   border-inline: 1px solid var(--border);
-  min-height: 110vh;
-  display: flex;
+  /* min-height: 110vh; */
   box-sizing: border-box;
 }
 
