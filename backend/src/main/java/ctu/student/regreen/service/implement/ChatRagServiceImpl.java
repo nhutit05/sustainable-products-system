@@ -1,6 +1,8 @@
 package ctu.student.regreen.service.implement;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,8 @@ import org.springframework.stereotype.Service;
 import ctu.student.regreen.model.ChatMessageMemory;
 import ctu.student.regreen.service.interfaces.ChatRagService;
 import ctu.student.regreen.service.interfaces.ConversationMemoryService;
+import ctu.student.regreen.service.interfaces.DynamicTopKService;
+import ctu.student.regreen.service.interfaces.QueryRewriteService;
 import ctu.student.regreen.service.interfaces.RetrieverService;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +22,9 @@ public class ChatRagServiceImpl implements ChatRagService {
     private final RetrieverService retrieverService;
     private final ChatClient chatClient;
     private final ConversationMemoryService memoryService;
+    private final Map<String, String> memorySummary = new HashMap<>();
+    private final DynamicTopKService dynamicTopKService;
+    private final QueryRewriteService queryRewriteService;
 
     // @Override
     // public String ask(String question) {
@@ -35,78 +42,81 @@ public class ChatRagServiceImpl implements ChatRagService {
     // .content();
     // }
 
+    private String getOrCreateSummary(String sessionId, List<ChatMessageMemory> history) {
+
+        if (history.size() < 6) {
+            return buildHistory(history);
+        }
+
+        String summary = memorySummary.get(sessionId);
+
+        if (summary != null)
+            return summary;
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("MEMORY SUMMARY:\n");
+
+        for (ChatMessageMemory m : history) {
+            sb.append(m.getRole()).append(": ").append(m.getContent()).append("\n");
+        }
+
+        String newSummary = sb.toString();
+
+        memorySummary.put(sessionId, newSummary);
+
+        return newSummary;
+    }
+
     @Override
     public String ask(String question) {
 
-        String sessionId = "default"; // Phase 9 đơn giản hóa
+        String sessionId = "default";
 
-        // 1. save user message
         memoryService.saveUserMessage(sessionId, question);
 
-        // 2. build context from documents
-        String context = retrieverService.buildContext(question, 5);
+        int topK = dynamicTopKService.calculate(question);
 
-        // 3. get conversation history
-        String history = buildHistory(memoryService.getHistory(sessionId, 6));
+        
 
-        String enrichedQuestion = "[USER QUERY WITH CONTEXT DEPENDENCY]\n" + question;
-        // 4. build final prompt
-        String prompt = buildPrompt(context, history, enrichedQuestion);
+        System.out.println("Dynamic TopK = " + topK);
+
+        List<ChatMessageMemory> history = memoryService.getHistory(sessionId, 6);
+
+        String rewrittenQuestion = queryRewriteService.rewrite(question, history);
+
+        String context = retrieverService.buildContext(rewrittenQuestion, topK);
+
+        String memory = getOrCreateSummary(sessionId, history);
+
+        String prompt = buildPrompt(context, memory, question);
 
         prompt = safe(prompt);
 
-        // 5. call LLM
         String answer = chatClient
                 .prompt()
                 .user(prompt)
                 .call()
                 .content();
 
-        // 6. save assistant message
         memoryService.saveAssistantMessage(sessionId, answer);
 
         return answer;
     }
-
-    // private String buildPrompt(String context) {
-
-    // return """
-    // You are a strict RAG assistant for the ReGreen system.
-
-    // RULES:
-    // - Use ONLY the provided context.
-    // - If answer is not found in context, say: "I don't know based on the provided
-    // documents."
-    // - Do NOT use external knowledge.
-    // - Be concise and factual.
-
-    // CONTEXT:
-    // %s
-
-    // INSTRUCTION:
-    // - Extract the most relevant information.
-    // - If multiple chunks are relevant, combine them logically.
-    // - Do not hallucinate.
-
-    // FINAL ANSWER:
-    // """.formatted(context);
-    // }
 
     private String buildPrompt(String context, String history, String question) {
 
         return """
                 You are a STRICT RAG assistant for ReGreen.
 
-                HARD RULES:
-                1. Use conversation memory to resolve references (it, this, that, they, them).
-                2. LAST_ASSISTANT_CONTEXT is the most important prior answer.
-                3. Use DOCUMENT CONTEXT ONLY for factual grounding.
-                4. If information is not in documents → say:
-                   "I don't know based on the provided documents."
-                5. NEVER hallucinate.
+                RULES:
+                - You MUST answer using DOCUMENT CONTEXT only.
+                - Always include citations like [SOURCE 1], [SOURCE 2].
+                - If not found in context: say "I don't know based on documents."
+                - Use MEMORY only for understanding conversation.
 
                 -------------------------
-                CONVERSATION MEMORY (VERY IMPORTANT):
+                CONVERSATION MEMORY:
                 %s
 
                 -------------------------
@@ -114,7 +124,7 @@ public class ChatRagServiceImpl implements ChatRagService {
                 %s
 
                 -------------------------
-                CURRENT QUESTION:
+                QUESTION:
                 %s
 
                 -------------------------
@@ -123,6 +133,11 @@ public class ChatRagServiceImpl implements ChatRagService {
                 Step 2: Check CONVERSATION MEMORY
                 Step 3: Check DOCUMENT CONTEXT
                 Step 4: Answer
+                --------------------------
+                OUTPUT FORMAT:
+                - Answer clearly
+                - Add citation like [SOURCE X]
+                - Do not hallucinate
 
                 FINAL ANSWER:
                 """.formatted(history, context, question);
@@ -178,3 +193,69 @@ public class ChatRagServiceImpl implements ChatRagService {
         return sb.toString();
     }
 }
+
+// private String buildPrompt(String context, String history, String question) {
+
+// return """
+// You are a STRICT RAG assistant for ReGreen.
+
+// HARD RULES:
+// 1. Use conversation memory to resolve references (it, this, that, they,
+// them).
+// 2. LAST_ASSISTANT_CONTEXT is the most important prior answer.
+// 3. Use DOCUMENT CONTEXT ONLY for factual grounding.
+// 4. If information is not in documents → say:
+// "I don't know based on the provided documents."
+// 5. NEVER hallucinate.
+
+// -------------------------
+// CONVERSATION MEMORY (VERY IMPORTANT):
+// %s
+
+// -------------------------
+// DOCUMENT CONTEXT:
+// %s
+
+// -------------------------
+// CURRENT QUESTION:
+// %s
+
+// -------------------------
+
+// FINAL ANSWER:
+// """.formatted(history, context, question);
+// }
+
+// @Override
+// public String ask(String question) {
+
+// String sessionId = "default"; // Phase 9 đơn giản hóa
+
+// // 1. save user message
+// memoryService.saveUserMessage(sessionId, question);
+
+// // 2. build context from documents
+// String context = retrieverService.buildContext(question, 5);
+
+// // 3. get conversation history
+// String history = buildHistory(memoryService.getHistory(sessionId, 6));
+
+// String enrichedQuestion = "[USER QUERY WITH CONTEXT DEPENDENCY]\n" +
+// question;
+// // 4. build final prompt
+// String prompt = buildPrompt(context, history, enrichedQuestion);
+
+// prompt = safe(prompt);
+
+// // 5. call LLM
+// String answer = chatClient
+// .prompt()
+// .user(prompt)
+// .call()
+// .content();
+
+// // 6. save assistant message
+// memoryService.saveAssistantMessage(sessionId, answer);
+
+// return answer;
+// }

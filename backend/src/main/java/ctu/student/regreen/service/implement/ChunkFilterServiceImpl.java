@@ -9,28 +9,40 @@ import ctu.student.regreen.service.interfaces.ChunkFilterService;
 
 @Service
 public class ChunkFilterServiceImpl
-        implements ChunkFilterService {
+                implements ChunkFilterService {
 
-    @Override
-    public List<DocumentChunk> filter(
-            List<DocumentChunk> chunks
-    ) {
+        @Override
+        public List<DocumentChunk> filter(List<DocumentChunk> chunks) {
 
-        return chunks.stream()
+                if (chunks == null || chunks.isEmpty()) {
+                        return List.of();
+                }
 
-                // bỏ chunk rỗng
-                .filter(c ->
-                        c.getContent() != null
-                                && !c.getContent().isBlank())
+                // lấy similarity cao nhất
+                double bestScore = chunks.stream()
+                                .map(DocumentChunk::getSimilarityScore)
+                                .filter(java.util.Objects::nonNull)
+                                .max(Double::compareTo)
+                                .orElse(0.0);
 
-                // bỏ chunk quá ngắn
-                .filter(c ->
-                        c.getCharacterCount() >= 100)
+                // thấp hơn best 0.08 thì loại
+                double threshold = Math.max(bestScore - 0.12, 0.50);
 
-                // bỏ duplicate
-                .distinct()
+                // System.out.println("Best Similarity = " + bestScore);
+                // System.out.println("Adaptive Threshold = " + threshold);
 
-                .toList();
-    }
+                return chunks.stream()
 
+                                .filter(c -> c.getSimilarityScore() == null
+                                                || c.getSimilarityScore() >= threshold)
+
+                                .filter(c -> c.getContent() != null
+                                                && !c.getContent().isBlank())
+
+                                .filter(c -> c.getCharacterCount() >= 100)
+
+                                .distinct()
+
+                                .toList();
+        }
 }

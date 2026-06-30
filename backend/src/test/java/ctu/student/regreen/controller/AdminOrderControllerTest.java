@@ -1,7 +1,5 @@
 package ctu.student.regreen.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import ctu.student.regreen.config.JwtAuthenticationFilter;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.service.implement.JwtService;
@@ -29,7 +27,7 @@ class AdminOrderControllerTest {
     private MockMvc mockMvc;
 
   
-    private final ObjectMapper objectMapper = new ObjectMapper();
+//     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MockitoBean
     private AdminOrderService adminOrderService;

@@ -1,6 +1,7 @@
 package ctu.student.regreen.service.implement;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -109,12 +110,13 @@ public class DocumentIngestionServiceImpl
                          * STEP 6
                          * Save chunks with embeddings
                          */
+                        List<DocumentChunk> chunkEntities = new ArrayList<>();
+
                         for (int i = 0; i < chunks.size(); i++) {
 
                                 String chunkContent = chunks.get(i);
 
-                                float[] embedding = embeddingService.embed(
-                                                chunkContent);
+                                float[] embedding = embeddingService.embed(chunkContent);
 
                                 DocumentChunk chunk = DocumentChunk.builder()
                                                 .document(document)
@@ -126,16 +128,16 @@ public class DocumentIngestionServiceImpl
                                                 .createdAt(LocalDateTime.now())
                                                 .build();
 
-                                documentChunkRepository.save(
-                                                chunk);
-
+                                chunkEntities.add(chunk);
                         }
+
+                        documentChunkRepository.saveAll(chunkEntities);
                         /*
                          * STEP 7
                          * Update status
                          */
                         // document.setStatus(
-                        //                 DocumentStatus.CHUNKED);
+                        // DocumentStatus.CHUNKED);
 
                         document.setStatus(DocumentStatus.EMBEDDED);
 

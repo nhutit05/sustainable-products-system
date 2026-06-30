@@ -47,5 +47,9 @@ public class DocumentChunk {
 
         @Column(columnDefinition = "vector(3072)")
         private float[] embedding;
-}
 
+        private String sourceName;
+
+        @Transient
+        private Double similarityScore;
+}

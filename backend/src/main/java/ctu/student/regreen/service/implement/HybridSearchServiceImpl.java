@@ -37,25 +37,53 @@ public class HybridSearchServiceImpl implements HybridSearchService {
                 .toList();
     }
 
-    private double score(DocumentChunk c, String query) {
+    private double score(DocumentChunk chunk,
+            String question) {
 
-        if (c.getContent() == null)
-            return 0;
+        double score = 0;
 
-        String content = c.getContent().toLowerCase();
+        String content = chunk.getContent().toLowerCase();
 
-        // 1. keyword signal
-        double keyword = content.contains(query.toLowerCase()) ? 0.4 : 0.0;
+        String q = question.toLowerCase();
 
-        // 2. relevance heuristic (simple but effective)
-        double lengthPenalty = c.getCharacterCount() < 300 ? 0.1 : 0.0;
+        // ------------------------------------------------
 
-        // 3. chunk quality boost
-        double qualityBoost = (c.getCharacterCount() > 100 && c.getCharacterCount() < 1200)
-                ? 0.2
-                : 0.0;
+        // 1 similarity
 
-        return keyword + lengthPenalty + qualityBoost;
+        score += 0.60;
+
+        // ------------------------------------------------
+
+        // 2 keyword
+
+        int matched = 0;
+
+        for (String word : q.split("\\s+")) {
+
+            if (word.length() < 3)
+                continue;
+
+            if (content.contains(word))
+                matched++;
+        }
+
+        score += matched * 0.08;
+
+        // ------------------------------------------------
+
+        // 3 exact phrase
+
+        if (content.contains(q))
+            score += 0.20;
+
+        // ------------------------------------------------
+
+        // 4 shorter chunk
+
+        if (chunk.getCharacterCount() < 600)
+            score += 0.05;
+
+        return score;
     }
 
     private static class ScoredChunk {
