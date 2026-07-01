@@ -49,9 +49,12 @@ public class SecurityConfig {
 
                         // ================= AUTH =================
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/test/**").permitAll()
 
                         // ================= ADMIN ONLY =================
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/storage/**").hasRole("ADMIN")
+                        .requestMatchers("/api/parser/**").hasRole("ADMIN")
 
                         // ================= CUSTOMER AUTH REQUIRED =================
                         .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
@@ -79,6 +82,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/cities").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/villages").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/jacoco/**").permitAll()
+                        .requestMatchers("/api/chat/**").permitAll()
                         // fallback
                         .anyRequest().authenticated())
 
