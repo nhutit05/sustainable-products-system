@@ -3,18 +3,15 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import type { CartItemResponse } from '../model/cart'
 import type { ProductIntroduce } from '../model/product'
 import { Leaf, Minus, Plus, Trash2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 interface CartItemProps {
-  item: CartItemResponse
+  item: CartItemResponse // Day la cart item
   onQuantityChange?: (productId: number, newQty: number) => void
   onRemove?: (productId: number) => void
 }
 
 export default function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
-  const productId = item.productId
   const [product, setProduct] = useState<ProductIntroduce | null>(null)
-
   // Optimistic quantity state — cập nhật UI ngay, sync API sau
   const [localQty, setLocalQty] = useState(item.quantity)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -36,7 +33,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
       try {
         const token = localStorage.getItem('token')
         const response = await fetch(
-          `http://localhost:8080/api/cart-items/${productId}?quantity=${newQty}`,
+          `http://localhost:8080/api/cart-items/${item.productId}?quantity=${newQty}`,
           {
             method: 'PUT',
             headers: {
@@ -49,7 +46,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
         if (!response.ok) throw new Error('Update failed')
 
         // Báo lên parent nếu cần (để parent cập nhật tổng giỏ hàng, v.v.)
-        onQuantityChange?.(productId, newQty)
+        onQuantityChange?.(item.productId, newQty)
       } catch (error) {
         console.error('Error updating quantity:', error)
         // Rollback về quantity cũ nếu API lỗi
@@ -59,7 +56,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
         setIsUpdating(false)
       }
     },
-    [productId, item.quantity, onQuantityChange]
+    [item.productId, item.quantity, onQuantityChange]
   )
 
   const updateQty = (change: number) => {
@@ -78,15 +75,16 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   }
 
   const removeItem = async () => {
+    // XOA GIO HANG
     setIsRemoving(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:8080/api/cart-items/${productId}`, {
+      const response = await fetch(`http://localhost:8080/api/cart-items/${item.productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!response.ok) throw new Error('Remove failed')
-      onRemove?.(productId)
+      onRemove?.(item.productId)
     } catch (error) {
       console.error('Error removing item:', error)
       setIsRemoving(false)
@@ -95,40 +93,31 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
   // Cleanup debounce timer khi component unmount
   useEffect(() => {
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current)
-    }
-  }, [])
-
-  useEffect(() => {
-    const fetchImageProduct = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/api/products/${productId}/images`)
-        if (response.ok) {
-          const data = await response.json()
-          return data[0]?.imageUrl ?? null
-        }
-      } catch (error) {
-        console.error('Error fetching product images:', error)
-      }
-      return null
-    }
-
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products/${productId}`)
+        const response = await fetch(`http://localhost:8080/api/products/${item.productId}`)
         if (response.ok) {
-          const data = await response.json()
-          data.productImage = await fetchImageProduct()
+          const data: ProductIntroduce = await response.json()
+
+          const images = await fetch(`http://localhost:8080/api/products/${item.productId}/images`)
+          if (images.ok) {
+            const imageDatas = await images.json()
+            data.productImage = imageDatas[0].imageUrl
+          }
           setProduct(data)
+        } else {
+          console.error('Failed to fetch product data')
         }
       } catch (error) {
-        console.error('Error fetching product:', error)
+        console.error('Error fetching product data:', error)
       }
     }
 
     fetchProduct()
-  }, [productId])
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    }
+  }, [])
 
   return (
     <div
@@ -196,7 +185,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
               <p className="text-green-900 text-xl font-bold">
                 <span className="text-red-500 mr-3 transition-all duration-200">
                   {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                    product.productPrice * localQty
+                    item.subtotal
                   )}
                 </span>
               </p>

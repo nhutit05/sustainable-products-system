@@ -1,9 +1,11 @@
 import axios from 'axios'
-import { Leaf } from 'lucide-react'
+import { Leaf, Plus, Sprout } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { CartItemResponse, Cart } from '../model/cart'
 import CartItem from '../components/CartItem'
+import type { ProductIntroduce } from '../model/product'
+import type { paymentMethodResponse } from '../model/paymentMethod'
 
 export default function Cart() {
   // const [currentUser, setCurrentUser] = useState(null)
@@ -13,25 +15,10 @@ export default function Cart() {
 
   const [cartItems, setCartItems] = useState<CartItemResponse[]>([])
 
-  useEffect(() => {
-    // Fetch cart data from the backend API
-    const fetchCart = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/cart', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        if (response.status === 200) {
-          const data = await response.json()
-          setCart(data)
-          console.log('Cart data:', data) // Log the cart data for debugging
-        }
-      } catch (error) {
-        console.error('Error fetching cart:', error)
-      }
-    }
+  const [paymentMethods, setPaymentMethods] = useState<paymentMethodResponse[]>([])
 
+  useEffect(() => {
+    // Lay danh sach san pham trong gio hang
     const fetchCartItem = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/cart-items', {
@@ -48,12 +35,32 @@ export default function Cart() {
       }
     }
 
+    // FETCH PHUONG THUC THANH TOAN
+
+    const fetchPaymentMethods = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/payment-methods', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status === 200) {
+          const data = await response.json()
+          setPaymentMethods(data)
+        }
+      } catch (error) {
+        console.error('Error fetching payment methods:', error)
+      }
+    }
     if (token) {
-      fetchCart()
+      // fetchCart()
       fetchCartItem()
+      fetchPaymentMethods()
     }
   }, [token])
 
+  //  tinh tong tien cua gio hang
+  const totalPrice = cartItems.reduce((total, item) => total + item.subtotal, 0)
   return (
     <div className="page-cus_cart mt-14 min-h-screen bg-[#F8FFF4] text-left">
       <div className="max-w-7xl mx-auto">
@@ -73,7 +80,10 @@ export default function Cart() {
           {/* Cart Title */}
           <div className="max-w-7xl mx-auto px-3 py-4">
             <h1 className="text-3xl font-bold text-green-900">
-              Giỏ hàng <span className="text-lg text-emerald-400 font-medium">(3 sản phẩm)</span>
+              Giỏ hàng{' '}
+              <span className="text-lg text-emerald-400 font-medium">
+                ({cartItems.length} sản phẩm)
+              </span>
             </h1>
           </div>
         </header>
@@ -104,7 +114,87 @@ export default function Cart() {
           <aside className="cart-aside grid col-s rounded-2xl">
             <div className=" bg-white rounded-2xl border border-emerald-200 p-4">
               <h2 className="text-xl font-bold text-green-900 mb-4">Tóm tắt đơn hàng</h2>
-              <div className="cart-aside--summary"></div>
+
+              {/* TINH TIEN HANG */}
+              <div className="cart-aside--summary">
+                <p className="text-md text-gray-700 mb2">
+                  Tổng tiền tạm tính:{' '}
+                  <span className="text-xl font-bold mx-2 text-red-500">
+                    {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                      totalPrice
+                    )}
+                  </span>
+                </p>
+              </div>
+
+              {/* LUA CHON PHUONG THUC THANH*/}
+              <div className="cart-aside--payment mt-4 p-4 rounded-2xl bg-emerald-50/80">
+                <h3 className="text-md font-semibold text-green-900 mb-4">
+                  Phương thức thanh toán
+                </h3>
+                <select
+                  name=""
+                  id=""
+                  className="w-full border border-gray-200 rounded-2xl p-3 text-gray-400"
+                >
+                  <option value="" className="text-gray-400">
+                    Chọn phương thức thanh toán
+                  </option>
+                  {paymentMethods.length === 0 ? (
+                    <option value="" className="text-gray-400">
+                      Không có phương thức thanh toán nào
+                    </option>
+                  ) : (
+                    paymentMethods.map((method) => (
+                      <option
+                        key={method.paymentMethodId}
+                        value={method.paymentMethodId}
+                        className=""
+                      >
+                        {method.paymentMethodName}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              {/* TIEN VAN CHUYEN */}
+              <div className="cart-aside--summary my-3">
+                <p className="text-md text-gray-700 mb2">
+                  Tổng tiền vận chuyển:{' '}
+                  <span className="text-md font-bold mx-2 text-red-500">free</span>
+                </p>
+              </div>
+
+              {/* TONG ECO POINT */}
+              <div className="cart-aside--summary my-3">
+                <p className="text-md text-gray-700 mb-2 flex items-center gap-2">
+                  Eco points <Plus className="inline-block mr-2 h-6 w-6" size={22} /> :{' '}
+                  <span className="text-md font-bold mx-2 text-emerald-500 flex items-center gap-1">
+                    <Leaf className="inline-block mr-2" size={20} />
+                    {totalPrice / 1000} Eco points
+                  </span>
+                </p>
+              </div>
+
+              {/* TONG TIEN TOAN BO */}
+              <div className="cart-aside--summary mt-6 border-t border-gray-200 pt-3">
+                <p className="text-lg text-gray-700 mb-2 font-semibold">
+                  Tổng tiền thanh toán:{' '}
+                  <span className="text-xl font-bold m-2 text-red-500">
+                    {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                      totalPrice
+                    )}
+                  </span>
+                </p>
+              </div>
+
+              {/* DAT HANG */}
+              <div className="cart-aside--checkout mt-12">
+                <button className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-emerald-600 transition-colors hover:cursor-pointer hover:scale-102">
+                  Đặt hàng
+                </button>
+              </div>
             </div>
           </aside>
         </main>

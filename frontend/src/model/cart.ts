@@ -3,7 +3,7 @@ export type CartItemResponse = {
   productId: number
   productName: string
   quantity: number
-  subTotal: number
+  subtotal: number
 }
 
 export type CartItemRequest = {

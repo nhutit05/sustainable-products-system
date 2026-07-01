@@ -18,6 +18,8 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
 
   const [userExist, setUserExist] = useState<boolean>(false)
 
+  const [totalItems, setTotalItems] = useState<number>()
+
   useEffect(() => {
     const handlerScroll = () => {
       setScrolled(window.scrollY > 0)
@@ -33,7 +35,29 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
       }
     }
 
+    const totalItemsInCart = async () => {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setTotalItems(0)
+        return
+      }
+      try {
+        const response = await fetch('http://localhost:8080/api/cart-items', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const data = await response.json()
+        setTotalItems(data.length)
+      } catch (error) {
+        console.error('Error fetching total items in cart:', error)
+      }
+    }
+
     checkUserExist()
+    totalItemsInCart()
 
     return () => {
       window.removeEventListener('scroll', handlerScroll)
@@ -88,7 +112,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
             >
               <ShoppingCart className="w-5 h-5" />
               <span className="absolute top-0.5 right-0.5 w-4 h-4 text-[10px] font-bold text-white bg-emerald-500 rounded-full flex items-center justify-center">
-                2
+                {totalItems}
               </span>
             </Link>
             <button className="hidden sm:flex relative p-2 rounded-lg text-green-700 hover:bg-green-100 transition-colors">
