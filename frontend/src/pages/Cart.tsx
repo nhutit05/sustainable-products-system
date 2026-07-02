@@ -1,21 +1,22 @@
-import axios from 'axios'
-import { Leaf, Plus, Sprout } from 'lucide-react'
+import { Leaf, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { CartItemResponse, Cart } from '../model/cart'
+import type { CartItemResponse, Cart } from '../model/cart.model'
 import CartItem from '../components/CartItem'
-import type { ProductIntroduce } from '../model/product'
-import type { paymentMethodResponse } from '../model/paymentMethod'
+import type { paymentMethodResponse } from '../model/paymentMethod.model'
+import Checkout from '../components/Checkout'
 
 export default function Cart() {
   // const [currentUser, setCurrentUser] = useState(null)
   const token = localStorage.getItem('token')
 
-  const [cart, setCart] = useState<Cart | null>(null)
-
   const [cartItems, setCartItems] = useState<CartItemResponse[]>([])
 
   const [paymentMethods, setPaymentMethods] = useState<paymentMethodResponse[]>([])
+
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>()
+
+  const [onClose, setOnClose] = useState(true)
 
   useEffect(() => {
     // Lay danh sach san pham trong gio hang
@@ -36,7 +37,6 @@ export default function Cart() {
     }
 
     // FETCH PHUONG THUC THANH TOAN
-
     const fetchPaymentMethods = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/payment-methods', {
@@ -58,6 +58,49 @@ export default function Cart() {
       fetchPaymentMethods()
     }
   }, [token])
+
+  // CHAN CUON
+  useEffect(() => {
+    if (onClose == false) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [onClose])
+
+  const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    if (!selectedPaymentMethod) {
+      alert('Vui lòng chọn phương thức thanh toán trước khi đặt hàng.')
+      return
+    }
+    setOnClose(false)
+  }
+
+  const handleQuantityChange = (productId: number, newQty: number) => {
+    setCartItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.productId !== productId) {
+          return item
+        }
+
+        const unitPrice = item.quantity > 0 ? item.subtotal / item.quantity : 0
+        return {
+          ...item,
+          quantity: newQty,
+          subtotal: unitPrice * newQty,
+        }
+      })
+    )
+  }
+
+  const handleRemoveItem = (productId: number) => {
+    setCartItems((currentItems) => currentItems.filter((item) => item.productId !== productId))
+  }
 
   //  tinh tong tien cua gio hang
   const totalPrice = cartItems.reduce((total, item) => total + item.subtotal, 0)
@@ -87,7 +130,6 @@ export default function Cart() {
             </h1>
           </div>
         </header>
-
         {/* Cart Content */}
         <main className="cart-main grid grid-cols-3 gap-6">
           <main className="cart-content grid col-span-2 rounded-2xl">
@@ -104,7 +146,14 @@ export default function Cart() {
             {/* Cart list items */}
             <div className="cart_list">
               {cartItems.length > 0 ? (
-                cartItems.map((item) => <CartItem key={item.productId} item={item} />)
+                cartItems.map((item) => (
+                  <CartItem
+                    key={item.productId}
+                    item={item}
+                    onQuantityChange={handleQuantityChange}
+                    onRemove={handleRemoveItem}
+                  />
+                ))
               ) : (
                 <p className="text-gray-500">Giỏ hàng của bạn đang trống.</p>
               )}
@@ -136,6 +185,7 @@ export default function Cart() {
                   name=""
                   id=""
                   className="w-full border border-gray-200 rounded-2xl p-3 text-gray-400"
+                  onChange={(e) => setSelectedPaymentMethod(Number(e.target.value))}
                 >
                   <option value="" className="text-gray-400">
                     Chọn phương thức thanh toán
@@ -151,7 +201,7 @@ export default function Cart() {
                         value={method.paymentMethodId}
                         className=""
                       >
-                        {method.paymentMethodName}
+                        {method.paymentMethodName} ({method.paymentMethodId})
                       </option>
                     ))
                   )}
@@ -191,14 +241,28 @@ export default function Cart() {
 
               {/* DAT HANG */}
               <div className="cart-aside--checkout mt-12">
-                <button className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-emerald-600 transition-colors hover:cursor-pointer hover:scale-102">
+                <button
+                  onClick={(e) => handleCheckout(e)}
+                  className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-emerald-600 transition-colors hover:cursor-pointer hover:scale-102"
+                >
                   Đặt hàng
                 </button>
               </div>
             </div>
           </aside>
         </main>
+        {!onClose && (
+          <Checkout
+            cartItems={cartItems}
+            totalPrice={totalPrice}
+            paymentMethodId={selectedPaymentMethod || 0}
+            setOnClose={setOnClose}
+          />
+        )}
       </div>
+      {!onClose && (
+        <div className="overlay absolute top-0 left-0 w-full h-full bg-gray-700/50 z-51"></div>
+      )}
     </div>
   )
 }

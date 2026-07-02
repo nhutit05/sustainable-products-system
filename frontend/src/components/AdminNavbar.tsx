@@ -35,15 +35,13 @@ export default function AdminNavbar({ NAV_LINKS }: AdminNavbarProps) {
         },
       })
       const data = await res.json()
-
-      
     }
 
     fetchAdmin()
   }, [token])
 
   return (
-    <nav className="admin-navbar bg-[#111A31] text-white p-4 flex flex-col h-full overflow-y-auto">
+    <nav className="admin-navbar bg-[#111A31] text-white p-4 flex flex-col h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-emerald-300 scrollbar-track-emerald-100">
       {/* ADMIN NAVBAR LOGO REGREEN */}
       <header className="adm-navbar-header">
         <div className="flex items-center gap-2 border-b border-gray-800 py-3">
@@ -104,12 +102,8 @@ export default function AdminNavbar({ NAV_LINKS }: AdminNavbarProps) {
             <UserCircle className="text-emerald-400" size={24} />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold text-white truncate">
-              Admin
-            </span>
-            <span className="text-xs text-emerald-400 font-medium">
-              Quản trị viên
-            </span>
+            <span className="text-sm font-semibold text-white truncate">Admin</span>
+            <span className="text-xs text-emerald-400 font-medium">Quản trị viên</span>
           </div>
         </div>
 

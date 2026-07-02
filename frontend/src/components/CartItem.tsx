@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState, useRef, useCallback } from 'react'
-import type { CartItemResponse } from '../model/cart'
-import type { ProductIntroduce } from '../model/product'
+import type { CartItemResponse } from '../model/cart.model'
+import type { ProductIntroduce } from '../model/product.model'
 import { Leaf, Minus, Plus, Trash2 } from 'lucide-react'
 
 interface CartItemProps {
@@ -14,17 +14,22 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   const [product, setProduct] = useState<ProductIntroduce | null>(null)
   // Optimistic quantity state — cập nhật UI ngay, sync API sau
   const [localQty, setLocalQty] = useState(item.quantity)
+  const [localSubtotal, setLocalSubtotal] = useState(item.subtotal)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
 
   // Ref để debounce: lưu timeout và quantity mới nhất cần sync
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingQty = useRef<number>(localQty)
+  const unitPrice = useRef<number>(item.quantity > 0 ? item.subtotal / item.quantity : 0)
 
   // Sync localQty nếu prop thay đổi từ bên ngoài (ví dụ: parent re-fetch)
   useEffect(() => {
     setLocalQty(item.quantity)
-  }, [item.quantity])
+    setLocalSubtotal(item.subtotal)
+    unitPrice.current = item.quantity > 0 ? item.subtotal / item.quantity : 0
+    pendingQty.current = item.quantity
+  }, [item.quantity, item.subtotal])
 
   // Hàm gọi API thực sự — chỉ chạy sau debounce 500ms
   const syncQtyToServer = useCallback(
@@ -45,18 +50,19 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
         if (!response.ok) throw new Error('Update failed')
 
-        // Báo lên parent nếu cần (để parent cập nhật tổng giỏ hàng, v.v.)
+        // Báo lên parent để cập nhật tổng giỏ hàng và subtotal ngay trên trang Cart
         onQuantityChange?.(item.productId, newQty)
       } catch (error) {
         console.error('Error updating quantity:', error)
         // Rollback về quantity cũ nếu API lỗi
         setLocalQty(item.quantity)
+        setLocalSubtotal(item.subtotal)
         pendingQty.current = item.quantity
       } finally {
         setIsUpdating(false)
       }
     },
-    [item.productId, item.quantity, onQuantityChange]
+    [item.productId, item.quantity, item.subtotal, onQuantityChange]
   )
 
   const updateQty = (change: number) => {
@@ -66,6 +72,10 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
     // Cập nhật UI ngay lập tức (optimistic)
     pendingQty.current = newQty
     setLocalQty(newQty)
+    setLocalSubtotal(unitPrice.current * newQty)
+
+    // Cập nhật parent ngay để tổng tiền thay đổi liền trên trang giỏ hàng
+    onQuantityChange?.(item.productId, newQty)
 
     // Debounce: huỷ timer cũ, đặt timer mới 500ms
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
@@ -117,7 +127,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current)
     }
-  }, [])
+  }, [item.productId])
 
   return (
     <div
@@ -166,7 +176,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
                 </button>
 
                 <span
-                  className={`px-3 py-1.5 text-green-900 font-semibold text-sm min-w-[2rem] text-center transition-opacity duration-150 ${
+                  className={`px-3 py-1.5 text-green-900 font-semibold text-sm min-w-8 text-center transition-opacity duration-150 ${
                     isUpdating ? 'opacity-60' : 'opacity-100'
                   }`}
                 >
@@ -184,9 +194,10 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
               <p className="text-green-900 text-xl font-bold">
                 <span className="text-red-500 mr-3 transition-all duration-200">
-                  {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                    item.subtotal
-                  )}
+                  {Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  }).format(localSubtotal)}
                 </span>
               </p>
             </div>

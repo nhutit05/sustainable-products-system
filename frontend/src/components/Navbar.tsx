@@ -20,6 +20,8 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
 
   const [totalItems, setTotalItems] = useState<number>()
 
+  const token = localStorage.getItem('token')
+
   useEffect(() => {
     const handlerScroll = () => {
       setScrolled(window.scrollY > 0)
@@ -27,7 +29,6 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     window.addEventListener('scroll', handlerScroll)
 
     const checkUserExist = () => {
-      const token = localStorage.getItem('token')
       if (token) {
         setUserExist(true)
       } else {
@@ -62,7 +63,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     return () => {
       window.removeEventListener('scroll', handlerScroll)
     }
-  }, [userExist])
+  }, [userExist, token])
 
   const transparent = isHome && !scrolled
 

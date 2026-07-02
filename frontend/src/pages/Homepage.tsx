@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import type { ProductIntroduce, ProductDetail, ProductImage } from '../model/product'
+import type { ProductIntroduce, ProductDetail, ProductImage } from '../model/product.model'
 import ProductCard from '../components/ProductCard'
 
 export default function Homepage() {

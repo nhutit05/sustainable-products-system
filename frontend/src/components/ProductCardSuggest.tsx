@@ -1,5 +1,5 @@
 import { Heart, Leaf, Sprout } from 'lucide-react'
-import type { ProductDetail, ProductImage, ProductIntroduce } from '../model/product'
+import type { ProductDetail, ProductImage, ProductIntroduce } from '../model/product.model'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 

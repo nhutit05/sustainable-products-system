@@ -10,6 +10,7 @@ import Products from '../pages/Products'
 import ProductDetail from '../pages/ProductDetail'
 import Cart from '../pages/Cart'
 import { useEffect } from 'react'
+import PaymentOnline from '../components/PaymentOnline'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
@@ -43,7 +44,9 @@ export default function CustomerLayout() {
             <Route path=":productId" element={<ProductDetail />} />
           </Route>
 
-          <Route path="cart" element={<Cart />} />
+          <Route path="cart" element={<Cart />}>
+            <Route path="payment-online" element={<PaymentOnline />} />
+          </Route>
           <Route path="profile" element={<Profile />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />

@@ -13,6 +13,7 @@ import AdminNavbar from '../components/AdminNavbar'
 import { Route, Routes } from 'react-router-dom'
 import AdminDashboard from '../pages/AdminDashboard'
 import AdminSystemCategories from '../pages/AdminSystemCategories'
+import AdminOrders from '../pages/AdminOrders'
 
 export default function AdminLayout() {
   // Set danh sach NAV_LINKS
@@ -96,7 +97,7 @@ export default function AdminLayout() {
 
   return (
     <div className="page-admin w-full min-h-screen grid grid-cols-4 gap-4 ">
-      <header className="header-adm ">
+      <header className="header-adm max-h-screen">
         <AdminNavbar NAV_LINKS={NAV_LINKS} />
       </header>
 
@@ -112,12 +113,13 @@ export default function AdminLayout() {
 
         {/* LIST ROUTES */}
         <Routes>
+          <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="reports" element={<h1>Reports</h1>} />
           <Route path="categories" element={<AdminSystemCategories />} />
           <Route path="products" element={<h1>Products</h1>} />
           <Route path="warehouses" element={<h1>Warehouses</h1>} />
-          <Route path="orders" element={<h1>Orders</h1>} />
+          <Route path="orders" element={<AdminOrders />} />
           <Route path="refunds" element={<h1>Refunds</h1>} />
           <Route path="vouchers" element={<h1>Vouchers</h1>} />
         </Routes>

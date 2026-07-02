@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { UserRegister } from '../model/userRegister'
+import type { UserRegister } from '../model/userRegister.model'
 import { useNavigate } from 'react-router-dom'
 
 interface FormErrors {

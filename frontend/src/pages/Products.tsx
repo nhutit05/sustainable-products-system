@@ -1,7 +1,9 @@
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { ProductDetail, ProductImage, ProductIntroduce } from '../model/product'
+import type { ProductDetail, ProductImage, ProductIntroduce } from '../model/product.model'
 import ProductCard from '../components/ProductCard'
+
+const PAGE_SIZE = 8
 
 export default function Products() {
   const hotFilters = [
@@ -54,11 +56,19 @@ export default function Products() {
   ]
 
   const [products, setProducts] = useState<ProductIntroduce[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasNextPage, setHasNextPage] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
     const fetchImageProduct = async (productId: number) => {
       try {
-        const reponse = await fetch(`http://localhost:8080/api/products/${productId}/images`)
+        const reponse = await fetch(`http://localhost:8080/api/products/${productId}/images`, {
+          signal: controller.signal,
+        })
         if (reponse.ok) {
           const imageData = await reponse.json()
           imageData.sort((a: ProductImage, b: ProductImage) => a.productImageId - b.productImageId)
@@ -72,32 +82,92 @@ export default function Products() {
     }
 
     const fetchProducts = async () => {
+      setIsLoading(true)
+
       try {
-        const response = await fetch('http://localhost:8080/api/products?page=1&limit=15')
+        const response = await fetch(
+          `http://localhost:8080/api/products?page=${currentPage}&limit=${PAGE_SIZE}`,
+          {
+            signal: controller.signal,
+          }
+        )
 
         if (response.ok) {
-          const data = await response.json()
-          const filteredProducts: ProductIntroduce[] = await Promise.all(
+          const responseData = await response.json()
+          const data: ProductDetail[] = Array.isArray(responseData)
+            ? responseData
+            : Array.isArray(responseData?.content)
+              ? responseData.content
+              : Array.isArray(responseData?.data)
+                ? responseData.data
+                : []
+
+          const totalPages =
+            typeof responseData?.totalPages === 'number'
+              ? responseData.totalPages
+              : typeof responseData?.totalPage === 'number'
+                ? responseData.totalPage
+                : null
+
+          if (!isMounted) {
+            return
+          }
+
+          setHasNextPage(totalPages !== null ? currentPage < totalPages : data.length === PAGE_SIZE)
+          setProducts(
+            data.map((product: ProductDetail) => ({
+              ...product,
+              productImage: '',
+            }))
+          )
+
+          void Promise.all(
             data.map(async (product: ProductDetail) => {
               const imageUrl = await fetchImageProduct(product.productId)
-              return { ...product, productImage: imageUrl }
+              return { productId: product.productId, imageUrl }
             })
-          )
-          setProducts(filteredProducts)
+          ).then((imageResults) => {
+            if (!isMounted) {
+              return
+            }
+
+            const imageMap = new Map(
+              imageResults
+                .filter((item) => item.imageUrl)
+                .map((item) => [item.productId, item.imageUrl] as const)
+            )
+
+            setProducts((currentProducts) =>
+              currentProducts.map((product) => {
+                const imageUrl = imageMap.get(product.productId)
+                return imageUrl ? { ...product, productImage: imageUrl } : product
+              })
+            )
+          })
         }
       } catch (error) {
+        if (controller.signal.aborted) {
+          return
+        }
         console.error('Error fetching products:', error)
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
 
     fetchProducts()
-  }, [])
+
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [currentPage])
 
   const [showFilters, setShowFilters] = useState(true)
 
   const [activeCategory, setActiveCategory] = useState<number | null>(-1)
-
-  const [slideActive, setSlideActive] = useState(1)
 
   return (
     <div className="page-cus_products mt-14 min-h-screen bg-[#F8FFF4]">
@@ -246,6 +316,8 @@ export default function Products() {
                 <ProductCard key={product.productId} product={product} />
               ))}
             </div>
+          ) : isLoading ? (
+            <p className="text-green-700 text-sm">Đang tải danh sách sản phẩm...</p>
           ) : (
             <p className="text-green-700 text-sm">Không có sản phẩm nào</p>
           )}
@@ -253,28 +325,34 @@ export default function Products() {
 
         <div className="product_list--slide flex items-center justify-center gap-3 mt-6">
           <button
-            onClick={() => setSlideActive(slideActive - 1)}
-            className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors`}
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            disabled={currentPage === 1 || isLoading}
+            className="product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             Previous
           </button>
           <button
             className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
-              ${slideActive === 1 ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white' : ''}`}
-            onClick={() => setSlideActive(1)}
+              ${currentPage === 1 ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white' : ''}`}
+            onClick={() => setCurrentPage(1)}
+            disabled={isLoading}
           >
             1
           </button>
+          {hasNextPage && (
+            <button
+              className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
+                ${currentPage === 2 ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white' : ''}`}
+              onClick={() => setCurrentPage(2)}
+              disabled={isLoading}
+            >
+              2
+            </button>
+          )}
           <button
-            className={`product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
-              ${slideActive === 2 ? 'bg-linear-to-r from-emerald-500 to-teal-600 text-white' : ''}`}
-            onClick={() => setSlideActive(2)}
-          >
-            2
-          </button>
-          <button
-            onClick={() => setSlideActive(slideActive + 1)}
-            className="product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+            onClick={() => setCurrentPage((page) => page + 1)}
+            disabled={!hasNextPage || isLoading}
+            className="product--slide-btn rounded-2xl bg-white py-2 px-3 border border-green-200 text-green-700 hover:bg-emerald-50 hover:border-emerald-300 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             Next
           </button>
