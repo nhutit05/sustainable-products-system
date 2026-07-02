@@ -13,5 +13,6 @@ public interface CartItemService {
 
     CartItemResponse update(Integer productId, Integer quantity);
 
+
     void delete(Integer productId);
 }

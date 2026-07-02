@@ -66,6 +66,6 @@ public class Product {
     private Category category;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "file_id", nullable = false)
+    @JoinColumn(name = "file_id")
     private File file;
 }

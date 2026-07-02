@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import type { ProductIntroduce, ProductDetail, ProductImage } from '../model/product'
+import type { ProductIntroduce, ProductDetail, ProductImage } from '../model/product.model'
 import ProductCard from '../components/ProductCard'
 
 export default function Homepage() {
@@ -28,7 +28,6 @@ export default function Homepage() {
         if (reponse.ok) {
           const imageData = await reponse.json()
           imageData.sort((a: ProductImage, b: ProductImage) => a.productImageId - b.productImageId)
-          console.log(`Image data for product ${productId}:`, imageData)
           if (imageData && imageData.length > 0) {
             return imageData[0].imageUrl
           }

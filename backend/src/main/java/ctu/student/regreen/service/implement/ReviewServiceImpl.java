@@ -45,6 +45,10 @@ public class ReviewServiceImpl implements ReviewService {
                 .toList();
     }
 
+    public Integer getCountByProductId(Integer productId) {
+        return getAllByProductId(productId).size();
+    }
+
     public List<ReviewResponse> getAllByCustomerId(Integer customerId) {
         return repository.findByCustomerUserId(customerId)
                 .stream()

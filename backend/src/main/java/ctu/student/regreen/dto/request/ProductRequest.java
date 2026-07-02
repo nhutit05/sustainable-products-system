@@ -44,6 +44,5 @@ public class ProductRequest {
     @NotNull
     private Integer categoryId;
 
-    @NotNull
     private Integer fileId;
 }
