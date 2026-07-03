@@ -2,8 +2,9 @@ import { useNavigate } from 'react-router-dom'
 
 export default function Profile() {
   const navigate = useNavigate()
+
   const handleSignOut = () => {
-    const confirmed = window.confirm('Are you sure you want to sign out?')
+    const confirmed = window.confirm('Bạn có chắc chắn muốn đăng xuất không?')
     if (confirmed) {
       // Perform sign out logic here (e.g., clear user session, redirect to login page)
       console.log('User signed out')

@@ -11,6 +11,7 @@ import ProductDetail from '../pages/ProductDetail'
 import Cart from '../pages/Cart'
 import { useEffect } from 'react'
 import PaymentOnline from '../components/PaymentOnline'
+// import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [

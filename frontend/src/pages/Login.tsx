@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useNotification } from '../context/useNotification'
 
 interface FormErrors {
   username?: string
@@ -106,14 +107,26 @@ export default function Login() {
     const data = await response.json()
     if (response.ok) {
       localStorage.setItem('token', data.token)
-      alert('Đăng nhập thành công')
+      showNotification({
+        message: 'Đăng nhập thành công',
+        type: 'SUCCESS',
+        duration: 3000,
+      })
       if (data.role === 'ROLE_CUSTOMER') navigate('/')
       else if (data.role === 'ROLE_ADMIN') navigate('/admin')
     } else {
       if (data.code == 'USR_003') {
-        alert('Mật khẩu không chính xác vui lòng thử lại')
+        showNotification({
+          message: 'Mật khẩu không chính xác vui lòng thử lại',
+          type: 'ERROR',
+          duration: 3000,
+        })
       } else if (data.code == 'USR_001') {
-        alert('Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
+        showNotification({
+          message: 'Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới',
+          type: 'ERROR',
+          duration: 3000,
+        })
       }
     }
 
@@ -126,6 +139,9 @@ export default function Login() {
     { content: 'Khách hàng tham gia', value: '50K+' },
     { content: 'Sản phẩm bán ra', value: '200K+' },
   ]
+
+  // NOTIFICATION
+  const { showNotification } = useNotification()
 
   return (
     <>

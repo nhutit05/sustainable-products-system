@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { UserRegister } from '../model/userRegister.model'
 import { useNavigate } from 'react-router-dom'
+import { useNotification } from '../context/useNotification'
 
 interface FormErrors {
   username?: string
@@ -50,6 +51,8 @@ export default function Signup() {
       nationalId: false,
     })
   }
+
+  const { showNotification } = useNotification()
 
   const validateField = (field: string, value: string): string | undefined => {
     switch (field) {
@@ -149,16 +152,32 @@ export default function Signup() {
     console.log('Response from server:', data)
     if (response.ok) {
       localStorage.setItem('token', data.token)
-      alert('Đăng ký tài khoản thành công')
+      showNotification({
+        message: 'Đăng ký tài khoản thành công',
+        type: 'SUCCESS',
+        duration: 3000,
+      })
       if (data.role === 'ROLE_CUSTOMER') navigate('/')
       else if (data.role === 'ROLE_ADMIN') navigate('/admin')
     } else {
       if (data.code == 'USR_003') {
-        alert('Mật khẩu không chính xác vui lòng thử lại')
+        showNotification({
+          message: 'Mật khẩu không chính xác vui lòng thử lại',
+          type: 'ERROR',
+          duration: 3000,
+        })
       } else if (data.code == 'USR_001') {
-        alert('Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
+        showNotification({
+          message: 'Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới',
+          type: 'ERROR',
+          duration: 3000,
+        })
       } else if (data.code == 'USR_004') {
-        alert('Tên đăng nhập đã tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
+        showNotification({
+          message: 'Tên đăng nhập đã tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới',
+          type: 'ERROR',
+          duration: 3000,
+        })
       }
     }
 

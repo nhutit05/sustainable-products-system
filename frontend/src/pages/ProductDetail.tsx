@@ -4,6 +4,7 @@ import type { ProductDetail, ProductImage } from '../model/product.model'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/ProductCardSuggest'
 import type { Cart } from '../model/cart.model'
+import { useNotification } from '../context/useNotification'
 
 export default function ProductDetail() {
   const location = useLocation()
@@ -43,6 +44,8 @@ export default function ProductDetail() {
       content: 'Miễn phí vận chuyển cho đơn hàng từ 5.000.000 đ',
     },
   ]
+
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     // Lay hinh anh san pham tu productId
@@ -157,9 +160,18 @@ export default function ProductDetail() {
         })
 
         if (response.ok) {
-          alert('Sản phẩm đã được thêm vào giỏ hàng thành công!')
+          showNotification({
+            message: 'Sản phẩm đã được thêm vào giỏ hàng thành công!',
+            type: 'SUCCESS',
+            duration: 3000,
+          })
         } else {
-          alert('Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.')
+          showNotification({
+            message: 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.',
+            type: 'ERROR',
+            duration: 3000,
+          })
+
           navigate(`/products/${productId}`)
         }
       } catch (error) {

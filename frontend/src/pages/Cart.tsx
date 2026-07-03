@@ -5,10 +5,12 @@ import type { CartItemResponse, Cart } from '../model/cart.model'
 import CartItem from '../components/CartItem'
 import type { paymentMethodResponse } from '../model/paymentMethod.model'
 import Checkout from '../components/Checkout'
+import { useNotification } from '../context/useNotification'
 
 export default function Cart() {
   // const [currentUser, setCurrentUser] = useState(null)
   const token = localStorage.getItem('token')
+  const { showNotification } = useNotification()
 
   const [cartItems, setCartItems] = useState<CartItemResponse[]>([])
 
@@ -75,7 +77,11 @@ export default function Cart() {
   const handleCheckout = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     if (!selectedPaymentMethod) {
-      alert('Vui lòng chọn phương thức thanh toán trước khi đặt hàng.')
+      showNotification({
+        message: 'Vui lòng chọn phương thức thanh toán trước khi đặt hàng.',
+        type: 'WARNING',
+        duration: 3000,
+      })
       return
     }
     setOnClose(false)
