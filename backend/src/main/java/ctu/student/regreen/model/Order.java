@@ -67,4 +67,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    @Column(name = "payos_order_code")
+    private Long payOSOrderCode;
 }

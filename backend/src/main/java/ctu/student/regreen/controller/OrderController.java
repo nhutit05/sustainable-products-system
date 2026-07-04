@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ctu.student.regreen.dto.request.OrderRequest;
+import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.service.interfaces.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class OrderController {
 
 
     @PostMapping("/checkout")
-    public OrderResponse checkout(@RequestBody OrderRequest request) {
+    public CheckoutResponse checkout(@RequestBody OrderRequest request) {
         return orderService.checkout(request);
     }
 

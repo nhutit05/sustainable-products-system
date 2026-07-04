@@ -7,9 +7,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import ctu.student.regreen.dto.request.OrderRequest;
+import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.enums.OrderStatusName;
 import ctu.student.regreen.enums.PaymentStatusName;
+import ctu.student.regreen.integration.payos.dto.PayOSCheckoutResult;
+import ctu.student.regreen.integration.payos.service.PayOSService;
 import ctu.student.regreen.mapper.OrderMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
@@ -57,6 +60,22 @@ public class OrderServiceImpl implements OrderService {
 
         private final OrderMapper orderMapper;
 
+        private final PayOSService payOSService;
+
+        private long calculatePayableAmount(Order order) {
+
+                long total = 0;
+
+                for (OrderItem item : order.getOrderItems()) {
+
+                        long price = Math.round(item.getPurchasedPrice());
+
+                        total += price * item.getQuantity();
+                }
+
+                return total;
+        }
+
         private Customer getCurrentCustomer() {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -81,7 +100,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         @Override
-        public OrderResponse checkout(OrderRequest request) {
+        public CheckoutResponse checkout(OrderRequest request) {
 
                 Customer customer = getCurrentCustomer();
 
@@ -151,7 +170,22 @@ public class OrderServiceImpl implements OrderService {
 
                 order.setOrderItems(items);
 
+                PayOSCheckoutResult checkout = null;
                 Order savedOrder = orderRepository.save(order);
+
+                if (paymentMethod.getOnline()) {
+
+                        long payableAmount = calculatePayableAmount(savedOrder);
+
+                        checkout = payOSService.createCheckout(
+                                        savedOrder,
+                                        payableAmount);
+
+                        savedOrder.setPayOSOrderCode(
+                                        checkout.getPayOSOrderCode());
+
+                        orderRepository.save(savedOrder);
+                }
 
                 Invoice invoice = new Invoice();
 
@@ -161,8 +195,21 @@ public class OrderServiceImpl implements OrderService {
                 invoiceRepository.save(
                                 invoice);
 
-                return orderMapper.toResponse(
-                                savedOrder);
+                return CheckoutResponse.builder()
+                                .order(orderMapper.toResponse(savedOrder))
+                                .checkoutUrl(
+                                                checkout != null
+                                                                ? checkout.getCheckoutUrl()
+                                                                : null)
+                                .qrCode(
+                                                checkout != null
+                                                                ? checkout.getQrCode()
+                                                                : null)
+                                .expiredAt(
+                                                checkout != null
+                                                                ? checkout.getExpiredAt()
+                                                                : null)
+                                .build();
         }
 
         @Override
@@ -219,7 +266,6 @@ public class OrderServiceImpl implements OrderService {
                         throw new RuntimeException("Order cannot be cancelled");
                 }
 
-                
                 order.setOrderStatus(cancelled);
 
                 return orderMapper.toResponse(orderRepository.save(order));

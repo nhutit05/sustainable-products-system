@@ -23,7 +23,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import ctu.student.regreen.dto.request.OrderRequest;
+import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.integration.payos.service.PayOSService;
 import ctu.student.regreen.mapper.OrderMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
@@ -51,460 +53,463 @@ import ctu.student.regreen.service.implement.OrderServiceImpl;
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
 
-    @Mock
-    private OrderRepository orderRepository;
+        @Mock
+        private OrderRepository orderRepository;
 
-    @Mock
-    private CustomerRepository customerRepository;
+        @Mock
+        private CustomerRepository customerRepository;
 
-    @Mock
-    private ProductRepository productRepository;
+        @Mock
+        private ProductRepository productRepository;
 
-    @Mock
-    private CartRepository cartRepository;
+        @Mock
+        private CartRepository cartRepository;
 
-    @Mock
-    private CartItemRepository cartItemRepository;
+        @Mock
+        private CartItemRepository cartItemRepository;
 
-    @Mock
-    private PaymentMethodRepository paymentMethodRepository;
+        @Mock
+        private PaymentMethodRepository paymentMethodRepository;
 
-    @Mock
-    private VoucherRepository voucherRepository;
+        @Mock
+        private VoucherRepository voucherRepository;
 
-    @Mock
-    private OrderStatusRepository orderStatusRepository;
+        @Mock
+        private OrderStatusRepository orderStatusRepository;
 
-    @Mock
-    private PaymentStatusRepository paymentStatusRepository;
+        @Mock
+        private PaymentStatusRepository paymentStatusRepository;
 
-    @Mock
-    private InvoiceRepository invoiceRepository;
+        @Mock
+        private InvoiceRepository invoiceRepository;
 
-    @Mock
-    private OrderMapper orderMapper;
+        @Mock
+        private OrderMapper orderMapper;
 
-    @InjectMocks
-    private OrderServiceImpl service;
+        @Mock
+        private PayOSService payOSService;
 
-    private Customer customer;
-    private Order order;
-    private OrderResponse response;
+        @InjectMocks
+        private OrderServiceImpl service;
 
-    @BeforeEach
-    void setUp() {
+        private Customer customer;
+        private Order order;
+        private OrderResponse response;
 
-        Authentication authentication = mock(Authentication.class);
+        @BeforeEach
+        void setUp() {
 
-        SecurityContext securityContext = mock(SecurityContext.class);
+                Authentication authentication = mock(Authentication.class);
 
-        when(authentication.getName())
-                .thenReturn("testuser");
+                SecurityContext securityContext = mock(SecurityContext.class);
 
-        when(securityContext.getAuthentication())
-                .thenReturn(authentication);
+                when(authentication.getName())
+                                .thenReturn("testuser");
 
-        SecurityContextHolder.setContext(
-                securityContext);
+                when(securityContext.getAuthentication())
+                                .thenReturn(authentication);
 
-        customer = new Customer();
-        customer.setUserId(1);
+                SecurityContextHolder.setContext(
+                                securityContext);
 
-        when(customerRepository
-                .findByUsername("testuser"))
-                .thenReturn(Optional.of(customer));
+                customer = new Customer();
+                customer.setUserId(1);
 
-        order = new Order();
+                when(customerRepository
+                                .findByUsername("testuser"))
+                                .thenReturn(Optional.of(customer));
 
-        response = mock(OrderResponse.class);
+                order = new Order();
 
-        lenient()
-                .when(orderMapper.toResponse(any()))
-                .thenReturn(response);
-    }
+                response = mock(OrderResponse.class);
 
-    private OrderStatus orderStatus(String name) {
+                lenient()
+                                .when(orderMapper.toResponse(any()))
+                                .thenReturn(response);
+        }
 
-        OrderStatus status = new OrderStatus();
-        status.setOrderStatusName(name);
+        private OrderStatus orderStatus(String name) {
 
-        return status;
-    }
+                OrderStatus status = new OrderStatus();
+                status.setOrderStatusName(name);
 
-    private PaymentStatus paymentStatus(String name) {
+                return status;
+        }
 
-        PaymentStatus status = new PaymentStatus();
-        status.setPaymentStatusName(name);
+        private PaymentStatus paymentStatus(String name) {
 
-        return status;
-    }
+                PaymentStatus status = new PaymentStatus();
+                status.setPaymentStatusName(name);
 
-    private PaymentMethod paymentMethod(boolean online) {
+                return status;
+        }
 
-        PaymentMethod method = new PaymentMethod();
-        method.setOnline(online);
+        private PaymentMethod paymentMethod(boolean online) {
 
-        return method;
-    }
+                PaymentMethod method = new PaymentMethod();
+                method.setOnline(online);
 
-    @Test
-    void getMyOrders_success() {
+                return method;
+        }
 
-        order.setCustomer(customer);
+        @Test
+        void getMyOrders_success() {
 
-        when(orderRepository
-                .findByCustomerUserId(1))
-                .thenReturn(List.of(order));
+                order.setCustomer(customer);
 
-        List<OrderResponse> result = service.getMyOrders();
+                when(orderRepository
+                                .findByCustomerUserId(1))
+                                .thenReturn(List.of(order));
 
-        assertEquals(1, result.size());
+                List<OrderResponse> result = service.getMyOrders();
 
-        verify(orderRepository)
-                .findByCustomerUserId(1);
-    }
+                assertEquals(1, result.size());
 
-    @Test
-    void getById_success() {
+                verify(orderRepository)
+                                .findByCustomerUserId(1);
+        }
 
-        order.setCustomer(customer);
+        @Test
+        void getById_success() {
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setCustomer(customer);
 
-        OrderResponse result = service.getById(1);
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        assertNotNull(result);
-    }
+                OrderResponse result = service.getById(1);
 
-    @Test
-    void getById_accessDenied_fail() {
+                assertNotNull(result);
+        }
 
-        Customer anotherCustomer = new Customer();
+        @Test
+        void getById_accessDenied_fail() {
 
-        anotherCustomer.setUserId(999);
+                Customer anotherCustomer = new Customer();
 
-        order.setCustomer(anotherCustomer);
+                anotherCustomer.setUserId(999);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setCustomer(anotherCustomer);
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.getById(1));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        assertEquals(
-                "Access denied",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.getById(1));
 
-    @Test
-    void cancel_pending_success() {
+                assertEquals(
+                                "Access denied",
+                                ex.getMessage());
+        }
 
-        Product product = new Product();
-        product.setInventory(10);
+        @Test
+        void cancel_pending_success() {
 
-        OrderItem item = new OrderItem();
-        item.setProduct(product);
-        item.setQuantity(2);
+                Product product = new Product();
+                product.setInventory(10);
 
-        order.setCustomer(customer);
-        order.setOrderItems(List.of(item));
-        order.setOrderStatus(
-                orderStatus("PENDING"));
+                OrderItem item = new OrderItem();
+                item.setProduct(product);
+                item.setQuantity(2);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setCustomer(customer);
+                order.setOrderItems(List.of(item));
+                order.setOrderStatus(
+                                orderStatus("PENDING"));
 
-        when(orderStatusRepository
-                .findByOrderStatusName("CANCELLED"))
-                .thenReturn(Optional.of(
-                        orderStatus("CANCELLED")));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        when(orderRepository.save(any()))
-                .thenReturn(order);
+                when(orderStatusRepository
+                                .findByOrderStatusName("CANCELLED"))
+                                .thenReturn(Optional.of(
+                                                orderStatus("CANCELLED")));
 
-        service.cancel(1);
+                when(orderRepository.save(any()))
+                                .thenReturn(order);
 
-        assertEquals(
-                12,
-                product.getInventory());
+                service.cancel(1);
 
-        assertEquals(
-                "CANCELLED",
-                order.getOrderStatus()
-                        .getOrderStatusName());
-    }
+                assertEquals(
+                                12,
+                                product.getInventory());
 
-    @Test
-    void cancel_alreadyCancelled_fail() {
+                assertEquals(
+                                "CANCELLED",
+                                order.getOrderStatus()
+                                                .getOrderStatusName());
+        }
 
-        order.setCustomer(customer);
+        @Test
+        void cancel_alreadyCancelled_fail() {
 
-        order.setOrderStatus(
-                orderStatus("CANCELLED"));
+                order.setCustomer(customer);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setOrderStatus(
+                                orderStatus("CANCELLED"));
 
-        when(orderStatusRepository
-                .findByOrderStatusName("CANCELLED"))
-                .thenReturn(Optional.of(
-                        orderStatus("CANCELLED")));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.cancel(1));
+                when(orderStatusRepository
+                                .findByOrderStatusName("CANCELLED"))
+                                .thenReturn(Optional.of(
+                                                orderStatus("CANCELLED")));
 
-        assertEquals(
-                "Order already cancelled",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.cancel(1));
 
-    @Test
-    void cancel_notPending_fail() {
+                assertEquals(
+                                "Order already cancelled",
+                                ex.getMessage());
+        }
 
-        order.setCustomer(customer);
+        @Test
+        void cancel_notPending_fail() {
 
-        order.setOrderStatus(
-                orderStatus("SHIPPING"));
+                order.setCustomer(customer);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setOrderStatus(
+                                orderStatus("SHIPPING"));
 
-        when(orderStatusRepository
-                .findByOrderStatusName("CANCELLED"))
-                .thenReturn(Optional.of(
-                        orderStatus("CANCELLED")));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.cancel(1));
+                when(orderStatusRepository
+                                .findByOrderStatusName("CANCELLED"))
+                                .thenReturn(Optional.of(
+                                                orderStatus("CANCELLED")));
 
-        assertEquals(
-                "Order cannot be cancelled",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.cancel(1));
 
-    @Test
-    void pay_online_success() {
+                assertEquals(
+                                "Order cannot be cancelled",
+                                ex.getMessage());
+        }
 
-        order.setCustomer(customer);
+        @Test
+        void pay_online_success() {
 
-        order.setPaymentMethod(
-                paymentMethod(true));
+                order.setCustomer(customer);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setPaymentMethod(
+                                paymentMethod(true));
 
-        when(paymentStatusRepository
-                .findByPaymentStatusName("PAID"))
-                .thenReturn(Optional.of(
-                        paymentStatus("PAID")));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        when(orderRepository.save(any()))
-                .thenReturn(order);
+                when(paymentStatusRepository
+                                .findByPaymentStatusName("PAID"))
+                                .thenReturn(Optional.of(
+                                                paymentStatus("PAID")));
 
-        service.pay(1);
+                when(orderRepository.save(any()))
+                                .thenReturn(order);
 
-        assertEquals(
-                "PAID",
-                order.getPaymentStatus()
-                        .getPaymentStatusName());
-    }
+                service.pay(1);
 
-    @Test
-    void pay_cod_fail() {
+                assertEquals(
+                                "PAID",
+                                order.getPaymentStatus()
+                                                .getPaymentStatusName());
+        }
 
-        order.setCustomer(customer);
+        @Test
+        void pay_cod_fail() {
 
-        order.setPaymentMethod(
-                paymentMethod(false));
+                order.setCustomer(customer);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setPaymentMethod(
+                                paymentMethod(false));
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.pay(1));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        assertEquals(
-                "COD order cannot be paid online",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.pay(1));
 
-    @Test
-    void pay_accessDenied_fail() {
+                assertEquals(
+                                "COD order cannot be paid online",
+                                ex.getMessage());
+        }
 
-        Customer anotherCustomer = new Customer();
+        @Test
+        void pay_accessDenied_fail() {
 
-        anotherCustomer.setUserId(99);
+                Customer anotherCustomer = new Customer();
 
-        order.setCustomer(anotherCustomer);
+                anotherCustomer.setUserId(99);
 
-        order.setPaymentMethod(
-                paymentMethod(true));
+                order.setCustomer(anotherCustomer);
 
-        when(orderRepository.findById(1))
-                .thenReturn(Optional.of(order));
+                order.setPaymentMethod(
+                                paymentMethod(true));
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.pay(1));
+                when(orderRepository.findById(1))
+                                .thenReturn(Optional.of(order));
 
-        assertEquals(
-                "Access denied",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.pay(1));
 
-    @Test
-    void checkout_success() {
+                assertEquals(
+                                "Access denied",
+                                ex.getMessage());
+        }
 
-        OrderRequest request = new OrderRequest();
+        @Test
+        void checkout_success() {
 
-        request.setOrderReceiver("Nguyen Van A");
-        request.setOrderReceiverPhone("0123456789");
-        request.setPaymentMethodId(1);
-        request.setProductIds(List.of(10));
+                OrderRequest request = new OrderRequest();
 
-        Cart cart = new Cart();
-        cart.setCartId(1);
+                request.setOrderReceiver("Nguyen Van A");
+                request.setOrderReceiverPhone("0123456789");
+                request.setPaymentMethodId(1);
+                request.setProductIds(List.of(10));
 
-        PaymentMethod paymentMethod = paymentMethod(false);
+                Cart cart = new Cart();
+                cart.setCartId(1);
 
-        Product product = new Product();
+                PaymentMethod paymentMethod = paymentMethod(false);
 
-        product.setProductId(10);
-        product.setProductName("Green Tea");
-        product.setProductPrice(100f);
-        product.setInventory(20);
+                Product product = new Product();
 
-        CartItem cartItem = new CartItem();
+                product.setProductId(10);
+                product.setProductName("Green Tea");
+                product.setProductPrice(100f);
+                product.setInventory(20);
 
-        cartItem.setId(
-                new CartItemId(1, 10));
+                CartItem cartItem = new CartItem();
 
-        cartItem.setQuantity(2);
+                cartItem.setId(
+                                new CartItemId(1, 10));
 
-        when(cartRepository
-                .findByCustomerUserId(1))
-                .thenReturn(Optional.of(cart));
+                cartItem.setQuantity(2);
 
-        when(paymentMethodRepository
-                .findById(1))
-                .thenReturn(Optional.of(paymentMethod));
+                when(cartRepository
+                                .findByCustomerUserId(1))
+                                .thenReturn(Optional.of(cart));
 
-        when(orderStatusRepository
-                .findByOrderStatusName("PENDING"))
-                .thenReturn(Optional.of(
-                        orderStatus("PENDING")));
+                when(paymentMethodRepository
+                                .findById(1))
+                                .thenReturn(Optional.of(paymentMethod));
 
-        when(paymentStatusRepository
-                .findByPaymentStatusName("UNPAID"))
-                .thenReturn(Optional.of(
-                        paymentStatus("UNPAID")));
+                when(orderStatusRepository
+                                .findByOrderStatusName("PENDING"))
+                                .thenReturn(Optional.of(
+                                                orderStatus("PENDING")));
 
-        when(cartItemRepository
-                .findById(new CartItemId(1, 10)))
-                .thenReturn(Optional.of(cartItem));
+                when(paymentStatusRepository
+                                .findByPaymentStatusName("UNPAID"))
+                                .thenReturn(Optional.of(
+                                                paymentStatus("UNPAID")));
 
-        when(productRepository.findById(10))
-                .thenReturn(Optional.of(product));
+                when(cartItemRepository
+                                .findById(new CartItemId(1, 10)))
+                                .thenReturn(Optional.of(cartItem));
 
-        when(orderRepository.save(any(Order.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
+                when(productRepository.findById(10))
+                                .thenReturn(Optional.of(product));
 
-        OrderResponse result = service.checkout(request);
+                when(orderRepository.save(any(Order.class)))
+                                .thenAnswer(inv -> inv.getArgument(0));
 
-        assertNotNull(result);
+                CheckoutResponse result = service.checkout(request);
 
-        assertEquals(
-                18,
-                product.getInventory());
+                assertNotNull(result);
 
-        verify(productRepository)
-                .save(product);
+                assertEquals(
+                                18,
+                                product.getInventory());
 
-        verify(cartItemRepository)
-                .delete(cartItem);
+                verify(productRepository)
+                                .save(product);
 
-        verify(invoiceRepository)
-                .save(any(Invoice.class));
-    }
+                verify(cartItemRepository)
+                                .delete(cartItem);
 
-    @Test
-    void checkout_noProductsSelected_fail() {
+                verify(invoiceRepository)
+                                .save(any(Invoice.class));
+        }
 
-        OrderRequest request = new OrderRequest();
+        @Test
+        void checkout_noProductsSelected_fail() {
 
-        request.setOrderReceiver("A");
-        request.setOrderReceiverPhone("0123456789");
-        request.setPaymentMethodId(1);
-        request.setProductIds(List.of());
+                OrderRequest request = new OrderRequest();
 
-        Cart cart = new Cart();
-        cart.setCartId(1);
+                request.setOrderReceiver("A");
+                request.setOrderReceiverPhone("0123456789");
+                request.setPaymentMethodId(1);
+                request.setProductIds(List.of());
 
-        when(cartRepository
-                .findByCustomerUserId(1))
-                .thenReturn(Optional.of(cart));
+                Cart cart = new Cart();
+                cart.setCartId(1);
 
-        when(paymentMethodRepository
-                .findById(1))
-                .thenReturn(Optional.of(
-                        paymentMethod(false)));
+                when(cartRepository
+                                .findByCustomerUserId(1))
+                                .thenReturn(Optional.of(cart));
 
-        when(orderStatusRepository
-                .findByOrderStatusName("PENDING"))
-                .thenReturn(Optional.of(
-                        orderStatus("PENDING")));
+                when(paymentMethodRepository
+                                .findById(1))
+                                .thenReturn(Optional.of(
+                                                paymentMethod(false)));
 
-        when(paymentStatusRepository
-                .findByPaymentStatusName("UNPAID"))
-                .thenReturn(Optional.of(
-                        paymentStatus("UNPAID")));
+                when(orderStatusRepository
+                                .findByOrderStatusName("PENDING"))
+                                .thenReturn(Optional.of(
+                                                orderStatus("PENDING")));
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.checkout(request));
+                when(paymentStatusRepository
+                                .findByPaymentStatusName("UNPAID"))
+                                .thenReturn(Optional.of(
+                                                paymentStatus("UNPAID")));
 
-        assertEquals(
-                "No products selected",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.checkout(request));
 
-    @Test
-    void checkout_voucherNotFound_fail() {
+                assertEquals(
+                                "No products selected",
+                                ex.getMessage());
+        }
 
-        OrderRequest request = new OrderRequest();
+        @Test
+        void checkout_voucherNotFound_fail() {
 
-        request.setOrderReceiver("A");
-        request.setOrderReceiverPhone("0123456789");
-        request.setPaymentMethodId(1);
-        request.setVoucherId(99);
-        request.setProductIds(List.of(10));
+                OrderRequest request = new OrderRequest();
 
-        Cart cart = new Cart();
+                request.setOrderReceiver("A");
+                request.setOrderReceiverPhone("0123456789");
+                request.setPaymentMethodId(1);
+                request.setVoucherId(99);
+                request.setProductIds(List.of(10));
 
-        when(cartRepository
-                .findByCustomerUserId(1))
-                .thenReturn(Optional.of(cart));
+                Cart cart = new Cart();
 
-        when(paymentMethodRepository
-                .findById(1))
-                .thenReturn(Optional.of(
-                        paymentMethod(false)));
+                when(cartRepository
+                                .findByCustomerUserId(1))
+                                .thenReturn(Optional.of(cart));
 
-        when(voucherRepository
-                .findById(99))
-                .thenReturn(Optional.empty());
+                when(paymentMethodRepository
+                                .findById(1))
+                                .thenReturn(Optional.of(
+                                                paymentMethod(false)));
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> service.checkout(request));
+                when(voucherRepository
+                                .findById(99))
+                                .thenReturn(Optional.empty());
 
-        assertEquals(
-                "Voucher not found",
-                ex.getMessage());
-    }
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.checkout(request));
+
+                assertEquals(
+                                "Voucher not found",
+                                ex.getMessage());
+        }
 }
