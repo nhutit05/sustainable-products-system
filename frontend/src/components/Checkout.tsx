@@ -118,7 +118,8 @@ export default function Checkout({
           type: 'SUCCESS',
           duration: 3000,
         })
-        navigate('/cart/payment-online')
+        const data = await response.json()
+        navigate(`/cart/${data.orderId}/payment-online`)
       }
     } else {
       showNotification({

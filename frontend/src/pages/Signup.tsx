@@ -13,8 +13,6 @@ interface FormErrors {
 }
 
 export default function Signup() {
-  const [formData, setFormData] = useState<UserRegister>()
-
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
@@ -124,14 +122,6 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!validateForm()) return
-
-    setFormData({
-      username: username,
-      password: password,
-      email: email,
-      numberPhone: numberPhone,
-      nationalId: nationalId,
-    })
 
     const response = await fetch('http://localhost:8080/api/auth/register', {
       method: 'POST',

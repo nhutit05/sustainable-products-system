@@ -10,7 +10,7 @@ interface NotificationState {
 }
 
 // Định nghĩa kiểu dữ liệu cho Context (Bao gồm dữ liệu và các hàm cập nhật state)
-interface NotificationContextType extends NotificationState {
+export interface NotificationContextType extends NotificationState {
   setNotification: (config: Partial<Omit<NotificationState, 'isOpen'>>) => void
   setIsOpen: (isOpen: boolean) => void
   showNotification: (

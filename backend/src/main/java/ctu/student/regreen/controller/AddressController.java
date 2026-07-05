@@ -19,7 +19,7 @@ public class AddressController {
     // [GET] /api/addresses
     @GetMapping
     public List<AddressResponse> getAllAddresses() {
-        return service.getAll();
+        return service.getMyAddresses();
     }
 
     // [GET] /api/addresses/{id}
@@ -28,23 +28,6 @@ public class AddressController {
         return service.getsByAddressId(id);
     }
 
-    // [GET] /api/addresses?customerId={customerId}
-    @GetMapping(params = "customerId")
-    public List<AddressResponse> getAllAddressesByCustomerId(@RequestParam Integer customerId) {
-        return service.getAllByCustomerId(customerId);
-    }
-    // [GET] /api/addresses?villageId={villageId}
-    @GetMapping(params = "villageId")
-    public List<AddressResponse> getAllAddressesByVillageId(@RequestParam Integer villageId)
-    {
-        return service.getAllByVillageId(villageId);
-    }
-
-    // [GET] /api/addresses/count
-    @GetMapping("/count")
-    public Integer countAddresses() {
-        return service.count();
-    }
 
     // [POST] /api/addresses
     @PostMapping
