@@ -19,4 +19,6 @@ public interface AdminRefundSlipService {
 
     RefundSlipResponse markRefunded(
             Integer refundSlipId);
+
+    RefundSlipResponse transferRefund(Integer refundSlipId);
 }

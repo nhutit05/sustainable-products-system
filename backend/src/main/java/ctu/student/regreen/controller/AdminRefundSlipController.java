@@ -2,6 +2,7 @@ package ctu.student.regreen.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +21,7 @@ public class AdminRefundSlipController {
     private final AdminRefundSlipService service;
 
     @GetMapping
-    public List<RefundSlipResponse>
-    getAllRefundSlips() {
+    public List<RefundSlipResponse> getAllRefundSlips() {
 
         return service.getAllRefundSlips();
     }
@@ -52,5 +52,13 @@ public class AdminRefundSlipController {
             @PathVariable Integer id) {
 
         return service.markRefunded(id);
+    }
+
+    @PatchMapping("/{id}/transfer")
+    public ResponseEntity<RefundSlipResponse> transferRefund(
+            @PathVariable Integer id) {
+
+        return ResponseEntity.ok(
+                service.transferRefund(id));
     }
 }

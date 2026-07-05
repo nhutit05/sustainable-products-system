@@ -512,4 +512,54 @@ class OrderServiceImplTest {
                                 "Voucher not found",
                                 ex.getMessage());
         }
+
+        @Test
+        void checkout_productOutOfStock_fail() {
+
+                OrderRequest request = new OrderRequest();
+
+                request.setOrderReceiver("A");
+                request.setOrderReceiverPhone("0123456789");
+                request.setPaymentMethodId(1);
+                request.setProductIds(List.of(10));
+
+                Cart cart = new Cart();
+                cart.setCartId(1);
+
+                CartItem cartItem = new CartItem();
+                cartItem.setId(new CartItemId(1, 10));
+                cartItem.setQuantity(5);
+
+                Product product = new Product();
+                product.setProductId(10);
+                product.setProductName("Green Tea");
+                product.setInventory(2);
+
+                when(cartRepository.findByCustomerUserId(1))
+                                .thenReturn(Optional.of(cart));
+
+                when(paymentMethodRepository.findById(1))
+                                .thenReturn(Optional.of(paymentMethod(false)));
+
+                when(orderStatusRepository.findByOrderStatusName("PENDING"))
+                                .thenReturn(Optional.of(orderStatus("PENDING")));
+
+                when(paymentStatusRepository.findByPaymentStatusName("UNPAID"))
+                                .thenReturn(Optional.of(paymentStatus("UNPAID")));
+
+                when(cartItemRepository.findById(new CartItemId(1, 10)))
+                                .thenReturn(Optional.of(cartItem));
+
+                when(productRepository.findById(10))
+                                .thenReturn(Optional.of(product));
+
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.checkout(request));
+
+                assertEquals(
+                                "Green Tea is out of stock",
+                                ex.getMessage());
+        }
+
 }

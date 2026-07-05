@@ -4,4 +4,5 @@ public interface PayOSWebhookService {
 
     void handle(Object webhook);
 
+    void confirm(String webhookUrl);
 }

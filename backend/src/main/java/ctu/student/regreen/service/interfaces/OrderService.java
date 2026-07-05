@@ -20,4 +20,6 @@ public interface OrderService {
                         Integer id);
 
         OrderResponse pay(Integer id);
+
+        CheckoutResponse repay(Integer orderId);
 }

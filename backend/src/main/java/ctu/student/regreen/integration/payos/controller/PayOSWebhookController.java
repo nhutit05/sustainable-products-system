@@ -19,9 +19,21 @@ public class PayOSWebhookController {
     @PostMapping("/webhook")
     public ResponseEntity<Void> webhook(
             @RequestBody Object webhook) {
+        
+        System.out.println("========== WEBHOOK RECEIVED ==========");
 
         webhookService.handle(webhook);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/webhook/confirm")
+    public ResponseEntity<String> confirmWebhook() {
+
+        String webhookUrl = "https://encounter-trustee-contest.ngrok-free.dev/api/payos/webhook";
+
+        webhookService.confirm(webhookUrl);
+
+        return ResponseEntity.ok("Webhook confirmed.");
     }
 }

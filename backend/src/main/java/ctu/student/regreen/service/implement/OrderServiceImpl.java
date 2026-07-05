@@ -99,6 +99,56 @@ public class OrderServiceImpl implements OrderService {
                                 .orElseThrow(() -> new RuntimeException("Payment status not found"));
         }
 
+        private PayOSCheckoutResult processOnlinePayment(Order order) {
+
+                if (!order.getPaymentMethod().getOnline()) {
+                        return null;
+                }
+
+                long payableAmount = calculatePayableAmount(order);
+
+                PayOSCheckoutResult checkout = payOSService.createCheckout(
+                                order,
+                                payableAmount);
+
+                order.setPayOSOrderCode(
+                                checkout.getPayOSOrderCode());
+
+                orderRepository.save(order);
+
+                return checkout;
+        }
+
+        private CheckoutResponse buildCheckoutResponse(
+                        Order order,
+                        PayOSCheckoutResult checkout) {
+
+                return CheckoutResponse.builder()
+                                .order(orderMapper.toResponse(order))
+                                .checkoutUrl(
+                                                checkout != null
+                                                                ? checkout.getCheckoutUrl()
+                                                                : null)
+                                .qrCode(
+                                                checkout != null
+                                                                ? checkout.getQrCode()
+                                                                : null)
+                                .expiredAt(
+                                                checkout != null
+                                                                ? checkout.getExpiredAt()
+                                                                : null)
+                                .build();
+        }
+
+        private void createInvoice(Order order) {
+
+                Invoice invoice = new Invoice();
+
+                invoice.setOrder(order);
+
+                invoiceRepository.save(invoice);
+        }
+
         @Override
         public CheckoutResponse checkout(OrderRequest request) {
 
@@ -170,46 +220,99 @@ public class OrderServiceImpl implements OrderService {
 
                 order.setOrderItems(items);
 
-                PayOSCheckoutResult checkout = null;
                 Order savedOrder = orderRepository.save(order);
 
-                if (paymentMethod.getOnline()) {
+                PayOSCheckoutResult checkout = processOnlinePayment(savedOrder);
 
-                        long payableAmount = calculatePayableAmount(savedOrder);
+                createInvoice(savedOrder);
 
-                        checkout = payOSService.createCheckout(
-                                        savedOrder,
-                                        payableAmount);
+                return buildCheckoutResponse(savedOrder, checkout);
+        }
 
-                        savedOrder.setPayOSOrderCode(
-                                        checkout.getPayOSOrderCode());
+        @Override
+        @Transactional
+        public CheckoutResponse repay(Integer orderId) {
+                Customer customer = getCurrentCustomer();
 
-                        orderRepository.save(savedOrder);
+                Order oldOrder = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new RuntimeException("Order not found."));
+
+                checkOwnership(oldOrder, customer);
+
+                if (!oldOrder.getPaymentMethod().getOnline()) {
+                        throw new RuntimeException("This order is not online payment.");
                 }
 
-                Invoice invoice = new Invoice();
+                if (!PaymentStatusName.FAILED.name()
+                                .equals(oldOrder.getPaymentStatus().getPaymentStatusName())) {
+                        throw new RuntimeException("Order cannot be repaid.");
+                }
 
-                invoice.setOrder(
-                                savedOrder);
+                if (!OrderStatusName.CANCELLED.name()
+                                .equals(oldOrder.getOrderStatus().getOrderStatusName())) {
+                        throw new RuntimeException("Order cannot be repaid.");
+                }
 
-                invoiceRepository.save(
-                                invoice);
+                Order newOrder = new Order();
 
-                return CheckoutResponse.builder()
-                                .order(orderMapper.toResponse(savedOrder))
-                                .checkoutUrl(
-                                                checkout != null
-                                                                ? checkout.getCheckoutUrl()
-                                                                : null)
-                                .qrCode(
-                                                checkout != null
-                                                                ? checkout.getQrCode()
-                                                                : null)
-                                .expiredAt(
-                                                checkout != null
-                                                                ? checkout.getExpiredAt()
-                                                                : null)
-                                .build();
+                newOrder.setCustomer(oldOrder.getCustomer());
+
+                newOrder.setOrderReceiver(oldOrder.getOrderReceiver());
+
+                newOrder.setOrderReceiverPhone(oldOrder.getOrderReceiverPhone());
+
+                newOrder.setPaymentMethod(oldOrder.getPaymentMethod());
+
+                newOrder.setVoucher(oldOrder.getVoucher());
+
+                newOrder.setOrderStatus(
+                                getOrderStatus(OrderStatusName.PENDING));
+
+                newOrder.setPaymentStatus(
+                                getPaymentStatus(PaymentStatusName.UNPAID));
+
+                List<OrderItem> items = new ArrayList<>();
+
+                for (OrderItem oldItem : oldOrder.getOrderItems()) {
+
+                        Product product = productRepository
+                                        .findById(oldItem.getProduct().getProductId())
+                                        .orElseThrow();
+
+                        if (product.getInventory() < oldItem.getQuantity()) {
+                                throw new RuntimeException(
+                                                product.getProductName() + " is out of stock");
+                        }
+
+                        product.setInventory(
+                                        product.getInventory() - oldItem.getQuantity());
+
+                        productRepository.save(product);
+
+                        OrderItem newItem = new OrderItem();
+
+                        newItem.setOrder(newOrder);
+
+                        newItem.setProduct(product);
+
+                        newItem.setQuantity(oldItem.getQuantity());
+
+                        newItem.setPurchasedPrice(oldItem.getPurchasedPrice());
+
+                        items.add(newItem);
+                }
+
+                newOrder.setOrderItems(items);
+
+                Order savedOrder = orderRepository.save(newOrder);
+
+                PayOSCheckoutResult checkout = processOnlinePayment(savedOrder);
+
+                createInvoice(savedOrder);
+
+                return buildCheckoutResponse(
+                                savedOrder,
+                                checkout);
         }
 
         @Override

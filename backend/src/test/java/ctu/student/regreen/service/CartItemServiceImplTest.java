@@ -34,218 +34,232 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CartItemServiceImplTest {
 
-    @Mock
-    private CartItemRepository repository;
+        @Mock
+        private CartItemRepository repository;
 
-    @Mock
-    private CartRepository cartRepository;
+        @Mock
+        private CartRepository cartRepository;
 
-    @Mock
-    private ProductRepository productRepository;
+        @Mock
+        private ProductRepository productRepository;
 
-    @Mock
-    private CartItemMapper mapper;
+        @Mock
+        private CartItemMapper mapper;
 
-    @InjectMocks
-    private CartItemServiceImpl service;
+        @InjectMocks
+        private CartItemServiceImpl service;
 
-    private Cart cart;
-    private Product product;
-    private CartItem item;
-    private CartItemResponse response;
+        private Cart cart;
+        private Product product;
+        private CartItem item;
+        private CartItemResponse response;
 
-    @BeforeEach
-    void setUp() {
+        @BeforeEach
+        void setUp() {
 
-        Authentication authentication =
-                mock(Authentication.class);
+                Authentication authentication = mock(Authentication.class);
 
-        SecurityContext securityContext =
-                mock(SecurityContext.class);
+                SecurityContext securityContext = mock(SecurityContext.class);
 
-        when(authentication.getName())
-                .thenReturn("testuser");
+                when(authentication.getName())
+                                .thenReturn("testuser");
 
-        when(securityContext.getAuthentication())
-                .thenReturn(authentication);
+                when(securityContext.getAuthentication())
+                                .thenReturn(authentication);
 
-        SecurityContextHolder.setContext(
-                securityContext);
+                SecurityContextHolder.setContext(
+                                securityContext);
 
-        cart = new Cart();
-        cart.setCartId(1);
+                cart = new Cart();
+                cart.setCartId(1);
 
-        product = new Product();
-        product.setProductId(10);
+                product = new Product();
+                product.setProductId(10);
+                product.setProductName("Sản phẩm tái chế");
+                product.setInventory(10);
 
-        item = new CartItem();
-        item.setId(
-                new CartItemId(1, 10));
-        item.setCart(cart);
-        item.setProduct(product);
-        item.setQuantity(2);
+                item = new CartItem();
+                item.setId(
+                                new CartItemId(1, 10));
+                item.setCart(cart);
+                item.setProduct(product);
+                item.setQuantity(2);
 
-        response =
-                mock(CartItemResponse.class);
+                response = mock(CartItemResponse.class);
 
-        lenient().when(cartRepository
-                .findByCustomerUsername("testuser"))
-                .thenReturn(Optional.of(cart));
+                lenient().when(cartRepository
+                                .findByCustomerUsername("testuser"))
+                                .thenReturn(Optional.of(cart));
 
-        lenient()
-                .when(mapper.toResponse(any()))
-                .thenReturn(response);
-    }
+                lenient()
+                                .when(mapper.toResponse(any()))
+                                .thenReturn(response);
+        }
 
-    @Test
-    void add_newItem_success() {
+        @Test
+        void add_newItem_success() {
 
-        CartItemRequest request =
-                new CartItemRequest();
+                CartItemRequest request = new CartItemRequest();
 
-        request.setProductId(10);
-        request.setQuantity(3);
+                request.setProductId(10);
+                request.setQuantity(3);
 
-        when(productRepository.findById(10))
-                .thenReturn(Optional.of(product));
+                when(productRepository.findById(10))
+                                .thenReturn(Optional.of(product));
 
-        when(repository.findById(any()))
-                .thenReturn(Optional.empty());
+                when(repository.findById(any()))
+                                .thenReturn(Optional.empty());
 
-        when(repository.save(any()))
-                .thenAnswer(i -> i.getArgument(0));
+                when(repository.save(any()))
+                                .thenAnswer(i -> i.getArgument(0));
 
-        CartItemResponse result =
+                CartItemResponse result = service.add(request);
+
+                assertNotNull(result);
+
+                verify(repository)
+                                .save(any());
+        }
+
+        @Test
+        void add_existingItem_success() {
+
+                CartItemRequest request = new CartItemRequest();
+
+                request.setProductId(10);
+                request.setQuantity(3);
+
+                when(productRepository.findById(10))
+                                .thenReturn(Optional.of(product));
+
+                when(repository.findById(any()))
+                                .thenReturn(Optional.of(item));
+
+                when(repository.save(any()))
+                                .thenAnswer(i -> i.getArgument(0));
+
                 service.add(request);
 
-        assertNotNull(result);
+                assertEquals(
+                                5,
+                                item.getQuantity());
+        }
 
-        verify(repository)
-                .save(any());
-    }
+        @Test
+        void add_productNotFound_fail() {
 
-    @Test
-    void add_existingItem_success() {
+                CartItemRequest request = new CartItemRequest();
 
-        CartItemRequest request =
-                new CartItemRequest();
+                request.setProductId(10);
+                request.setQuantity(1);
 
-        request.setProductId(10);
-        request.setQuantity(3);
+                when(productRepository.findById(10))
+                                .thenReturn(Optional.empty());
 
-        when(productRepository.findById(10))
-                .thenReturn(Optional.of(product));
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.add(request));
 
-        when(repository.findById(any()))
-                .thenReturn(Optional.of(item));
+                assertEquals(
+                                "Product not found",
+                                ex.getMessage());
+        }
 
-        when(repository.save(any()))
-                .thenAnswer(i -> i.getArgument(0));
+        @Test
+        void getMyCartItems_success() {
 
-        service.add(request);
+                when(repository.findByCartCartId(1))
+                                .thenReturn(List.of(item));
 
-        assertEquals(
-                5,
-                item.getQuantity());
-    }
+                List<CartItemResponse> result = service.getMyCartItems();
 
-    @Test
-    void add_productNotFound_fail() {
+                assertEquals(
+                                1,
+                                result.size());
+        }
 
-        CartItemRequest request =
-                new CartItemRequest();
+        @Test
+        void update_success() {
 
-        request.setProductId(10);
-        request.setQuantity(1);
+                when(repository.findById(any()))
+                                .thenReturn(Optional.of(item));
 
-        when(productRepository.findById(10))
-                .thenReturn(Optional.empty());
+                when(repository.save(any()))
+                                .thenAnswer(i -> i.getArgument(0));
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.add(request));
-
-        assertEquals(
-                "Product not found",
-                ex.getMessage());
-    }
-
-    @Test
-    void getMyCartItems_success() {
-
-        when(repository.findByCartCartId(1))
-                .thenReturn(List.of(item));
-
-        List<CartItemResponse> result =
-                service.getMyCartItems();
-
-        assertEquals(
-                1,
-                result.size());
-    }
-
-    @Test
-    void update_success() {
-
-        when(repository.findById(any()))
-                .thenReturn(Optional.of(item));
-
-        when(repository.save(any()))
-                .thenAnswer(i -> i.getArgument(0));
-
-        service.update(
-                10,
-                7);
-
-        assertEquals(
-                7,
-                item.getQuantity());
-    }
-
-    @Test
-    void update_itemNotFound_fail() {
-
-        when(repository.findById(any()))
-                .thenReturn(Optional.empty());
-
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.update(
+                service.update(
                                 10,
-                                5));
+                                7);
 
-        assertEquals(
-                "Cart item not found",
-                ex.getMessage());
-    }
+                assertEquals(
+                                7,
+                                item.getQuantity());
+        }
 
-    @Test
-    void delete_success() {
+        @Test
+        void update_itemNotFound_fail() {
 
-        when(repository.findById(any()))
-                .thenReturn(Optional.of(item));
+                when(repository.findById(any()))
+                                .thenReturn(Optional.empty());
 
-        service.delete(10);
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.update(
+                                                10,
+                                                5));
 
-        verify(repository)
-                .delete(item);
-    }
+                assertEquals(
+                                "Cart item not found",
+                                ex.getMessage());
+        }
 
-    @Test
-    void delete_itemNotFound_fail() {
+        @Test
+        void delete_success() {
 
-        when(repository.findById(any()))
-                .thenReturn(Optional.empty());
+                when(repository.findById(any()))
+                                .thenReturn(Optional.of(item));
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.delete(10));
+                service.delete(10);
 
-        assertEquals(
-                "Cart item not found",
-                ex.getMessage());
-    }
+                verify(repository)
+                                .delete(item);
+        }
+
+        @Test
+        void delete_itemNotFound_fail() {
+
+                when(repository.findById(any()))
+                                .thenReturn(Optional.empty());
+
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.delete(10));
+
+                assertEquals(
+                                "Cart item not found",
+                                ex.getMessage());
+        }
+
+        @Test
+        void add_insufficientInventory_fail() {
+
+                CartItemRequest request = new CartItemRequest();
+                request.setProductId(10);
+                request.setQuantity(5);
+
+                product.setInventory(2);
+
+                when(productRepository.findById(10))
+                                .thenReturn(Optional.of(product));
+
+                RuntimeException ex = assertThrows(
+                                RuntimeException.class,
+                                () -> service.add(request));
+
+                assertEquals(
+                                "Not enough stock. Available: "  + product.getInventory(),
+                                ex.getMessage());
+
+                verify(repository, never()).save(any());
+        }
 }
