@@ -48,7 +48,14 @@ export default function CustomerLayout() {
             <Route path=":productId" element={<ProductDetail />} />
           </Route>
 
-          <Route path="cart" element={<Cart />} />
+          <Route
+            path="cart"
+            element={
+              <CustomerProvider>
+                <Cart />
+              </CustomerProvider>
+            }
+          />
           <Route path="cart/:id/payment-online" element={<PaymentOnline />} />
           <Route
             path="profile"

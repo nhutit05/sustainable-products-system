@@ -15,11 +15,9 @@ export default function Profile() {
 
   const location = useLocation()
 
-  const { customerData, setCustomerData } = useCustomer()
+  const { token, customerData, setCustomerData } = useCustomer()
 
   const [user, setUser] = useState<meResponse | null>(null)
-
-  const token = localStorage.getItem('token')
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -76,16 +74,6 @@ export default function Profile() {
     fetchCustomer()
   }, [user?.username, token, setCustomerData])
 
-  const handleSignOut = () => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn đăng xuất không?')
-    if (confirmed) {
-      // Perform sign out logic here (e.g., clear user session, redirect to login page)
-      console.log('User signed out')
-      localStorage.removeItem('token')
-      navigate('/login')
-    }
-  }
-
   //   list navbar
   const navbarItems = [
     {
@@ -109,6 +97,7 @@ export default function Profile() {
       icon: <Heart className="w-5 h-5" />,
     },
   ]
+
   return (
     <div className="profile-page mt-12 p-4 bg-emerald-50">
       <div className="max-w-7xl mx-auto">
@@ -163,7 +152,21 @@ export default function Profile() {
           </section>
 
           <section className="p-4 bg-white rounded-2xl shadow col-span-2">
-            <Outlet />
+            {token ? (
+              <Outlet />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                  Bạn cần đăng nhập để truy cập trang này.
+                </h3>
+                <button
+                  onClick={() => navigate('/login', { state: { from: location } })}
+                  className="px-4 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 hover:cursor-pointer transition-colors"
+                >
+                  Đăng nhập
+                </button>
+              </div>
+            )}
           </section>
         </main>
       </div>

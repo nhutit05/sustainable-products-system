@@ -31,7 +31,7 @@ public class Address {
     private String addressStreet;
 
     @Column(nullable = false, name = "is_default")
-    private Boolean isDefault = false;
+    private Boolean isDefault;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "village_id", nullable = false)
