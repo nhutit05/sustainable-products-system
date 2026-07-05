@@ -1,6 +1,7 @@
 import { Heart, Leaf, Sprout } from 'lucide-react'
-import type { ProductIntroduce } from '../model/product'
+import type { ProductIntroduce } from '../model/product.model'
 import { useNavigate } from 'react-router-dom'
+import heroImage from '../assets/hero.png'
 
 interface ProductCardProps {
   product: ProductIntroduce
@@ -20,9 +21,10 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       <div className="product_card--image h-52 overflow-hidden bg-green-100 relative">
         <img
-          src={product.productImage}
+          src={product.productImage || heroImage}
           alt={product.productName}
           className="product-img object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+          loading="lazy"
         />
 
         <button
@@ -38,7 +40,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
       <div className="product_card--content p-3">
         <h2 className="text-sm text-green-800 uppercase mb-2">{product.categoryName}</h2>
-        <h3 className="text-lg font-semibold text-green-900 mb-2">{product.productName}</h3>
+        <h3 className="text-lg font-semibold text-green-900 mb-2 line-clamp-1">
+          {product.productName}
+        </h3>
         <p className="text-2xl font-bold text-emerald-600 relative">
           {product.productPrice.toLocaleString('vi-VN')} ₫
           <span className="text-lg absolute bottom-0 right-2 flex items-center gap-2 bg-teal-50 px-3 rounded-full">

@@ -2,20 +2,17 @@ package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.request.AddressRequest;
 import ctu.student.regreen.dto.response.AddressResponse;
+import ctu.student.regreen.model.Customer;
 
 import java.util.List;
 
 
 public interface AddressService {
-    List<AddressResponse> getAll();
+    Customer getCurrentCustomer();
 
-    List<AddressResponse> getAllByCustomerId(Integer customerId);
-
-    List<AddressResponse> getAllByVillageId(Integer villageId);
+    List<AddressResponse> getMyAddresses();
 
     AddressResponse getsByAddressId(Integer id);
-
-    Integer count();
 
     AddressResponse create(AddressRequest address);
 

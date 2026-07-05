@@ -35,12 +35,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // Kich hoat CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
+//                        Cho phep tat ca cac request OPTIONS (dung cho preflight request cua CORS)
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                         // ================= AUTH =================
                         .requestMatchers("/api/auth/**").permitAll()
@@ -55,10 +60,11 @@ public class SecurityConfig {
                         // ================= CUSTOMER AUTH REQUIRED =================
                         .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/refund-slips/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/cart", "/api/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/payment-methods/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/customers/**").hasRole("CUSTOMER")
                         // .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
                         // .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
 
@@ -69,11 +75,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/reviews/**").permitAll()
                         .requestMatchers("/api/cloudinary/**").permitAll()
 
-                                                .requestMatchers(
-                                                                "/swagger-ui/**",
-                                                                "/v3/api-docs/**",
-                                                                "/swagger-ui.html")
-                                                .permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html")
+                        .permitAll()
                         .requestMatchers("/api/banks").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/cities").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/villages").hasAnyRole("CUSTOMER", "ADMIN")

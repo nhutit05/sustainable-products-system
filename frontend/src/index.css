@@ -5,8 +5,7 @@
   margin: 0 auto;
   text-align: center;
   border-inline: 1px solid var(--border);
-  min-height: 110vh;
-  display: flex;
+  /* min-height: 110vh; */
   box-sizing: border-box;
 }
 
@@ -34,4 +33,41 @@ ul {
 
 .bg-primary {
   background: linear-gradient(135deg, #10b981, #0d9488);
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInOutOnce {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.fade-in-out {
+  animation: fadeInOut 3s ease-in-out infinite;
+}
+
+.fade-in-out-once {
+  animation: fadeInOutOnce 3s ease-in-out forwards;
+}
+
+.bg-noti {
+  background: rgba(255, 255, 255, 0.8); /* White with 80% opacity */
+  backdrop-filter: blur(12px);
 }

@@ -19,25 +19,23 @@ import java.util.List;
 public class VillageServiceImpl implements VillageService {
 
     private final VillageRepository repository;
-    private final CityRepository cityRepository;
 
     private final VillageMapper villageMapper;
 
+
     public VillageResponse create(VillageRequest request) {
-        cityRepository.findById(request.getCityRequest().getCityId()).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.CITY_NOT_FOUND));
         Village entity = villageMapper.toEntity(request);
         return villageMapper.toResponse(repository.save(entity));
     }
 
-    public List<VillageResponse> getAllVillages() {
-        return repository.findAll()
+    public List<VillageResponse> getAllVillages(Integer cityId) {
+        return repository.findByCityCityId(cityId)
                 .stream()
-                .map(villageMapper::toResponse).toList();
+                .map(villageMapper::toResponse)
+                .toList();
+
     }
 
-    public int getCountVillages() {
-        return repository.findAll().size();
-    }
 
     public VillageResponse getVillageById(Integer id) {
         Village entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.VILLAGE_NOT_FOUND));

@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useNotification } from '../context/useNotification'
+
+interface FormErrors {
+  username?: string
+  password?: string
+}
 
 export default function Login() {
   const navigate = useNavigate()
@@ -9,45 +15,118 @@ export default function Login() {
   const [username, setUsername] = useState<string>('')
 
   const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<{ username: boolean; password: boolean }>({
+    username: false,
+    password: false,
+  })
 
   const clear = () => {
     setPassword('')
     setUsername('')
+    setErrors({})
+    setTouched({ username: false, password: false })
   }
 
   const handleShowPassword = () => {
     setShowPassword(!showPassword)
   }
 
+  // Validate từng trường
+  const validateField = (field: string, value: string): string | undefined => {
+    switch (field) {
+      case 'username':
+        if (!value.trim()) return 'Tên đăng nhập không được để trống'
+        if (value.trim().length < 3) return 'Tên đăng nhập phải có ít nhất 3 ký tự'
+        return undefined
+      case 'password':
+        if (!value) return 'Mật khẩu không được để trống'
+        if (value.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự'
+        return undefined
+      default:
+        return undefined
+    }
+  }
+
+  // Validate toàn bộ form
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {
+      username: validateField('username', username),
+      password: validateField('password', password),
+    }
+    setErrors(newErrors)
+    setTouched({ username: true, password: true })
+    return !newErrors.username && !newErrors.password
+  }
+
+  // Xử lý thay đổi giá trị + validate real-time
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setUsername(value)
+    if (touched.username) {
+      setErrors((prev) => ({ ...prev, username: validateField('username', value) }))
+    }
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setPassword(value)
+    if (touched.password) {
+      setErrors((prev) => ({ ...prev, password: validateField('password', value) }))
+    }
+  }
+
+  // Xử lý blur để bắt đầu hiển thị lỗi
+  const handleBlur = (field: 'username' | 'password') => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+    const value = field === 'username' ? username : password
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (!validateForm()) return
 
     const dataForm = {
       username: username,
       password: password,
     }
 
-    console.log(JSON.stringify(dataForm))
-
     const response = await fetch('http://localhost:8080/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(dataForm),
+      body: JSON.stringify({
+        username: dataForm.username,
+        password: dataForm.password,
+      }),
     })
 
     const data = await response.json()
     if (response.ok) {
       localStorage.setItem('token', data.token)
-      alert('Đăng nhập thành công')
+      showNotification({
+        message: 'Đăng nhập thành công',
+        type: 'SUCCESS',
+        duration: 3000,
+      })
       if (data.role === 'ROLE_CUSTOMER') navigate('/')
       else if (data.role === 'ROLE_ADMIN') navigate('/admin')
     } else {
       if (data.code == 'USR_003') {
-        alert('Mật khẩu không chính xác vui lòng thử lại')
+        showNotification({
+          message: 'Mật khẩu không chính xác vui lòng thử lại',
+          type: 'ERROR',
+          duration: 3000,
+        })
       } else if (data.code == 'USR_001') {
-        alert('Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới')
+        showNotification({
+          message: 'Tên đăng nhập không tồn tại vui lòng thử lại! Hoặc tạo tài khoản mới',
+          type: 'ERROR',
+          duration: 3000,
+        })
       }
     }
 
@@ -60,6 +139,9 @@ export default function Login() {
     { content: 'Khách hàng tham gia', value: '50K+' },
     { content: 'Sản phẩm bán ra', value: '200K+' },
   ]
+
+  // NOTIFICATION
+  const { showNotification } = useNotification()
 
   return (
     <>
@@ -105,7 +187,7 @@ export default function Login() {
               </button>
             </div>
             <p className="text-sm text-green-900">or</p>
-            <form className="signup-form text-left" onSubmit={handleSubmit}>
+            <form className="signup-form text-left" onSubmit={handleSubmit} noValidate>
               <div className="form-group grid grid-cols-1 text-left">
                 <label htmlFor="username" className="form-label">
                   Tên đăng nhập:{' '}
@@ -113,11 +195,19 @@ export default function Login() {
                 <input
                   type="text"
                   id="username"
-                  className="form-input text-md bg-white border border-green-200 rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none focus:border-green-800"
+                  className={`form-input text-md bg-white border rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none ${
+                    touched.username && errors.username
+                      ? 'border-red-400 focus:border-red-500'
+                      : 'border-green-200 focus:border-green-800'
+                  }`}
                   placeholder="Nhập tên đăng nhập của bạn ..."
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={handleUsernameChange}
+                  onBlur={() => handleBlur('username')}
                 />
+                {touched.username && errors.username && (
+                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+                )}
               </div>
 
               <div className="gap-4 grid grid-cols-1 text-left mt-4">
@@ -129,10 +219,15 @@ export default function Login() {
                     <input
                       type={showPassword ? 'text' : 'password'}
                       id="password"
-                      className="form-input text-md w-full bg-white border border-green-200 rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none focus:border-green-800"
+                      className={`form-input text-md w-full bg-white border rounded-2xl p-2.5 placeholder:text-gray-400 text-green-900 focus:outline-none ${
+                        touched.password && errors.password
+                          ? 'border-red-400 focus:border-red-500'
+                          : 'border-green-200 focus:border-green-800'
+                      }`}
                       placeholder="Nhập mật khẩu ..."
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={handlePasswordChange}
+                      onBlur={() => handleBlur('password')}
                     />
 
                     {showPassword ? (
@@ -147,6 +242,9 @@ export default function Login() {
                       />
                     )}
                   </div>
+                  {touched.password && errors.password && (
+                    <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                  )}
                 </div>
               </div>
 

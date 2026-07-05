@@ -17,6 +17,7 @@ public class AdminProductController {
 
     @PostMapping
     public ProductResponse create(@RequestBody ProductRequest request) {
+
         return service.create(request);
     }
 

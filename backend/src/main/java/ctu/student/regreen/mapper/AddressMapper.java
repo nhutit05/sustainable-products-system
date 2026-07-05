@@ -21,8 +21,10 @@ public class AddressMapper {
                 address.getAddressName(),
                 address.getAddressStreet(),
                 address.getIsDefault(),
-                villageMapper.toResponse(address.getVillage()),
-                customerMapper.toResponse(address.getCustomer())
+                address.getVillage().getVillageId(),
+                address.getVillage().getVillageName(),
+                address.getVillage().getCity().getCityId(),
+                address.getVillage().getCity().getCityName()
         );
     }
 

@@ -22,16 +22,16 @@ public class VillageController {
     // [GET] /api/villages
     @GetMapping
     @PreAuthorize("permitAll")
-    public List<VillageResponse> getAllVillages() {
-        return service.getAllVillages();
+    public List<VillageResponse> getAllVillages(@RequestParam(value = "cityId") Integer cityId) {
+        return service.getAllVillages(cityId);
     }
 
-    // [GET] /api/villages?name={name}
-    @GetMapping(params = "name")
-    @PreAuthorize("permitAll")
-    public VillageResponse getAllVillagesByName(@RequestParam String name) {
-        return service.getVillageByName(name);
-    }
+//    // [GET] /api/villages?name={name}
+//    @GetMapping(params = "name")
+//    @PreAuthorize("permitAll")
+//    public VillageResponse getAllVillagesByName(@RequestParam String name) {
+//        return service.getVillageByName(name);
+//    }
 
 
     // [GET] /api/villages/{id}
@@ -39,13 +39,6 @@ public class VillageController {
     @PreAuthorize("permitAll")
     public VillageResponse getVillageById(@PathVariable Integer id) {
         return service.getVillageById(id);
-    }
-
-    // [GET] /api/villages/count
-    @GetMapping("/count")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Integer countVillages() {
-        return service.getCountVillages();
     }
 
     // [POST] /api/villages

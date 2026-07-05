@@ -8,6 +8,13 @@ import Profile from '../pages/Profile'
 import Footer from '../components/Footer'
 import Products from '../pages/Products'
 import ProductDetail from '../pages/ProductDetail'
+import Cart from '../pages/Cart'
+import { useEffect } from 'react'
+import PaymentOnline from '../components/PaymentOnline'
+import { CustomerProvider } from '../context/CustomerContext'
+import ProfileInfo from '../components/ProfileInfo'
+import ProfileAddress from '../components/ProfileAddress'
+// import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
@@ -18,8 +25,17 @@ export default function CustomerLayout() {
     { label: 'About Us', to: '/about' },
   ]
 
+  const location = window.location.pathname
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  }, [location])
+
   return (
-    <div className="page-customer container">
+    <div className="page-customer container mx-auto ">
       <header className="header-cus ">
         <Navbar NAV_LINKS={NAV_LINKS} />
       </header>
@@ -32,8 +48,28 @@ export default function CustomerLayout() {
             <Route path=":productId" element={<ProductDetail />} />
           </Route>
 
-          <Route path="cart" element={<h1>Cart</h1>} />
-          <Route path="profile" element={<Profile />} />
+          <Route
+            path="cart"
+            element={
+              <CustomerProvider>
+                <Cart />
+              </CustomerProvider>
+            }
+          />
+          <Route path="cart/:id/payment-online" element={<PaymentOnline />} />
+          <Route
+            path="profile"
+            element={
+              <CustomerProvider>
+                <Profile />
+              </CustomerProvider>
+            }
+          >
+            <Route path="" element={<ProfileInfo />} />
+            <Route path="orders" element={<h1>Đơn hàng của tôi</h1>} />
+            <Route path="addresses" element={<ProfileAddress />} />
+            <Route path="favorites" element={<h1>Sản phẩm yêu thích</h1>} />
+          </Route>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />
           <Route path="carbon-calculator" element={<h1>Carbon Calculator</h1>} />

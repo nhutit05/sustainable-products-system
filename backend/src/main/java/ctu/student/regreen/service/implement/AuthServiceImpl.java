@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
 public AuthResponse register(RegisterRequest request) {
 
     if (userRepository.existsByUsername(request.getUsername())) {
-        throw new RuntimeException("Username already exists");
+        throw new ResourceNotFoundException(ErrorCode.USERNAME_ALREADY_EXISTS);
     }
 
     Customer customer = new Customer();

@@ -12,7 +12,7 @@ public interface CustomerService {
 
     CustomerResponse getById(Integer id);
 
-    CustomerResponse getByUsername(String username, String password);
+    CustomerResponse getByUsername(String username);
 
     CustomerResponse update(Integer id, CustomerRequest request);
 
