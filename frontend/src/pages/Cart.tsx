@@ -6,10 +6,12 @@ import CartItem from '../components/CartItem'
 import type { paymentMethodResponse } from '../model/paymentMethod.model'
 import Checkout from '../components/Checkout'
 import { useNotification } from '../context/useNotification'
+import { useCustomer } from '../context/useCustomer'
 
 export default function Cart() {
   // const [currentUser, setCurrentUser] = useState(null)
-  const token = localStorage.getItem('token')
+  const { token } = useCustomer()
+
   const { showNotification } = useNotification()
 
   const [cartItems, setCartItems] = useState<CartItemResponse[]>([])
@@ -137,125 +139,140 @@ export default function Cart() {
           </div>
         </header>
         {/* Cart Content */}
-        <main className="cart-main grid grid-cols-3 gap-6">
-          <main className="cart-content grid col-span-2 rounded-2xl">
-            {/* Summary eco points and carbon_index reduce */}
-            <div className="cart_summary--note bg-emerald-50 rounded-2xl border border-emerald-200 p-4 mb-6">
-              <p className="text-emerald-700">
-                <Leaf className="inline-block mr-2" size={22} />
-                Bạn sẽ nhận được <span className="font-bold"> 150 </span> điểm sinh thái và giảm{' '}
-                <span className="font-bold">0.5kg</span> khí thải carbon khi hoàn thành đơn hàng
-                này.
-              </p>
-            </div>
+        <main className="cart-main ">
+          {token ? (
+            <div className="grid grid-cols-3 gap-6">
+              <main className="cart-content grid col-span-2 rounded-2xl">
+                {/* Summary eco points and carbon_index reduce */}
+                <div className="cart_summary--note bg-emerald-50 rounded-2xl border border-emerald-200 p-4 mb-6">
+                  <p className="text-emerald-700">
+                    <Leaf className="inline-block mr-2" size={22} />
+                    Bạn sẽ nhận được <span className="font-bold"> 150 </span> điểm sinh thái và giảm{' '}
+                    <span className="font-bold">0.5kg</span> khí thải carbon khi hoàn thành đơn hàng
+                    này.
+                  </p>
+                </div>
 
-            {/* Cart list items */}
-            <div className="cart_list">
-              {cartItems.length > 0 ? (
-                cartItems.map((item) => (
-                  <CartItem
-                    key={item.productId}
-                    item={item}
-                    onQuantityChange={handleQuantityChange}
-                    onRemove={handleRemoveItem}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">Giỏ hàng của bạn đang trống.</p>
-              )}
-            </div>
-          </main>
-
-          <aside className="cart-aside grid col-s rounded-2xl">
-            <div className=" bg-white rounded-2xl border border-emerald-200 p-4">
-              <h2 className="text-xl font-bold text-green-900 mb-4">Tóm tắt đơn hàng</h2>
-
-              {/* TINH TIEN HANG */}
-              <div className="cart-aside--summary">
-                <p className="text-md text-gray-700 mb2">
-                  Tổng tiền tạm tính:{' '}
-                  <span className="text-xl font-bold mx-2 text-red-500">
-                    {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      totalPrice
-                    )}
-                  </span>
-                </p>
-              </div>
-
-              {/* LUA CHON PHUONG THUC THANH*/}
-              <div className="cart-aside--payment mt-4 p-4 rounded-2xl bg-emerald-50/80">
-                <h3 className="text-md font-semibold text-green-900 mb-4">
-                  Phương thức thanh toán
-                </h3>
-                <select
-                  name=""
-                  id=""
-                  className="w-full border border-gray-200 rounded-2xl p-3 text-gray-400"
-                  onChange={(e) => setSelectedPaymentMethod(Number(e.target.value))}
-                >
-                  <option value="" className="text-gray-400">
-                    Chọn phương thức thanh toán
-                  </option>
-                  {paymentMethods.length === 0 ? (
-                    <option value="" className="text-gray-400">
-                      Không có phương thức thanh toán nào
-                    </option>
-                  ) : (
-                    paymentMethods.map((method) => (
-                      <option
-                        key={method.paymentMethodId}
-                        value={method.paymentMethodId}
-                        className=""
-                      >
-                        {method.paymentMethodName} ({method.paymentMethodId})
-                      </option>
+                {/* Cart list items */}
+                <div className="cart_list">
+                  {cartItems.length > 0 ? (
+                    cartItems.map((item) => (
+                      <CartItem
+                        key={item.productId}
+                        item={item}
+                        onQuantityChange={handleQuantityChange}
+                        onRemove={handleRemoveItem}
+                      />
                     ))
+                  ) : (
+                    <p className="text-gray-500">Giỏ hàng của bạn đang trống.</p>
                   )}
-                </select>
-              </div>
+                </div>
+              </main>
 
-              {/* TIEN VAN CHUYEN */}
-              <div className="cart-aside--summary my-3">
-                <p className="text-md text-gray-700 mb2">
-                  Tổng tiền vận chuyển:{' '}
-                  <span className="text-md font-bold mx-2 text-red-500">free</span>
-                </p>
-              </div>
+              <aside className="cart-aside grid col-s rounded-2xl">
+                <div className=" bg-white rounded-2xl border border-emerald-200 p-4">
+                  <h2 className="text-xl font-bold text-green-900 mb-4">Tóm tắt đơn hàng</h2>
 
-              {/* TONG ECO POINT */}
-              <div className="cart-aside--summary my-3">
-                <p className="text-md text-gray-700 mb-2 flex items-center gap-2">
-                  Eco points <Plus className="inline-block mr-2 h-6 w-6" size={22} /> :{' '}
-                  <span className="text-md font-bold mx-2 text-emerald-500 flex items-center gap-1">
-                    <Leaf className="inline-block mr-2" size={20} />
-                    {totalPrice / 1000} Eco points
-                  </span>
-                </p>
-              </div>
+                  {/* TINH TIEN HANG */}
+                  <div className="cart-aside--summary">
+                    <p className="text-md text-gray-700 mb2">
+                      Tổng tiền tạm tính:{' '}
+                      <span className="text-xl font-bold mx-2 text-red-500">
+                        {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                          totalPrice
+                        )}
+                      </span>
+                    </p>
+                  </div>
 
-              {/* TONG TIEN TOAN BO */}
-              <div className="cart-aside--summary mt-6 border-t border-gray-200 pt-3">
-                <p className="text-lg text-gray-700 mb-2 font-semibold">
-                  Tổng tiền thanh toán:{' '}
-                  <span className="text-xl font-bold m-2 text-red-500">
-                    {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      totalPrice
-                    )}
-                  </span>
-                </p>
-              </div>
+                  {/* LUA CHON PHUONG THUC THANH*/}
+                  <div className="cart-aside--payment mt-4 p-4 rounded-2xl bg-emerald-50/80">
+                    <h3 className="text-md font-semibold text-green-900 mb-4">
+                      Phương thức thanh toán
+                    </h3>
+                    <select
+                      name=""
+                      id=""
+                      className="w-full border border-gray-200 rounded-2xl p-3 text-gray-400"
+                      onChange={(e) => setSelectedPaymentMethod(Number(e.target.value))}
+                    >
+                      <option value="" className="text-gray-400">
+                        Chọn phương thức thanh toán
+                      </option>
+                      {paymentMethods.length === 0 ? (
+                        <option value="" className="text-gray-400">
+                          Không có phương thức thanh toán nào
+                        </option>
+                      ) : (
+                        paymentMethods.map((method) => (
+                          <option
+                            key={method.paymentMethodId}
+                            value={method.paymentMethodId}
+                            className=""
+                          >
+                            {method.paymentMethodName} ({method.paymentMethodId})
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
 
-              {/* DAT HANG */}
-              <div className="cart-aside--checkout mt-12">
-                <button
-                  onClick={(e) => handleCheckout(e)}
-                  className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-emerald-600 transition-colors hover:cursor-pointer hover:scale-102"
-                >
-                  Đặt hàng
-                </button>
-              </div>
+                  {/* TIEN VAN CHUYEN */}
+                  <div className="cart-aside--summary my-3">
+                    <p className="text-md text-gray-700 mb2">
+                      Tổng tiền vận chuyển:{' '}
+                      <span className="text-md font-bold mx-2 text-red-500">free</span>
+                    </p>
+                  </div>
+
+                  {/* TONG ECO POINT */}
+                  <div className="cart-aside--summary my-3">
+                    <p className="text-md text-gray-700 mb-2 flex items-center gap-2">
+                      Eco points <Plus className="inline-block mr-2 h-6 w-6" size={22} /> :{' '}
+                      <span className="text-md font-bold mx-2 text-emerald-500 flex items-center gap-1">
+                        <Leaf className="inline-block mr-2" size={20} />
+                        {totalPrice / 1000} Eco points
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* TONG TIEN TOAN BO */}
+                  <div className="cart-aside--summary mt-6 border-t border-gray-200 pt-3">
+                    <p className="text-lg text-gray-700 mb-2 font-semibold">
+                      Tổng tiền thanh toán:{' '}
+                      <span className="text-xl font-bold m-2 text-red-500">
+                        {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                          totalPrice
+                        )}
+                      </span>
+                    </p>
+                  </div>
+
+                  {/* DAT HANG */}
+                  <div className="cart-aside--checkout mt-12">
+                    <button
+                      onClick={(e) => handleCheckout(e)}
+                      className="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl hover:bg-emerald-600 transition-colors hover:cursor-pointer hover:scale-102"
+                    >
+                      Đặt hàng
+                    </button>
+                  </div>
+                </div>
+              </aside>
             </div>
-          </aside>
+          ) : (
+            <div className="col-span-3 flex flex-col items-center justify-center gap-4">
+              <h2 className="text-2xl font-bold text-green-900">Bạn chưa đăng nhập</h2>
+              <p className="text-gray-500">Vui lòng đăng nhập để xem giỏ hàng của bạn.</p>
+              <Link
+                to="/login"
+                className="bg-primary text-white font-bold py-2 px-4 rounded-xl hover:bg-emerald-600 transition-colors hover:cursor-pointer hover:scale-102"
+              >
+                Đăng nhập
+              </Link>
+            </div>
+          )}
         </main>
         {!onClose && (
           <Checkout

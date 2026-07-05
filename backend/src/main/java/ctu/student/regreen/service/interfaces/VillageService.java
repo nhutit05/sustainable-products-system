@@ -9,7 +9,7 @@ import java.util.List;
 public interface VillageService {
     VillageResponse create(VillageRequest request);
 
-    List<VillageResponse> getAllVillages();
+    List<VillageResponse> getAllVillages(Integer cityId);
 
     VillageResponse getVillageById(Integer id);
 
@@ -19,5 +19,5 @@ public interface VillageService {
 
     boolean deleteVillage(Integer id);
 
-    int getCountVillages();
+//    int getCountVillages();
 }

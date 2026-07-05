@@ -17,7 +17,8 @@ public class VillageMapper {
                 village.getVillageId(),
                 village.getVillageName(),
                 village.getVillageLevel(),
-                cityMapper.toResponse(village.getCity())
+                village.getCity().getCityId(),
+                village.getCity().getCityName()
         );
     }
 

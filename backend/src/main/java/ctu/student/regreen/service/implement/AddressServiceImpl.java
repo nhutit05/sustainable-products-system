@@ -62,11 +62,17 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressResponse create(AddressRequest address) {
+        Customer customer = getCurrentCustomer();
+
         Village village = villageRepository.findById(address.getVillageId())
                 .orElseThrow(() -> new RuntimeException("Village not found"));
 
-        Customer customer = customerRepository.findById(address.getUserId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+
+        Address existingDefaultAddress = repository.findByIsDefaultAndCustomerUserId(true, customer.getUserId()).orElse(null);
+        if (existingDefaultAddress != null && address.getIsDefault()) {
+            existingDefaultAddress.setIsDefault(false);
+            repository.save(existingDefaultAddress);
+        }
 
         Address entity = addressMapper.toEntity(address, village, customer);
         return addressMapper.toResponse(repository.save(entity));
@@ -74,14 +80,21 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressResponse update(Integer id, AddressRequest address) {
+        Customer customer = getCurrentCustomer();
+
         Address entity = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
 
         Village village = villageRepository.findById(address.getVillageId())
                 .orElseThrow(() -> new RuntimeException("Village not found"));
 
-        Customer customer = customerRepository.findById(address.getUserId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        if(address.getIsDefault() == true) {
+            Address existingDefaultAddress = repository.findByIsDefaultAndCustomerUserId(true, customer.getUserId()).orElse(null);
+            if (existingDefaultAddress != null && address.getIsDefault()) {
+                existingDefaultAddress.setIsDefault(false);
+                repository.save(existingDefaultAddress);
+            }
+        }
 
         addressMapper.update(entity, address, village, customer);
         return addressMapper.toResponse(repository.save(entity));

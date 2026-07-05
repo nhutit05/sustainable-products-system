@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
-import type { Address } from '../model/address.model'
+import type { Addressresponse } from '../model/address.model'
 import { Plus, X } from 'lucide-react'
 import AddressItem from './AddressItem'
+import AddNewAddress from './AddNewAddress'
+import UpdateAddress from './UpdateAddress'
 
 export default function ProfileAddress() {
-  const [addresses, setAddresses] = useState<Address[]>([])
+  const [addresses, setAddresses] = useState<Addressresponse[]>([])
 
   const token = localStorage.getItem('token')
+
+  const [selectedAddress, setSelectedAddress] = useState<Addressresponse | null>(null)
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -29,26 +33,12 @@ export default function ProfileAddress() {
     if (token) {
       fetchAddresses()
     }
-  }, [token])
-
-  const fakeAddresses: Address = {
-    addressId: 1,
-    addressName: 'Nhà riêng',
-    addressStreet: '123 Đường ABC',
-    isDefault: true,
-    villageId: 1,
-    villageName: 'Phường 1',
-    cityId: 1,
-    cityName: 'TP. HCM',
-  }
+  }, [token, addresses])
 
   const [showUpdateAddress, setShowUpdateAddress] = useState(false)
 
   const [showAddAddress, setShowAddAddress] = useState(false)
 
-  const handleSubmitAddress = async () => {
-    console.log('submit address')
-  }
   return (
     <div className="profileAddress">
       <header className="border-b border-green-100 pb-4 pt-2 px-3 mb-4 text-left flex items-center justify-between">
@@ -57,8 +47,15 @@ export default function ProfileAddress() {
 
       <main className="addr_list grid-cols-2 gap-4 grid">
         {/* ADDRESSES LIST */}
-        <AddressItem address={fakeAddresses} setShowUpdate={setShowUpdateAddress} />
-        <AddressItem address={fakeAddresses} setShowUpdate={setShowUpdateAddress} />
+        {addresses.length > 0 &&
+          addresses.map((address) => (
+            <AddressItem
+              key={address.addressId}
+              address={address}
+              setShowUpdate={setShowUpdateAddress}
+              setSelectedAddress={setSelectedAddress}
+            />
+          ))}
         {/* DEAFAULT ADDRESS */}
 
         <div
@@ -72,41 +69,11 @@ export default function ProfileAddress() {
       </main>
 
       {/* ADD ADDRESS MODAL */}
-      {showAddAddress ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-300/70 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
-            <h2 className="text-lg font-bold mb-4">Thêm địa chỉ mới</h2>
-            <form onSubmit={handleSubmitAddress}>
-              <div className="mb-4">
-                <label htmlFor="addressName" className="block text-gray-700 font-semibold mb-2">
-                  Tên địa chỉ
-                </label>
-                <input
-                  type="text"
-                  id="addressName"
-                  name="addressName"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="addressStreet" className="block text-gray-700 font-semibold mb-2">
-                  Địa chỉ
-                </label>
-                <input
-                  type="text"
-                  id="addressStreet"
-                  name="addressStreet"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring focus:border-blue-500"
-                />
-              </div>
-            </form>
+      {showAddAddress ? <AddNewAddress setShowAddAddress={setShowAddAddress} /> : null}
 
-            <X
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
-              onClick={() => setShowAddAddress(false)}
-            />
-          </div>
-        </div>
+      {/* UPDATE ADDRESS MODAL */}
+      {showUpdateAddress && selectedAddress ? (
+        <UpdateAddress address={selectedAddress} setShowUpdateAddress={setShowUpdateAddress} />
       ) : null}
     </div>
   )

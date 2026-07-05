@@ -1,14 +1,20 @@
 import { MapPin, SquarePen } from 'lucide-react'
-import type { Address } from '../model/address.model'
+import type { Addressresponse } from '../model/address.model'
 
 interface AddressItemProps {
-  address: Address
+  address: Addressresponse
   setShowUpdate: (value: boolean) => void
+  setSelectedAddress: (address: Addressresponse) => void
 }
 
-export default function AddressItem({ address, setShowUpdate }: AddressItemProps) {
+export default function AddressItem({
+  address,
+  setShowUpdate,
+  setSelectedAddress,
+}: AddressItemProps) {
   return (
     <div
+      onClick={() => setSelectedAddress(address)}
       className={`addrItem flex items-center justify-between p-3 border  rounded-2xl bg-white text-left ${address.isDefault ? 'border-emerald-600 shadow-xs shadow-emerald-50' : 'border-gray-400'}`}
     >
       <div className="">
