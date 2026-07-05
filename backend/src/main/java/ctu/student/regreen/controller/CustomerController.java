@@ -23,17 +23,22 @@ public class CustomerController {
         return service.getAll();
     }
 
+    @GetMapping("me")
+    public CustomerResponse getCustomerByUsername(@RequestParam(value = "username") String username) {
+        return service.getByUsername(username);
+    }
+
     // [GET] /api/customers/{id}
     @GetMapping("/{id}")
     public CustomerResponse getCustomerById(@PathVariable Integer id) {
         return service.getById(id);
     }
 
-    // [POST] /api/customers/auth
-    @PostMapping("/auth")
-    public CustomerResponse getCustomerByUsername(@RequestBody LoginRequest request) {
-        return service.getByUsername(request.getUsername(), request.getPassword());
-    }
+//    // [POST] /api/customers/auth
+//    @PostMapping("/auth")
+//    public CustomerResponse getCustomerByUsername(@RequestBody LoginRequest request) {
+//        return service.getByUsername(request.getUsername(), request.getPassword());
+//    }
 
     // [POST] /api/customers
     @PostMapping

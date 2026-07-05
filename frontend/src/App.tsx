@@ -5,6 +5,7 @@ import CustomerLayout from './layouts/CustomerLayout'
 import AdminLayout from './layouts/AdminLayout'
 import { useEffect } from 'react'
 import { jwtDecode } from 'jwt-decode'
+import Notification from './components/Notification'
 
 function App() {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ function App() {
   }, [navigate])
   return (
     <div className="app ">
+      <Notification />
       <Routes>
         <Route path="/*" element={<CustomerLayout />} />
 

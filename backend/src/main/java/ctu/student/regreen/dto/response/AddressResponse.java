@@ -14,7 +14,11 @@ public class AddressResponse {
 
     private Boolean isDefault;
 
-    private VillageResponse village;
+    private Integer villageId;
+    private String villageName;
 
-    private CustomerResponse customer;
+    private Integer cityId;
+    private String cityName;
+
+//    private CustomerResponse customer;
 }

@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import type { voucherResponse } from '../model/voucher.model'
 import { PaymentMethodName } from '../enum/PaymentMethod.enum'
 import { useNavigate } from 'react-router-dom'
+import { useNotification } from '../context/useNotification'
 
 interface CheckoutProps {
   cartItems: CartItemResponse[]
@@ -14,8 +15,6 @@ interface CheckoutProps {
 }
 
 export default function Checkout({
-  //   onClose,
-  //   onConfirm,
   cartItems,
   totalPrice,
   paymentMethodId,
@@ -40,6 +39,9 @@ export default function Checkout({
   const token = localStorage.getItem('token')
 
   const [valueSale, setValueSale] = useState<number>(0)
+
+  // SHOW NOTIFICATION
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     const totalDiscount = () => {
@@ -104,14 +106,27 @@ export default function Checkout({
 
     if (response.ok) {
       if (paymentMethodId === 2) {
-        alert('Đặt hàng thành công!')
+        showNotification({
+          message: 'Đặt hàng thành công!',
+          type: 'SUCCESS',
+          duration: 3000,
+        })
         navigate('/home')
       } else {
-        alert('Đặt hàng thành công! Vui lòng thanh toán trực tuyến.')
-        navigate('/cart/payment-online')
+        showNotification({
+          message: 'Đặt hàng thành công! Vui lòng thanh toán trực tuyến.',
+          type: 'SUCCESS',
+          duration: 3000,
+        })
+        const data = await response.json()
+        navigate(`/cart/${data.orderId}/payment-online`)
       }
     } else {
-      alert('Đặt hàng thất bại. Vui lòng thử lại.')
+      showNotification({
+        message: 'Đặt hàng thất bại. Vui lòng thử lại.',
+        type: 'ERROR',
+        duration: 3000,
+      })
       navigate('/cart')
     }
   }

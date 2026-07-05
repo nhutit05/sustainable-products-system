@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/payment-methods/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/customers/**").hasRole("CUSTOMER")
                         // .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
                         // .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
 
