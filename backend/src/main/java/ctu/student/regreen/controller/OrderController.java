@@ -1,4 +1,5 @@
 package ctu.student.regreen.controller;
+
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ctu.student.regreen.dto.request.OrderRequest;
+import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.service.interfaces.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +25,8 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
     private final OrderService orderService;
 
-
-
     @PostMapping("/checkout")
-    public OrderResponse checkout(@RequestBody OrderRequest request) {
+    public CheckoutResponse checkout(@RequestBody OrderRequest request) {
         return orderService.checkout(request);
     }
 
@@ -48,5 +48,12 @@ public class OrderController {
     @PatchMapping("/{id}/pay")
     public OrderResponse pay(@PathVariable Integer id) {
         return orderService.pay(id);
+    }
+
+    @PostMapping("/{orderId}/repay")
+    public CheckoutResponse repay(
+            @PathVariable Integer orderId) {
+
+        return orderService.repay(orderId);
     }
 }

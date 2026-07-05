@@ -2,6 +2,7 @@ package ctu.student.regreen.service.implement;
 
 import ctu.student.regreen.dto.response.RefundSlipResponse;
 import ctu.student.regreen.enums.RefundStatusName;
+import ctu.student.regreen.integration.payos.service.PayOSPayoutService;
 import ctu.student.regreen.mapper.RefundSlipMapper;
 import ctu.student.regreen.model.RefundSlip;
 import ctu.student.regreen.model.RefundStatus;
@@ -25,6 +26,8 @@ public class AdminRefundSlipServiceImpl
         private final RefundStatusRepository refundStatusRepository;
 
         private final RefundSlipMapper refundSlipMapper;
+
+        private final PayOSPayoutService payOSPayoutService;
 
         @Override
         public List<RefundSlipResponse> getAllRefundSlips() {
@@ -73,6 +76,38 @@ public class AdminRefundSlipServiceImpl
                 return updateStatus(
                                 refundSlipId,
                                 RefundStatusName.REFUNDED);
+        }
+
+        @Override
+        public RefundSlipResponse transferRefund(Integer refundSlipId) {
+
+                RefundSlip refundSlip = refundSlipRepository.findById(refundSlipId)
+                                .orElseThrow(() -> new RuntimeException("Refund slip not found"));
+
+                validateTransition(
+                                RefundStatusName.valueOf(refundSlip.getRefundStatus().getRefundStatusName()),
+                                RefundStatusName.REFUNDED);
+
+                Long refundAmount = Math.round(
+                                refundSlip.getOrder().getOrderItems().stream()
+                                                .mapToDouble(item -> item.getPurchasedPrice() * item.getQuantity())
+                                                .sum());
+
+                payOSPayoutService.transfer(
+                                refundSlip.getRefundSlipId(),
+                                refundSlip.getBank().getBankId(),
+                                refundSlip.getBankNumber(),
+                                refundAmount,
+                                "Refund order #" + refundSlip.getOrder().getOrderId());
+
+                RefundStatus refundedStatus = refundStatusRepository
+                                .findByRefundStatusName(RefundStatusName.REFUNDED.name())
+                                .orElseThrow(() -> new RuntimeException("Refund status not found"));
+
+                refundSlip.setRefundStatus(refundedStatus);
+
+                return refundSlipMapper.toResponse(
+                                refundSlipRepository.save(refundSlip));
         }
 
         private RefundSlipResponse updateStatus(

@@ -5,7 +5,6 @@ import ctu.student.regreen.mapper.CityMapper;
 import ctu.student.regreen.model.City;
 import ctu.student.regreen.repository.CityRepository;
 import ctu.student.regreen.service.implement.CityServiceImpl;
-import ctu.student.regreen.service.interfaces.CityService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
-
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 import static org.springframework.test.util.AssertionErrors.assertNotNull;

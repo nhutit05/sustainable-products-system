@@ -50,6 +50,7 @@ public class SecurityConfig {
                         // ================= AUTH =================
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
+                        .requestMatchers("/api/payos/**").permitAll()
 
                         // ================= ADMIN ONLY =================
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

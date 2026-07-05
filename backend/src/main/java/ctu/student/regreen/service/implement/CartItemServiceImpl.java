@@ -38,6 +38,8 @@ public class CartItemServiceImpl implements CartItemService {
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
     }
 
+    //
+
     @Override
     public CartItemResponse add(CartItemRequest request) {
 
@@ -50,14 +52,36 @@ public class CartItemServiceImpl implements CartItemService {
 
         CartItem item = repository.findById(id).orElse(null);
 
+        int requestedQuantity = request.getQuantity();
+
+        // Kiểm tra số lượng hợp lệ
+        if (requestedQuantity <= 0) {
+            throw new RuntimeException("Quantity must be greater than 0");
+        }
+
         if (item != null) {
-            item.setQuantity(item.getQuantity() + request.getQuantity());
+            int newQuantity = item.getQuantity() + requestedQuantity;
+
+            // Kiểm tra tồn kho
+            if (newQuantity > product.getInventory()) {
+                throw new RuntimeException(
+                        "Not enough stock. Available: " + product.getInventory());
+            }
+
+            item.setQuantity(newQuantity);
         } else {
+
+            // Kiểm tra tồn kho
+            if (requestedQuantity > product.getInventory()) {
+                throw new RuntimeException(
+                        "Not enough stock. Available: " + product.getInventory());
+            }
+
             item = new CartItem();
             item.setId(id);
             item.setCart(cart);
             item.setProduct(product);
-            item.setQuantity(request.getQuantity());
+            item.setQuantity(requestedQuantity);
         }
 
         return mapper.toResponse(repository.save(item));
