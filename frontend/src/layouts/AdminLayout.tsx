@@ -14,6 +14,7 @@ import { Route, Routes } from 'react-router-dom'
 import AdminDashboard from '../pages/AdminDashboard'
 import AdminSystemCategories from '../pages/AdminSystemCategories'
 import AdminOrders from '../pages/AdminOrders'
+import AdminProducts from '../pages/AdminProducts'
 
 export default function AdminLayout() {
   // Set danh sach NAV_LINKS
@@ -101,9 +102,9 @@ export default function AdminLayout() {
         <AdminNavbar NAV_LINKS={NAV_LINKS} />
       </header>
 
-      <main className="main-adm text-left bg-emerald-50 rounded-2xl p-4 grid col-span-3 max-h-screen overflow-y-scroll scrollbar-thin scrollbar-thumb-emerald-300 scrollbar-track-emerald-100">
+      <main className=" main-adm text-left bg-emerald-50 rounded-2xl grid col-span-3 max-h-screen overflow-y-scroll scrollbar-thin scrollbar-thumb-emerald-300 scrollbar-track-emerald-100">
         {/* DASHBOARD HEADER */}
-        <header className="adm_dashboard-header shadow-xs bg-white pl-4 mb-4 p-4 fixed top-0 left-96 right-0 z-10 border-b border-emerald-100">
+        <header className="adm_dashboard-header shadow-xs bg-white pl-4 mb-4 p-4 sticky top-0 left-0 right-0 z-10 max-h-fit border-b border-emerald-100">
           <h2 className="text-3xl font-bold text-green-900 uppercase">
             {NAV_LINKS.flatMap((link) => link.child_links).find(
               (childLink) => childLink.to === location
@@ -117,7 +118,7 @@ export default function AdminLayout() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="reports" element={<h1>Reports</h1>} />
           <Route path="categories" element={<AdminSystemCategories />} />
-          <Route path="products" element={<h1>Products</h1>} />
+          <Route path="products" element={<AdminProducts />} />
           <Route path="warehouses" element={<h1>Warehouses</h1>} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="refunds" element={<h1>Refunds</h1>} />
