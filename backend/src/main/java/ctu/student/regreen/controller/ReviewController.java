@@ -48,18 +48,18 @@ public class ReviewController {
         return service.getAllByProductId(productId);
     }
 
-    // [GET] /api/products/{productId}/reviews/count
-    @GetMapping("/api/products/{productId}/reviews/count")
-    public Integer countByProductId(@PathVariable Integer productId) {
-        return service.getCountByProductId(productId);
-    }
+//    // [GET] /api/products/{productId}/reviews/count
+//    @GetMapping("/api/products/{productId}/reviews/count")
+//    public Integer countByProductId(@PathVariable Integer productId) {
+//        return service.getCountByProductId(productId);
+//    }
 
     // [POST] /api/products/{productId}/reviews
     @PostMapping("/api/products/{productId}/reviews")
     public ReviewResponse createByProductId(
             @PathVariable Integer productId,
             @RequestBody ReviewRequest request) {
-        return service.create(request);
+        return service.create(request, productId);
     }
 
 

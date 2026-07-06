@@ -14,6 +14,7 @@ public class ReviewResponse {
     private Integer reviewRating;
 
     private Integer customerId;
+    private String customerName;
 
     private Integer productId;
 
