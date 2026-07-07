@@ -18,7 +18,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
   const [reviews, setReviews] = useState<ReviewResponse[]>([])
   const [countReviews, setCountReviews] = useState<number>(0)
 
-  const { customerData } = useCustomer()
+  const { token, customerData } = useCustomer()
 
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [showAddReviewForm, setShowAddReviewForm] = useState(false)
@@ -64,6 +64,41 @@ export default function ProductReview({ productId }: ProductReviewProps) {
 
     fetchReviews()
   }, [productId])
+
+  const handleRemoveReview = async (reviewId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (response.ok) {
+        showNotification({
+          message: 'Xóa đánh giá thành công',
+          type: 'SUCCESS',
+          duration: 3000,
+        })
+        setTimeout(() => {
+          window.location.reload() // Refresh the current page
+        }, 3000) // Delay for 3 seconds before refreshing
+      } else {
+        showNotification({
+          message: 'Xóa đánh giá thất bại',
+          type: 'ERROR',
+          duration: 3000,
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error)
+      showNotification({
+        message: 'Xóa đánh giá thất bại',
+        type: 'ERROR',
+        duration: 3000,
+      })
+    }
+  }
 
   return (
     <div className="reviews bg-white p-4 shadow rounded-2xl">
@@ -126,7 +161,13 @@ export default function ProductReview({ productId }: ProductReviewProps) {
                       >
                         Chỉnh sửa đánh giá
                       </div>
-                      <div className="p-2 rounded-xl hover:bg-gray-100 hover:cursor-pointer">
+                      <div
+                        className="p-2 rounded-xl hover:bg-gray-100 hover:cursor-pointer"
+                        onClick={() => {
+                          setShowEditReview({ index: review.reviewId, isOpen: false })
+                          handleRemoveReview(review.reviewId)
+                        }}
+                      >
                         Xóa đánh giá
                       </div>
                     </div>

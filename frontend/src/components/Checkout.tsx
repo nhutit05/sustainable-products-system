@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react'
 import type { CartItemResponse } from '../model/cart.model'
 import { X } from 'lucide-react'
@@ -7,7 +6,7 @@ import { PaymentMethodName } from '../enum/PaymentMethod.enum'
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../context/useNotification'
 import type { Addressresponse } from '../model/address.model'
-import { useCustomer } from '../context/useCustomer'
+import AddNewAddress from './AddNewAddress'
 
 interface CheckoutProps {
   cartItems: CartItemResponse[]
@@ -27,9 +26,10 @@ export default function Checkout({
   const [orderReceiverPhone, setOrderReceiverPhone] = useState('')
 
   const [addresses, setAddresses] = useState<Addressresponse[]>([])
-  const [selectedAddress, setSelectedAddress] = useState<Addressresponse | undefined>()
+  const [selectedAddress, setSelectedAddress] = useState<Addressresponse | null>(null)
 
   const [showAddressList, setShowAddressList] = useState(false)
+  const [showAddAddress, setShowAddAddress] = useState(false)
 
   const [vouchers, setVouchers] = useState<
     { voucherId: number; code: string; discountValue: number }[]
@@ -49,6 +49,33 @@ export default function Checkout({
 
   // SHOW NOTIFICATION
   const { showNotification } = useNotification()
+
+  const refreshAddresses = async (preferSelectedId?: number) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/addresses', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setAddresses(data)
+
+        const nextSelected =
+          data.find((address: Addressresponse) => address.addressId === preferSelectedId) ||
+          data.find((address: Addressresponse) => address.isDefault) ||
+          data[0] ||
+          null
+
+        setSelectedAddress((currentSelected) =>
+          currentSelected && !preferSelectedId ? currentSelected : nextSelected
+        )
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
+    }
+  }
 
   useEffect(() => {
     const totalDiscount = () => {
@@ -87,28 +114,14 @@ export default function Checkout({
       }
     }
 
-    // FETCH ADDRESS hien tai
-    const fetchAddresses = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/addresses', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setAddresses(data)
-        }
-      } catch (error) {
-        console.error('Error fetching addresses:', error)
+    const timeoutId = window.setTimeout(() => {
+      if (token) {
+        void fetchVouchers()
+        void refreshAddresses()
       }
-    }
+    }, 0)
 
-    if (token) {
-      fetchVouchers()
-      fetchAddresses()
-    }
+    return () => window.clearTimeout(timeoutId)
   }, [token])
 
   // XU LY DAT HANG
@@ -213,58 +226,98 @@ export default function Checkout({
             {/* CHON DIA CHI GIAO HANG */}
             <div className="text-md text-green-900 font-semibold my-2">Chọn địa chỉ giao hàng</div>
             <div className="flex flex-col gap-2">
-              {/* DIA CHI MAC DINH */}
-              {selectedAddress === undefined}
               {addresses.map((address) =>
                 address.isDefault ? (
-                  <div
-                    className={`address p-3 border border-gray-400 rounded-2xl hover:cursor-pointer ${selectedAddress?.addressId == address.addressId ? 'bg-emerald-50/80' : ''} ${selectedAddress?.addressId === address.addressId ? 'bg-emerald-50/80' : ''}`}
+                  <button
+                    type="button"
+                    className={`address p-3 border border-gray-400 rounded-2xl text-left hover:cursor-pointer ${selectedAddress?.addressId === address.addressId ? 'bg-emerald-50/80 border-emerald-500' : ''}`}
                     onClick={() => setSelectedAddress(address)}
                     key={address.addressId}
                   >
-                    <h2 className="text-md font-semibold text-green-900">{address.addressName}</h2>
-                    <p className="text-sm text-gray-700">
-                      {address.addressStreet}, {address.villageName}, {address.cityName}
-                    </p>
-                  </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-md font-semibold text-green-900">
+                          {address.addressName}
+                        </h2>
+                        <p className="text-sm text-gray-700">
+                          {address.addressStreet}, {address.villageName}, {address.cityName}
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-blue-500 bg-blue-100 px-3 py-1 rounded-full">
+                        Mặc định
+                      </span>
+                    </div>
+                  </button>
                 ) : null
               )}
-              <div
-                onClick={() => setShowAddressList(true)}
-                className="text-gray-500 relative text-sm text-center hover:cursor-pointer hover:text-gray-800 hover:underline"
-              >
-                ---- Tùy chọn địa chỉ ----
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowAddressList((current) => !current)}
+                  className="w-full text-gray-500 text-sm text-center hover:cursor-pointer hover:text-gray-800 hover:underline"
+                >
+                  ---- Tùy chọn địa chỉ ----
+                </button>
                 {showAddressList && (
-                  <div className="absolute bottom-0 left-50 min-w-2xs p-3 bg-white shadow rounded-2xl z-56">
-                    <p className="p-2 text-left">Danh sách địa chỉ</p>
+                  <div className="absolute left-0 right-0 mt-2 min-w-2xs p-3 bg-white shadow rounded-2xl z-56 border border-gray-100">
+                    <p className="p-2 text-left font-semibold text-green-900">Danh sách địa chỉ</p>
                     {addresses.map((address) => (
-                      <div
-                        className={`address p-2 mb-2 border border-gray-400 rounded-2xl hover:cursor-pointer hover:bg-amber-50 ${selectedAddress == address.addressId ? 'bg-emerald-50/80' : ''}`}
+                      <button
+                        type="button"
+                        className={`w-full text-left address p-2 mb-2 border border-gray-400 rounded-2xl hover:cursor-pointer hover:bg-amber-50 ${selectedAddress?.addressId === address.addressId ? 'bg-emerald-50/80 border-emerald-500' : ''}`}
                         onClick={() => {
-                          setSelectedAddress(address.addressId)
+                          setSelectedAddress(address)
                           setShowAddressList(false)
                         }}
                         key={address.addressId}
                       >
-                        <h2 className="text-sm text-left font-semibold text-green-900">
+                        <h2 className="text-sm font-semibold text-green-900">
                           {address.addressName}
                         </h2>
                         <p className="text-xs text-gray-700">
                           {address.addressStreet}, {address.villageName}, {address.cityName}
                         </p>
-                      </div>
+                      </button>
                     ))}
 
-                    <div
-                      className="text-gray-500 relative text-sm text-center hover:cursor-pointer
-                     hover:text-gray-800 hover:underline"
+                    <button
+                      type="button"
+                      className="w-full text-gray-500 relative text-sm text-center hover:cursor-pointer hover:text-gray-800 hover:underline"
+                      onClick={() => {
+                        setShowAddressList(false)
+                        setShowAddAddress(true)
+                      }}
                     >
                       Thêm địa chỉ mới
-                    </div>
+                    </button>
                   </div>
                 )}
               </div>
+
+              {selectedAddress ? (
+                <div className="mt-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                    Địa chỉ đã chọn
+                  </p>
+                  <h3 className="mt-1 text-sm font-bold text-green-900">
+                    {selectedAddress.addressName}
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    {selectedAddress.addressStreet}, {selectedAddress.villageName},
+                    {selectedAddress.cityName}
+                  </p>
+                </div>
+              ) : null}
             </div>
+            {showAddAddress ? (
+              <AddNewAddress
+                setShowAddAddress={setShowAddAddress}
+                redirectToProfile={false}
+                onSuccess={async () => {
+                  await refreshAddresses()
+                }}
+              />
+            ) : null}
           </aside>
           {/* THONG TIN DON HANG */}
           <main className="checkout-main col-span-2 p-4">
