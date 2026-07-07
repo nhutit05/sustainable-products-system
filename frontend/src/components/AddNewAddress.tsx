@@ -1,15 +1,21 @@
 import { X } from 'lucide-react'
 import { useCustomer } from '../context/useCustomer'
-import type { VillageResponse, CityResponse, AddressRequest } from '../model/address.model'
+import type { VillageResponse, CityResponse } from '../model/address.model'
 import { useEffect, useState } from 'react'
 import { useNotification } from '../context/useNotification'
 import { useNavigate } from 'react-router-dom'
 
 interface AddNewAddressProps {
   setShowAddAddress: (show: boolean) => void
+  onSuccess?: () => void
+  redirectToProfile?: boolean
 }
 
-export default function AddNewAddress({ setShowAddAddress }: AddNewAddressProps) {
+export default function AddNewAddress({
+  setShowAddAddress,
+  onSuccess,
+  redirectToProfile = true,
+}: AddNewAddressProps) {
   const addressTypeName = ['Nhà riêng', 'Công ty', 'Khác']
 
   const { token, customerData } = useCustomer()
@@ -96,7 +102,10 @@ export default function AddNewAddress({ setShowAddAddress }: AddNewAddressProps)
       })
 
       if (response.ok) {
-        navigate('/profile/addresses')
+        onSuccess?.()
+        if (redirectToProfile) {
+          navigate('/profile/addresses')
+        }
         showNotification({
           message: 'Thêm địa chỉ thành công!',
           type: 'SUCCESS',

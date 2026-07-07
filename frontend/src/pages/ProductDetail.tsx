@@ -6,7 +6,6 @@ import ProductCardSuggest from '../components/ProductCardSuggest'
 import type { Cart } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
 import ProductReview from '../components/ProductReview'
-
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -302,6 +301,7 @@ export default function ProductDetail() {
           {/* Products Reviews */}
           <div className="product_reviews mt-5">
             <h2 className="text-lg font-semibold mb-4 text-green-900">Đánh giá sản phẩm</h2>
+
             <ProductReview productId={product.productId} />
           </div>
         </div>
