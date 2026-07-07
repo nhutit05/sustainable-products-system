@@ -7,6 +7,19 @@ import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../context/useNotification'
 import type { Addressresponse } from '../model/address.model'
 import AddNewAddress from './AddNewAddress'
+import PayOSEmbedded from './PayOSEmbedded'
+
+
+interface OrderSummary {
+  items: CartItemResponse[]
+  total: number
+  discount: number
+  paymentMethod: string
+  receiver: string
+  phone: string
+  address: string
+}
+
 
 interface CheckoutProps {
   cartItems: CartItemResponse[]
@@ -15,13 +28,13 @@ interface CheckoutProps {
   setOnClose: (value: boolean) => void
 }
 
-export default function Checkout({
-  cartItems,
-  totalPrice,
-  paymentMethodId,
-  setOnClose,
-}: CheckoutProps) {
+
+export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOnClose }: CheckoutProps) {
+
   const navigate = useNavigate()
+  const token = localStorage.getItem('token')
+  const { showNotification } = useNotification()
+
   const [orderReceiver, setOrderReceiver] = useState('')
   const [orderReceiverPhone, setOrderReceiverPhone] = useState('')
 
@@ -31,24 +44,20 @@ export default function Checkout({
   const [showAddressList, setShowAddressList] = useState(false)
   const [showAddAddress, setShowAddAddress] = useState(false)
 
-  const [vouchers, setVouchers] = useState<
-    { voucherId: number; code: string; discountValue: number }[]
-  >([])
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+  const [orderId, setOrderId] = useState<number>()
+  const [expiredAt, setExpiredAt] = useState<string | null>(null)
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
 
-  const [selectedVoucher, setSelectedVoucher] = useState<{
-    voucherId: number
-    code: string
-    discountValue: number
-  } | null>(null)
+  const [vouchers, setVouchers] = useState<{ voucherId: number; code: string; discountValue: number }[]>([])
+
+  const [selectedVoucher, setSelectedVoucher] = useState<{ voucherId: number; code: string; discountValue: number } | null>(null)
+
+  const [valueSale, setValueSale] = useState(0)
 
   const paymentMethodName = PaymentMethodName[paymentMethodId as keyof typeof PaymentMethodName]
 
-  const token = localStorage.getItem('token')
 
-  const [valueSale, setValueSale] = useState<number>(0)
-
-  // SHOW NOTIFICATION
-  const { showNotification } = useNotification()
 
   const refreshAddresses = async (preferSelectedId?: number) => {
     try {
@@ -68,29 +77,27 @@ export default function Checkout({
           data[0] ||
           null
 
-        setSelectedAddress((currentSelected) =>
-          currentSelected && !preferSelectedId ? currentSelected : nextSelected
-        )
+        setSelectedAddress(nextSelected)
       }
     } catch (error) {
-      console.error('Error fetching addresses:', error)
+      console.error('Fetch address error:', error)
     }
   }
 
-  useEffect(() => {
-    const totalDiscount = () => {
-      if (selectedVoucher) {
-        const value = (selectedVoucher.discountValue / 100) * totalPrice
-        setValueSale(value)
-      } else {
-        setValueSale(0)
-      }
-    }
 
-    totalDiscount()
+
+  useEffect(() => {
+    if (selectedVoucher) {
+      setValueSale((selectedVoucher.discountValue / 100) * totalPrice)
+    } else {
+      setValueSale(0)
+    }
   }, [selectedVoucher, totalPrice])
 
+
+
   useEffect(() => {
+
     const fetchVouchers = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/vouchers', {
@@ -101,6 +108,7 @@ export default function Checkout({
 
         if (response.ok) {
           const data = await response.json()
+
           setVouchers(
             data.map((voucher: voucherResponse) => ({
               voucherId: voucher.voucherId,
@@ -109,319 +117,602 @@ export default function Checkout({
             }))
           )
         }
+
       } catch (error) {
-        console.error('Error fetching vouchers:', error)
+        console.error('Fetch voucher error:', error)
       }
     }
 
-    const timeoutId = window.setTimeout(() => {
-      if (token) {
-        void fetchVouchers()
-        void refreshAddresses()
-      }
-    }, 0)
 
-    return () => window.clearTimeout(timeoutId)
+    if (token) {
+      void fetchVouchers()
+      void refreshAddresses()
+    }
+
   }, [token])
 
-  // XU LY DAT HANG
   const handleSubmitCheckout = async () => {
-    const data = {
-      orderReceiver: orderReceiver,
-      orderReceiverPhone: orderReceiverPhone,
-      paymentMethodId: paymentMethodId,
+
+    const request = {
+      orderReceiver,
+      orderReceiverPhone,
+      paymentMethodId,
       addressId: selectedAddress?.addressId,
-      voucherId: selectedVoucher?.voucherId || null,
-      productIds: cartItems.map((item) => item.productId),
+      voucherId: selectedVoucher?.voucherId ?? null,
+      productIds: cartItems.map(item => item.productId),
     }
 
-    console.log('Checkout data:', data)
 
-    const response = await fetch('http://localhost:8080/api/orders/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(data),
-    })
+    try {
 
-    if (response.ok) {
-      if (paymentMethodId === 2) {
+      const response = await fetch('http://localhost:8080/api/orders/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(request),
+      })
+
+
+      const result = await response.json()
+
+
+      if (!response.ok) {
+        showNotification({
+          message: 'Đặt hàng thất bại. Vui lòng thử lại.',
+          type: 'ERROR',
+          duration: 3000,
+        })
+        return
+      }
+
+
+
+      // COD
+
+      if (!result.checkoutUrl) {
+
         showNotification({
           message: 'Đặt hàng thành công!',
           type: 'SUCCESS',
           duration: 3000,
         })
+
         navigate('/')
-      } else {
-        showNotification({
-          message: 'Đặt hàng thành công! Vui lòng thanh toán trực tuyến.',
-          type: 'SUCCESS',
-          duration: 3000,
-        })
-        const data = await response.json()
-        navigate(`/cart/${data.orderId}/payment-online`)
+
+        return
       }
-    } else {
+
+
+
+
+
+      // PAYOS
+
+      setOrderId(result.order.orderId)
+
+      setCheckoutUrl(result.checkoutUrl)
+
+      setExpiredAt(result.expiredAt)
+
+
+
+      setOrderSummary({
+        items: cartItems,
+        total: totalPrice - valueSale,
+        discount: valueSale,
+        paymentMethod: paymentMethodName,
+        receiver: orderReceiver,
+        phone: orderReceiverPhone,
+        address: selectedAddress
+          ? `${selectedAddress.addressStreet}, ${selectedAddress.villageName}, ${selectedAddress.cityName}`
+          : 'Chưa có địa chỉ',
+      })
+
+
+
+    } catch (error) {
+
+      console.error(error)
+
       showNotification({
-        message: 'Đặt hàng thất bại. Vui lòng thử lại.',
+        message: 'Có lỗi xảy ra khi đặt hàng.',
         type: 'ERROR',
         duration: 3000,
       })
-      navigate('/cart')
+
     }
+
   }
 
+
+
+
+
+
+  if (checkoutUrl && orderSummary) {
+
+    return (
+      <PayOSEmbedded
+        checkoutUrl={checkoutUrl}
+        orderId={orderId!}
+        expiredAt={expiredAt}
+        setOnClose={setOnClose}
+        orderSummary={orderSummary}
+      />
+    )
+
+  }
+
+
+
+
+
+
   return (
-    <div className="dialog_checkout fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-55">
-      <div className=" shadow-md bg-white p-4 rounded-2xl relative max-h-2xl lg:w-4xl overflow-y-scroll">
+
+    <div className="fixed inset-0 z-52 flex items-center justify-center bg-black/30">
+
+      <div className="bg-white rounded-3xl shadow-xl w-[90vw] max-w-6xl max-h-[90vh] overflow-y-auto p-6 relative">
+
+
         <X
-          className="absolute top-2 right-2 hover:cursor-pointer"
-          size={20}
+          size={24}
+          className="absolute right-5 top-5 cursor-pointer hover:text-red-500"
           onClick={() => setOnClose(true)}
         />
-        <header className="checkout-header p-3 border-b border-gray-200">
-          <h2 className="text-2xl text-center font-bold text-green-900 my-2">
-            Xác nhận đơn đặt hàng
-          </h2>
-        </header>
 
-        <div className="grid grid-cols-3 gap-4">
-          {/* THONG TIN NGUOI NHAN */}
-          <aside className="py-4">
-            <h2 className="text-xl font-semibold text-green-900 mb-4">Thông tin người nhận</h2>
-            <div className="">
-              <div className="mb-4 flex-1">
-                <label htmlFor="orderReceiver" className="block text-green-900 font-semibold mb-2">
-                  Tên người nhận:
-                </label>
-                <input
-                  type="text"
-                  id="orderReceiver"
-                  value={orderReceiver}
-                  onChange={(e) => setOrderReceiver(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl p-2"
-                  placeholder="Nhập tên người nhận"
-                />
-              </div>
-              <div className="mb-4 flex-1">
-                <label
-                  htmlFor="orderReceiverPhone"
-                  className="block text-green-900 font-semibold mb-2"
-                >
-                  Số điện thoại người nhận:
-                </label>
-                <input
-                  type="text"
-                  id="orderReceiverPhone"
-                  value={orderReceiverPhone}
-                  onChange={(e) => setOrderReceiverPhone(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl p-2"
-                  placeholder="Nhập số điện thoại người nhận"
-                />
-              </div>
+
+
+        <h1 className="text-3xl font-bold text-center text-green-900 mb-6">
+          Xác nhận đơn đặt hàng
+        </h1>
+
+
+
+
+        <div className="grid grid-cols-3 gap-6">
+
+
+
+
+          <aside className="space-y-5">
+
+            <h2 className="text-xl font-bold text-green-900">
+              Thông tin người nhận
+            </h2>
+
+
+            <div>
+
+              <label className="block font-semibold text-green-900 mb-2">
+                Tên người nhận
+              </label>
+
+
+              <input
+                value={orderReceiver}
+                onChange={(e) => setOrderReceiver(e.target.value)}
+                placeholder="Nhập tên người nhận"
+                className="w-full border rounded-xl p-3"
+              />
+
             </div>
 
-            {/* CHON DIA CHI GIAO HANG */}
-            <div className="text-md text-green-900 font-semibold my-2">Chọn địa chỉ giao hàng</div>
-            <div className="flex flex-col gap-2">
-              {addresses.map((address) =>
-                address.isDefault ? (
-                  <button
-                    type="button"
-                    className={`address p-3 border border-gray-400 rounded-2xl text-left hover:cursor-pointer ${selectedAddress?.addressId === address.addressId ? 'bg-emerald-50/80 border-emerald-500' : ''}`}
-                    onClick={() => setSelectedAddress(address)}
-                    key={address.addressId}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <h2 className="text-md font-semibold text-green-900">
-                          {address.addressName}
-                        </h2>
-                        <p className="text-sm text-gray-700">
-                          {address.addressStreet}, {address.villageName}, {address.cityName}
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold text-blue-500 bg-blue-100 px-3 py-1 rounded-full">
-                        Mặc định
-                      </span>
-                    </div>
-                  </button>
-                ) : null
-              )}
-              <div className="relative">
+
+
+
+            <div>
+
+              <label className="block font-semibold text-green-900 mb-2">
+                Số điện thoại
+              </label>
+
+
+              <input
+                value={orderReceiverPhone}
+                onChange={(e) => setOrderReceiverPhone(e.target.value)}
+                placeholder="Nhập số điện thoại"
+                className="w-full border rounded-xl p-3"
+              />
+
+            </div>
+
+
+
+
+            <h2 className="text-xl font-bold text-green-900">
+              Địa chỉ giao hàng
+            </h2>
+
+
+
+            {
+              addresses.filter(address => address.isDefault).map(address => (
+
                 <button
+                  key={address.addressId}
                   type="button"
-                  onClick={() => setShowAddressList((current) => !current)}
-                  className="w-full text-gray-500 text-sm text-center hover:cursor-pointer hover:text-gray-800 hover:underline"
+                  onClick={() => setSelectedAddress(address)}
+                  className={`w-full text-left border rounded-2xl p-4 ${
+                    selectedAddress?.addressId === address.addressId
+                      ? 'bg-emerald-50 border-emerald-500'
+                      : ''
+                  }`}
                 >
-                  ---- Tùy chọn địa chỉ ----
+
+                  <p className="font-bold text-green-900">
+                    {address.addressName}
+                  </p>
+
+                  <p className="text-sm text-gray-600">
+                    {address.addressStreet}, {address.villageName}, {address.cityName}
+                  </p>
+
+
                 </button>
-                {showAddressList && (
-                  <div className="absolute left-0 right-0 mt-2 min-w-2xs p-3 bg-white shadow rounded-2xl z-56 border border-gray-100">
-                    <p className="p-2 text-left font-semibold text-green-900">Danh sách địa chỉ</p>
-                    {addresses.map((address) => (
+
+              ))
+            }
+
+
+
+            <button
+              type="button"
+              className="text-sm text-gray-500 hover:underline"
+              onClick={() => setShowAddressList(!showAddressList)}
+            >
+              -- Chọn địa chỉ khác --
+            </button>
+
+
+
+
+            {
+              showAddressList && (
+
+                <div className="border rounded-xl p-3 space-y-2">
+
+                  {
+                    addresses.map(address => (
+
                       <button
+                        key={address.addressId}
                         type="button"
-                        className={`w-full text-left address p-2 mb-2 border border-gray-400 rounded-2xl hover:cursor-pointer hover:bg-amber-50 ${selectedAddress?.addressId === address.addressId ? 'bg-emerald-50/80 border-emerald-500' : ''}`}
+                        className="block w-full text-left p-3 rounded-xl hover:bg-emerald-50"
                         onClick={() => {
                           setSelectedAddress(address)
                           setShowAddressList(false)
                         }}
-                        key={address.addressId}
                       >
-                        <h2 className="text-sm font-semibold text-green-900">
+
+                        <p className="font-semibold">
                           {address.addressName}
-                        </h2>
-                        <p className="text-xs text-gray-700">
+                        </p>
+
+                        <p className="text-sm">
                           {address.addressStreet}, {address.villageName}, {address.cityName}
                         </p>
+
                       </button>
-                    ))}
 
-                    <button
-                      type="button"
-                      className="w-full text-gray-500 relative text-sm text-center hover:cursor-pointer hover:text-gray-800 hover:underline"
-                      onClick={() => {
-                        setShowAddressList(false)
-                        setShowAddAddress(true)
-                      }}
-                    >
-                      Thêm địa chỉ mới
-                    </button>
-                  </div>
-                )}
-              </div>
+                    ))
+                  }
 
-              {selectedAddress ? (
-                <div className="mt-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                    Địa chỉ đã chọn
-                  </p>
-                  <h3 className="mt-1 text-sm font-bold text-green-900">
-                    {selectedAddress.addressName}
-                  </h3>
-                  <p className="text-sm text-gray-700">
-                    {selectedAddress.addressStreet}, {selectedAddress.villageName},
-                    {selectedAddress.cityName}
-                  </p>
+
+
+                  <button
+                    className="text-sm text-gray-500 hover:underline"
+                    onClick={() => {
+                      setShowAddressList(false)
+                      setShowAddAddress(true)
+                    }}
+                  >
+                    + Thêm địa chỉ mới
+                  </button>
+
+
                 </div>
-              ) : null}
-            </div>
-            {showAddAddress ? (
-              <AddNewAddress
-                setShowAddAddress={setShowAddAddress}
-                redirectToProfile={false}
-                onSuccess={async () => {
-                  await refreshAddresses()
-                }}
-              />
-            ) : null}
+
+              )
+            }
+
+
+
+            {
+              showAddAddress && (
+
+                <AddNewAddress
+                  setShowAddAddress={setShowAddAddress}
+                  redirectToProfile={false}
+                  onSuccess={() => refreshAddresses()}
+                />
+
+              )
+            }
+
+
           </aside>
-          {/* THONG TIN DON HANG */}
-          <main className="checkout-main col-span-2 p-4">
-            <h2 className="text-xl font-semibold text-green-900 mb-2">Thông tin đơn hàng</h2>
-            {/* Checkout Table */}
-            <section className="checkout-table">
-              <table className="w-full border border-gray-200 rounded-2xl">
-                <thead className="bg-emerald-50/80">
+
+          
+
+
+
+          <main className="col-span-2 space-y-5">
+
+
+            <h2 className="text-xl font-bold text-green-900">
+              Thông tin đơn hàng
+            </h2>
+
+
+
+
+            <div className="border rounded-2xl overflow-hidden">
+
+
+              <table className="w-full">
+
+
+                <thead className="bg-emerald-50">
+
                   <tr>
-                    <th className="text-left p-3 border-b border-gray-200">Tên sản phẩm</th>
-                    <th className="text-left p-3 border-b border-gray-200">Số lượng</th>
-                    <th className="text-left p-3 border-b border-gray-200">Đơn giá</th>
-                    <th className="text-left p-3 border-b border-gray-200">Tổng</th>
+
+                    <th className="p-3 text-left">
+                      Sản phẩm
+                    </th>
+
+                    <th className="p-3 text-left">
+                      Số lượng
+                    </th>
+
+                    <th className="p-3 text-left">
+                      Đơn giá
+                    </th>
+
+                    <th className="p-3 text-left">
+                      Thành tiền
+                    </th>
+
                   </tr>
+
                 </thead>
+
+
+
                 <tbody>
-                  {cartItems.map((item) => (
-                    <tr key={item.productId}>
-                      <td className="p-3 border-b border-gray-200">{item.productName}</td>
-                      <td className="p-3 border-b border-gray-200">{item.quantity}</td>
-                      <td className="p-3 border-b border-gray-200">
-                        {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                          item.subtotal / item.quantity
-                        )}
-                      </td>
-                      <td className="p-3 border-b border-gray-200">
-                        {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                          item.subtotal
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+
+
+                  {
+                    cartItems.map(item => (
+
+                      <tr key={item.productId} className="border-t">
+
+
+                        <td className="p-3">
+                          {item.productName}
+                        </td>
+
+
+                        <td className="p-3">
+                          {item.quantity}
+                        </td>
+
+
+                        <td className="p-3">
+
+                          {
+                            Intl.NumberFormat('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND',
+                            }).format(item.subtotal / item.quantity)
+                          }
+
+                        </td>
+
+
+
+                        <td className="p-3 font-semibold">
+
+                          {
+                            Intl.NumberFormat('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND',
+                            }).format(item.subtotal)
+                          }
+
+                        </td>
+
+
+
+                      </tr>
+
+                    ))
+                  }
+
+
                 </tbody>
+
+
               </table>
-            </section>
 
-            {/* APPLY VOUCHER */}
-            <section>
-              <div className="list-voucher p-3 flex items-center gap-4 mt-2 rounded-2xl ">
-                <label
-                  htmlFor="voucher"
-                  className="text-md font-semibold text-green-900 mb-2 block"
-                >
-                  Mã giảm giá
-                </label>
-                <select
-                  name=""
-                  id="voucher"
-                  onChange={(e) => {
-                    const selected = vouchers.find((v) => v.voucherId === parseInt(e.target.value))
-                    setSelectedVoucher(selected || null)
-                  }}
-                  className="flex-1 border border-gray-200 rounded-2xl p-3 text-gray-400"
-                >
-                  <option value="">Chọn mã giảm giá</option>
-                  {vouchers.map((voucher) => (
-                    <option key={voucher.voucherId} value={voucher.voucherId}>
-                      {voucher.code}
-                    </option>
-                  ))}
-                </select>
 
-                <span className="flex-1 text-right text-red-500 font-bold text-md">
-                  {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                    -valueSale
-                  )}
-                </span>
-              </div>
-            </section>
-
-            {/* Phuong thuc thanh toan */}
-            <section className="px-3 py-2">
-              <div className="flex items-center gap-4">
-                <h2 className="text-green-900 text-md font-semibold">Phương thức thanh toán: </h2>
-                <span className="text-red-500 font-bold text-md">{paymentMethodName}</span>
-              </div>
-            </section>
-
-            {/* TONG TIEN DON HANG + khuyen mai*/}
-            <section className="px-3 py-2">
-              <div className="flex items-center gap-4 mt-2">
-                <h2 className="text-green-900 text-md font-semibold uppercase">
-                  Tổng tiền đơn hàng:{' '}
-                </h2>
-                <span className="text-red-500 font-bold text-xl">
-                  {Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                    totalPrice - valueSale
-                  )}
-                </span>
-              </div>
-            </section>
-
-            {/* XAC NHAN THANH TOAN */}
-            <div className="px-3 py-2">
-              <button
-                onClick={() => handleSubmitCheckout()}
-                className="bg-primary hover:cursor-pointer hover:scale-101 transform text-white font-bold py-3 px-4 rounded-2xl duration-300 transition-all w-full active:scale-99"
-              >
-                Xác nhận thanh toán
-              </button>
             </div>
+
+
+
+
+
+
+
+
+            <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+
+
+              <label className="font-semibold text-green-900">
+                Mã giảm giá
+              </label>
+
+
+
+              <select
+
+                className="flex-1 border rounded-xl p-3"
+
+                onChange={(e) => {
+
+                  const selected = vouchers.find(
+                    voucher => voucher.voucherId === Number(e.target.value)
+                  )
+
+                  setSelectedVoucher(selected ?? null)
+
+                }}
+
+              >
+
+                <option value="">
+                  Chọn voucher
+                </option>
+
+
+
+                {
+                  vouchers.map(voucher => (
+
+                    <option
+                      key={voucher.voucherId}
+                      value={voucher.voucherId}
+                    >
+
+                      {voucher.code} - {voucher.discountValue}%
+
+                    </option>
+
+                  ))
+                }
+
+
+              </select>
+
+
+
+              <span className="font-bold text-red-500">
+
+
+                -
+                {
+                  Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  }).format(valueSale)
+                }
+
+
+              </span>
+
+
+            </div>
+
+
+
+
+
+
+
+            <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl">
+
+
+              <span className="font-semibold text-green-900">
+                Phương thức thanh toán
+              </span>
+
+
+              <span className="font-bold text-green-700">
+                {paymentMethodName}
+              </span>
+
+
+            </div>
+
+
+
+
+
+
+
+            <div className="flex justify-between items-center border rounded-2xl p-5">
+
+
+              <span className="text-xl font-bold text-green-900">
+                Tổng thanh toán
+              </span>
+
+
+
+              <span className="text-2xl font-bold text-red-500">
+
+                {
+                  Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                  }).format(totalPrice - valueSale)
+                }
+
+              </span>
+
+
+            </div>
+
+
+
+
+
+
+
+            <button
+
+              onClick={handleSubmitCheckout}
+
+              className="
+                w-full
+                bg-primary
+                text-white
+                font-bold
+                py-4
+                rounded-2xl
+                transition
+                hover:scale-[1.02]
+                active:scale-95
+              "
+
+            >
+
+              Xác nhận thanh toán
+
+
+            </button>
+
+
+
+
           </main>
+
+
+
         </div>
+
+
+
       </div>
+
+
+
     </div>
+
+
   )
+
+
 }

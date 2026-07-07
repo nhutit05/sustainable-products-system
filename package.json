@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "payos-checkout": "^1.0.9"
+  }
+}

@@ -7,7 +7,7 @@ export type orderStatusResponse = {
 
 // ================ ORDER ===============
 
-export type orderResponse = {
+export interface OrderResponse {
   orderId: number
   orderedAt: string
 
@@ -20,6 +20,9 @@ export type orderResponse = {
   paymentMethodId: number
   paymentMethodName: string
 
+  paymentStatusId: number
+  paymentStatusName: string
+
   voucherId: number | null
   voucherCode: string | null
 
@@ -31,7 +34,7 @@ export type orderResponse = {
   items: orderItemResponse[]
 }
 
-export type orderRequest = {
+export type OrderRequest = {
   orderReceiver: string
   orderReceiverPhone: string
   paymentMethodId: number

@@ -7,13 +7,14 @@ import { NotificationProvider } from './context/NotificationContext.tsx'
 import { CustomerProvider } from './context/CustomerContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  // <StrictMode>
     <CustomerProvider>
       <BrowserRouter>
         <NotificationProvider>
+          
           <App />
         </NotificationProvider>
       </BrowserRouter>
     </CustomerProvider>
-  </StrictMode>
+  // </StrictMode>
 )
