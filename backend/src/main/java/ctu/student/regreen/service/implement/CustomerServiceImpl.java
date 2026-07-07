@@ -2,8 +2,6 @@ package ctu.student.regreen.service.implement;
 
 import ctu.student.regreen.dto.request.CustomerRequest;
 import ctu.student.regreen.dto.response.CustomerResponse;
-import ctu.student.regreen.exception.ErrorCode;
-import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.CustomerMapper;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.Customer;

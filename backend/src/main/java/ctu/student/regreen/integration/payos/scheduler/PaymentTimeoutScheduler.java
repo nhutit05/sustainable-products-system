@@ -1,5 +1,6 @@
 package ctu.student.regreen.integration.payos.scheduler;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,7 +34,9 @@ public class PaymentTimeoutScheduler {
     @Transactional
     public void cancelExpiredOrders() {
 
-        LocalDateTime expiredTime = LocalDateTime.now().minusMinutes(15);
+        LocalDateTime expiredTime = LocalDateTime.now(Clock.systemUTC()).minusMinutes(15);
+        // System.out.println("UTC now = " + LocalDateTime.now(Clock.systemUTC()));
+        System.out.println("Expired = " + expiredTime);
 
         List<Order> orders = orderRepository
                 .findByPaymentStatusPaymentStatusNameAndOrderedAtBefore(
@@ -52,6 +55,8 @@ public class PaymentTimeoutScheduler {
 
         for (Order order : orders) {
 
+            System.out.println("Cancelling order " + order.getOrderId());
+
             order.setPaymentStatus(failed);
             order.setOrderStatus(cancelled);
 
@@ -67,5 +72,7 @@ public class PaymentTimeoutScheduler {
 
             orderRepository.save(order);
         }
+
+        System.out.println("Scheduler done");
     }
 }
