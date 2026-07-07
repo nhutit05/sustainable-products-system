@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,4 +72,7 @@ public class Order {
 
     @Column(name = "payos_order_code")
     private Long payOSOrderCode;
+
+    @Column(name = "order_address", nullable = false, updatable = false)
+    private String orderAddress;
 }

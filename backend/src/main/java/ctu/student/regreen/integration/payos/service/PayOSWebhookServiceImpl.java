@@ -3,7 +3,6 @@ package ctu.student.regreen.integration.payos.service;
 import org.springframework.stereotype.Service;
 
 import ctu.student.regreen.enums.PaymentStatusName;
-import ctu.student.regreen.integration.payos.exception.PayOSException;
 import ctu.student.regreen.model.Order;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.repository.OrderRepository;

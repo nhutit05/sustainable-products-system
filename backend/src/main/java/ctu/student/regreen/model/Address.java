@@ -39,4 +39,8 @@ public class Address {
     @JoinColumn(name = "user_id", nullable = false)
     private Customer customer;
 
+    @Override
+    public String toString() {
+        return addressStreet + " " + addressName + " " + village.getVillageName() + " " + village.getCity().getCityName();
+    }
 }

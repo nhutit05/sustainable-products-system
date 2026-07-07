@@ -15,4 +15,5 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByPaymentStatusPaymentStatusNameAndOrderedAtBefore(
         String paymentStatusName,
         LocalDateTime orderedAt);
+    List<Order> findByPaymentStatusPaymentStatusNameAndOrderedAtAfter(String name, LocalDateTime expiredTime);
 }

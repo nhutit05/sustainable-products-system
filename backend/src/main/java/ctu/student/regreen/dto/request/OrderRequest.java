@@ -17,6 +17,8 @@ public class OrderRequest {
     @Pattern(regexp = "^[0-9]{10}$")
     private String orderReceiverPhone;
 
+    private Integer addressId;
+
     @NotNull
     private Integer paymentMethodId;
 

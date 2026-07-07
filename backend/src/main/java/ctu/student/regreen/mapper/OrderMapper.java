@@ -41,6 +41,8 @@ public class OrderMapper {
                 order.getOrderReceiver(),
                 order.getOrderReceiverPhone(),
 
+                order.getOrderAddress(),
+
                 order.getCustomer().getUserId(),
                 order.getCustomer().getUsername(),
 
