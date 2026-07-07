@@ -1,7 +1,6 @@
 import { IdCard, Leaf, MailCheck, Phone, SquarePen, UserCircle } from 'lucide-react'
 import { useCustomer } from '../context/useCustomer'
 import { useState } from 'react'
-import type { customerResponse } from '../model/customer'
 
 export default function ProfileInfo() {
   const { customerData, setCustomerData } = useCustomer()
