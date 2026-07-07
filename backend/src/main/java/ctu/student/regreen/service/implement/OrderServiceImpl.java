@@ -14,6 +14,7 @@ import ctu.student.regreen.enums.PaymentStatusName;
 import ctu.student.regreen.integration.payos.dto.PayOSCheckoutResult;
 import ctu.student.regreen.integration.payos.service.PayOSService;
 import ctu.student.regreen.mapper.OrderMapper;
+import ctu.student.regreen.model.Address;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
 import ctu.student.regreen.model.CartItemId;
@@ -26,6 +27,7 @@ import ctu.student.regreen.model.PaymentMethod;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.Voucher;
+import ctu.student.regreen.repository.AddressRepository;
 import ctu.student.regreen.repository.CartItemRepository;
 import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
@@ -55,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
         private final VoucherRepository voucherRepository;
         private final OrderStatusRepository orderStatusRepository;
         private final PaymentStatusRepository paymentStatusRepository;
+        private final AddressRepository addressRepository;
 
         private final InvoiceRepository invoiceRepository;
 
@@ -71,6 +74,10 @@ public class OrderServiceImpl implements OrderService {
                         long price = Math.round(item.getPurchasedPrice());
 
                         total += price * item.getQuantity();
+                }
+
+                if (order.getVoucher() != null) {
+                        total -= Math.round(order.getVoucher().getDiscountValue());
                 }
 
                 return total;
@@ -99,6 +106,10 @@ public class OrderServiceImpl implements OrderService {
                                 .orElseThrow(() -> new RuntimeException("Payment status not found"));
         }
 
+        private Address getAddress(Integer addressId) {
+                return addressRepository.findById(addressId)
+                                .orElseThrow(() -> new RuntimeException("Address not found"));
+        }
         private PayOSCheckoutResult processOnlinePayment(Order order) {
 
                 if (!order.getPaymentMethod().getOnline()) {
@@ -171,10 +182,14 @@ public class OrderServiceImpl implements OrderService {
 
                 PaymentStatus unpaid = getPaymentStatus(PaymentStatusName.UNPAID);
 
+                String address = getAddress(request.getAddressId()).toString();
+
+
                 Order order = new Order();
                 order.setCustomer(customer);
                 order.setOrderReceiver(request.getOrderReceiver());
                 order.setOrderReceiverPhone(request.getOrderReceiverPhone());
+                order.setOrderAddress(address);
                 order.setPaymentMethod(paymentMethod);
                 order.setVoucher(voucher);
                 order.setOrderStatus(pending);
@@ -262,6 +277,8 @@ public class OrderServiceImpl implements OrderService {
                 newOrder.setOrderReceiverPhone(oldOrder.getOrderReceiverPhone());
 
                 newOrder.setPaymentMethod(oldOrder.getPaymentMethod());
+                
+                newOrder.setOrderAddress((oldOrder.getOrderAddress()));
 
                 newOrder.setVoucher(oldOrder.getVoucher());
 

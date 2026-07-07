@@ -18,6 +18,7 @@ public class OrderResponse {
 
     private String orderReceiver;
     private String orderReceiverPhone;
+    private String orderAddress;
 
     private Integer customerId;
     private String customerUsername;

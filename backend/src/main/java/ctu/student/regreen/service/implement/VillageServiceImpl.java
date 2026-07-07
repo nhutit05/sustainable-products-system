@@ -6,7 +6,6 @@ import ctu.student.regreen.exception.ErrorCode;
 import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.VillageMapper;
 import ctu.student.regreen.model.Village;
-import ctu.student.regreen.repository.CityRepository;
 import ctu.student.regreen.repository.VillageRepository;
 import ctu.student.regreen.service.interfaces.VillageService;
 import lombok.RequiredArgsConstructor;

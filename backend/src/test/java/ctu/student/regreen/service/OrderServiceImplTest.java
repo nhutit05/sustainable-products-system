@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -27,9 +28,11 @@ import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.integration.payos.service.PayOSService;
 import ctu.student.regreen.mapper.OrderMapper;
+import ctu.student.regreen.model.Address;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
 import ctu.student.regreen.model.CartItemId;
+import ctu.student.regreen.model.City;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Invoice;
 import ctu.student.regreen.model.Order;
@@ -38,6 +41,8 @@ import ctu.student.regreen.model.OrderStatus;
 import ctu.student.regreen.model.PaymentMethod;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.model.Product;
+import ctu.student.regreen.model.Village;
+import ctu.student.regreen.repository.AddressRepository;
 import ctu.student.regreen.repository.CartItemRepository;
 import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
@@ -70,6 +75,9 @@ class OrderServiceImplTest {
 
         @Mock
         private PaymentMethodRepository paymentMethodRepository;
+
+        @Mock
+        private AddressRepository addressRepository;
 
         @Mock
         private VoucherRepository voucherRepository;
@@ -371,6 +379,7 @@ class OrderServiceImplTest {
                 request.setOrderReceiverPhone("0123456789");
                 request.setPaymentMethodId(1);
                 request.setProductIds(List.of(10));
+                request.setAddressId(1);
 
                 Cart cart = new Cart();
                 cart.setCartId(1);
@@ -388,6 +397,19 @@ class OrderServiceImplTest {
 
                 cartItem.setId(
                                 new CartItemId(1, 10));
+                
+                City city = new City();
+                city.setCityId(1);
+
+                Village village = new Village();
+                village.setCity(city);
+                
+                Address address = new Address();
+                address.setAddressId(1);
+                address.setAddressName("Hoai");
+                address.setAddressStreet("3/2");
+                address.setCustomer(customer);
+                address.setVillage(village);
 
                 cartItem.setQuantity(2);
 
@@ -398,6 +420,8 @@ class OrderServiceImplTest {
                 when(paymentMethodRepository
                                 .findById(1))
                                 .thenReturn(Optional.of(paymentMethod));
+                
+                when(addressRepository.findById(1)).thenReturn(Optional.of(address));
 
                 when(orderStatusRepository
                                 .findByOrderStatusName("PENDING"))
@@ -420,6 +444,8 @@ class OrderServiceImplTest {
                                 .thenAnswer(inv -> inv.getArgument(0));
 
                 CheckoutResponse result = service.checkout(request);
+
+                verify(addressRepository).findById(anyInt());
 
                 assertNotNull(result);
 
@@ -446,6 +472,20 @@ class OrderServiceImplTest {
                 request.setOrderReceiverPhone("0123456789");
                 request.setPaymentMethodId(1);
                 request.setProductIds(List.of());
+                request.setAddressId(1);
+
+                City city = new City();
+                city.setCityId(1);
+
+                Village village = new Village();
+                village.setCity(city);
+
+                Address address = new Address();
+                address.setAddressId(1);
+                address.setAddressName("Hoai");
+                address.setAddressStreet("3/2");
+                address.setCustomer(customer);
+                address.setVillage(village);
 
                 Cart cart = new Cart();
                 cart.setCartId(1);
@@ -458,6 +498,8 @@ class OrderServiceImplTest {
                                 .findById(1))
                                 .thenReturn(Optional.of(
                                                 paymentMethod(false)));
+                
+                when(addressRepository.findById(1)).thenReturn(Optional.of(address));
 
                 when(orderStatusRepository
                                 .findByOrderStatusName("PENDING"))
@@ -488,6 +530,8 @@ class OrderServiceImplTest {
                 request.setPaymentMethodId(1);
                 request.setVoucherId(99);
                 request.setProductIds(List.of(10));
+                request.setAddressId(1);
+
 
                 Cart cart = new Cart();
 
@@ -522,9 +566,20 @@ class OrderServiceImplTest {
                 request.setOrderReceiverPhone("0123456789");
                 request.setPaymentMethodId(1);
                 request.setProductIds(List.of(10));
+                request.setAddressId(1);
 
                 Cart cart = new Cart();
                 cart.setCartId(1);
+
+                City city = new City();
+                city.setCityId(1);
+
+                Village village = new Village();
+                village.setCity(city);
+
+                Address address = new Address();
+                address.setAddressId(1);
+                address.setVillage(village);
 
                 CartItem cartItem = new CartItem();
                 cartItem.setId(new CartItemId(1, 10));
@@ -535,11 +590,15 @@ class OrderServiceImplTest {
                 product.setProductName("Green Tea");
                 product.setInventory(2);
 
+                
                 when(cartRepository.findByCustomerUserId(1))
                                 .thenReturn(Optional.of(cart));
 
                 when(paymentMethodRepository.findById(1))
                                 .thenReturn(Optional.of(paymentMethod(false)));
+
+                when(addressRepository.findById(1)).thenReturn(Optional.of(address));
+
 
                 when(orderStatusRepository.findByOrderStatusName("PENDING"))
                                 .thenReturn(Optional.of(orderStatus("PENDING")));
