@@ -29,3 +29,24 @@ export type ProductImage = {
   productId: number
   imageUrl: string
 }
+
+export type ProductRequest = {
+  productName: string
+  productPrice: number
+  productCarbonIndex: number
+  baseEcoPoints: number
+  inventory: number
+  original: string
+  statusSale: boolean
+  expiredAt: string
+  weight: number
+  categoryId: number
+  fileId: number
+}
+
+// CATEGORIES
+
+export type CategoryResponse = {
+  categoryId: number
+  categoryName: string
+}

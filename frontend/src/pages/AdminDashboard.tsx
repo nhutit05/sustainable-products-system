@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   return (
     <div className="admin_dashboard text-left">
       {/* DASHBOARD CONTENT */}
-      <div className="mt-20">
+      <div className="px-4">
         {/* DASHBOARD BANNER */}
         <section className="adm_dashboard-banner  p-4 mb-4 rounded-2xl bg-[radial-gradient(circle_at_45%_50%,rgba(16,185,129,0.18)_0%,transparent_45%),linear-gradient(to_right,#0E1D2C,#0D3D39,#0E1D2C)]">
           <h3 className="text-xl font-semibold text-white py-2">

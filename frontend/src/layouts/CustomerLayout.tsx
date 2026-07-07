@@ -45,7 +45,14 @@ export default function CustomerLayout() {
           <Route path="" element={<Homepage />} />
           <Route path="products">
             <Route path="" element={<Products />} />
-            <Route path=":productId" element={<ProductDetail />} />
+            <Route
+              path=":productId"
+              element={
+                <CustomerProvider>
+                  <ProductDetail />
+                </CustomerProvider>
+              }
+            />
           </Route>
 
           <Route

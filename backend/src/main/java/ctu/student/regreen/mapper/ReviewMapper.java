@@ -20,16 +20,8 @@ public class ReviewMapper {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
 
-    public Review toEntity(ReviewRequest request) {
+    public Review toEntity(ReviewRequest request, Customer customer, Product product) {
         Review review = new Review();
-
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found with id: " + request.getCustomerId()));
-
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new RuntimeException("Product not found with id: " + request.getProductId()));
 
         review.setReviewContent(request.getReviewContent());
         review.setReviewRating(request.getReviewRating());
@@ -45,23 +37,14 @@ public class ReviewMapper {
                 review.getReviewContent(),
                 review.getReviewRating(),
                 review.getCustomer().getUserId(),
+                review.getCustomer().getUsername(),
                 review.getProduct().getProductId()
         );
     }
 
     public void update(Review review, ReviewRequest request) {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() ->
-                        new RuntimeException("Customer not found with id: " + request.getCustomerId()));
-
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() ->
-                        new RuntimeException("Product not found with id: " + request.getProductId()));
-
         review.setReviewRating(request.getReviewRating());
         review.setReviewContent(request.getReviewContent());
-        review.setProduct(product);
-        review.setCustomer(customer);
 
     }
 }

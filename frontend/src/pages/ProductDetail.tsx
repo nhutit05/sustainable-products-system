@@ -5,6 +5,7 @@ import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/ProductCardSuggest'
 import type { Cart } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
+import ProductReview from '../components/ProductReview'
 
 export default function ProductDetail() {
   const location = useLocation()
@@ -19,7 +20,7 @@ export default function ProductDetail() {
 
   const [activeImg, setActiveImg] = useState(0)
 
-  const [countReviews, setCountReviews] = useState(0)
+  const countReviews = 0
 
   // Danh sach san pham goi y => lay tam tu products
   const [suggestProducts, setSuggestProducts] = useState<ProductDetail[]>([])
@@ -61,21 +62,6 @@ export default function ProductDetail() {
         }
       } catch (error) {
         console.error(`Error fetching image for product ${productId}:`, error)
-      }
-    }
-
-    // Lay so luong danh gia san pham tu productId
-    const getCountReviews = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/products/${productId}/reviews/count`
-        )
-        if (response.ok) {
-          const data = await response.json()
-          setCountReviews(data.count)
-        }
-      } catch (error) {
-        console.error('Error fetching review count:', error)
       }
     }
 
@@ -125,7 +111,6 @@ export default function ProductDetail() {
 
     fetchProduct()
     fetchImageProduct()
-    getCountReviews()
 
     // fetch tam toan bo product de goi y
     fetchSuggestProducts()
@@ -299,12 +284,25 @@ export default function ProductDetail() {
           </div>
 
           {/* Products Description */}
-          <div className="product_infor--plus bg-white border border-emerald-100 rounded-2xl p-3 ml-4"></div>
+          <h2 className="text-green-900 text-lg font-semibold mb-4">Thông tin sản phẩm</h2>
+          <div className="product_infor--plus bg-white border border-emerald-100 rounded-2xl p-3 mb-5">
+            <p className="text-gray-500 text-md mt-2">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed blanditiis, optio, porro
+              rem quaerat labore quas quibusdam voluptates harum eveniet, aut velit? Omnis aliquam
+              id quidem tempora aut dolore facilis?
+            </p>
+          </div>
 
           {/* Products Suggestion */}
           <div className="product_suggest-list">
-            <h2 className="text-lg font-semibold mb-4">Sản phẩm liên quan</h2>
+            <h2 className="text-lg font-semibold mb-4 text-green-900">Sản phẩm liên quan</h2>
             <ProductCardSuggest products={suggestProducts} />
+          </div>
+
+          {/* Products Reviews */}
+          <div className="product_reviews mt-5">
+            <h2 className="text-lg font-semibold mb-4 text-green-900">Đánh giá sản phẩm</h2>
+            <ProductReview productId={product.productId} />
           </div>
         </div>
       ) : (

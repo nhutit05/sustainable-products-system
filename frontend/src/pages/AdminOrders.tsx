@@ -67,10 +67,8 @@ export default function AdminOrders() {
     }
   }, [token])
 
-  console.log('orders', orders)
-
   return (
-    <div className="flex flex-col gap-4 mt-20">
+    <div className="flex flex-col gap-4 px-4">
       <header className="order-header p-4 rounded-2xl shadow bg-white ">
         <h1 className="text-xl text-green-900 font-semibold mb-4">Quản lý đơn hàng</h1>
         <div className="grid grid-cols-3 items-center gap-4">
