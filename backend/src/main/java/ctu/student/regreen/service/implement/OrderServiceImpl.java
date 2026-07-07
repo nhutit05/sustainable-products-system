@@ -110,6 +110,7 @@ public class OrderServiceImpl implements OrderService {
                 return addressRepository.findById(addressId)
                                 .orElseThrow(() -> new RuntimeException("Address not found"));
         }
+
         private PayOSCheckoutResult processOnlinePayment(Order order) {
 
                 if (!order.getPaymentMethod().getOnline()) {
@@ -184,7 +185,6 @@ public class OrderServiceImpl implements OrderService {
 
                 String address = getAddress(request.getAddressId()).toString();
 
-
                 Order order = new Order();
                 order.setCustomer(customer);
                 order.setOrderReceiver(request.getOrderReceiver());
@@ -237,6 +237,14 @@ public class OrderServiceImpl implements OrderService {
 
                 Order savedOrder = orderRepository.save(order);
 
+                Integer accummulatedEcoPoints = 0;
+
+                for (OrderItem item: savedOrder.getOrderItems()) {
+                        accummulatedEcoPoints += item.getProduct().getBaseEcoPoints() * item.getQuantity();
+                }
+
+                customer.setAccumulatedEcoPoints(customer.getAccumulatedEcoPoints() + accummulatedEcoPoints);
+
                 PayOSCheckoutResult checkout = processOnlinePayment(savedOrder);
 
                 createInvoice(savedOrder);
@@ -277,7 +285,7 @@ public class OrderServiceImpl implements OrderService {
                 newOrder.setOrderReceiverPhone(oldOrder.getOrderReceiverPhone());
 
                 newOrder.setPaymentMethod(oldOrder.getPaymentMethod());
-                
+
                 newOrder.setOrderAddress((oldOrder.getOrderAddress()));
 
                 newOrder.setVoucher(oldOrder.getVoucher());
