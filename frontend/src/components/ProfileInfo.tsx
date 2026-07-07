@@ -36,6 +36,8 @@ export default function ProfileInfo() {
     console.log('update data', dataUpdated)
   }
 
+  console.log('customerData', customerData)
+
   return (
     <div className="profileInfo">
       <header className="border-b border-green-100 pb-4 pt-2 px-3 mb-4 text-left flex items-center justify-between">
