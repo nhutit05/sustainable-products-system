@@ -91,7 +91,7 @@ export default function Checkout({
       orderReceiver: orderReceiver,
       orderReceiverPhone: orderReceiverPhone,
       paymentMethodId: paymentMethodId,
-      voucherId: selectedVoucher?.voucherId || 0,
+      voucherId: selectedVoucher?.voucherId || null,
       productIds: cartItems.map((item) => item.productId),
     }
 

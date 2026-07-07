@@ -76,6 +76,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
         Order order = getOrderEntity(orderId);
 
+    
         if (!order.getPaymentMethod().getOnline()) {
 
             order.setPaymentStatus(

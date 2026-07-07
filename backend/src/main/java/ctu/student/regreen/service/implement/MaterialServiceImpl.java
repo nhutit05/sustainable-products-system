@@ -41,8 +41,7 @@ public class MaterialServiceImpl implements MaterialService {
     public MaterialResponse getById(Integer id) {
 
         Material material = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Material not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Material not found with id: " + id));
 
         return mapper.toResponse(material);
     }
@@ -51,8 +50,7 @@ public class MaterialServiceImpl implements MaterialService {
     public MaterialResponse update(Integer id, MaterialRequest request) {
 
         Material material = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Material not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Material not found with id: " + id));
 
         mapper.update(material, request);
 
@@ -63,8 +61,7 @@ public class MaterialServiceImpl implements MaterialService {
     public void delete(Integer id) {
 
         Material material = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Material not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Material not found with id: " + id));
 
         repository.delete(material);
     }
