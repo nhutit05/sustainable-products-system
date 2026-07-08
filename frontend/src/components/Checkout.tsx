@@ -21,12 +21,14 @@ interface OrderSummary {
 }
 
 
+
 interface CheckoutProps {
   cartItems: CartItemResponse[]
   totalPrice: number
   paymentMethodId: number
   setOnClose: (value: boolean) => void
 }
+
 
 
 export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOnClose }: CheckoutProps) {
@@ -45,9 +47,10 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
   const [showAddAddress, setShowAddAddress] = useState(false)
 
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+  const [qrCode, setQrCode] = useState< string | null>(null)
   const [orderId, setOrderId] = useState<number>()
   const [expiredAt, setExpiredAt] = useState<string | null>(null)
-  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
 
   const [vouchers, setVouchers] = useState<{ voucherId: number; code: string; discountValue: number }[]>([])
 
@@ -133,6 +136,7 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
 
   const handleSubmitCheckout = async () => {
 
+
     const request = {
       orderReceiver,
       orderReceiverPhone,
@@ -145,6 +149,8 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
 
     try {
 
+      console.log("CLICK");
+
       const response = await fetch('http://localhost:8080/api/orders/checkout', {
         method: 'POST',
         headers: {
@@ -155,8 +161,9 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
       })
 
 
+console.log("status:", response.status);
       const result = await response.json()
-
+console.log(result);
 
       if (!response.ok) {
         showNotification({
@@ -171,7 +178,7 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
 
       // COD
 
-      if (!result.checkoutUrl) {
+      if (!result.checkoutUrl && !result.qrCode) {
 
         showNotification({
           message: 'Đặt hàng thành công!',
@@ -185,7 +192,8 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
       }
 
 
-
+console.log("checkoutUrl =", result.checkoutUrl);
+console.log("expiredAt =", result.expiredAt);
 
 
       // PAYOS
@@ -195,20 +203,23 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
       setCheckoutUrl(result.checkoutUrl)
 
       setExpiredAt(result.expiredAt)
+      setQrCode(result.qrCode)
+
+
 
 
 
       setOrderSummary({
-        items: cartItems,
-        total: totalPrice - valueSale,
-        discount: valueSale,
-        paymentMethod: paymentMethodName,
-        receiver: orderReceiver,
-        phone: orderReceiverPhone,
-        address: selectedAddress
-          ? `${selectedAddress.addressStreet}, ${selectedAddress.villageName}, ${selectedAddress.cityName}`
-          : 'Chưa có địa chỉ',
-      })
+  items: cartItems,
+  total: totalPrice - valueSale,
+  discount: valueSale,
+  paymentMethod: paymentMethodName,
+  receiver: orderReceiver,
+  phone: orderReceiverPhone,
+  address: selectedAddress
+    ? `${selectedAddress.addressStreet}, ${selectedAddress.villageName}, ${selectedAddress.cityName}`
+    : "Chưa có địa chỉ",
+});
 
 
 
@@ -229,21 +240,21 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
 
 
 
+console.log("checkoutUrl =", checkoutUrl);
+console.log("orderSummary =", orderSummary);
 
-
-  if (checkoutUrl && orderSummary) {
-
-    return (
-      <PayOSEmbedded
-        checkoutUrl={checkoutUrl}
-        orderId={orderId!}
-        expiredAt={expiredAt}
-        setOnClose={setOnClose}
-        orderSummary={orderSummary}
-      />
-    )
-
-  }
+  if (checkoutUrl && qrCode && orderSummary) {
+  return (
+    <PayOSEmbedded
+      checkoutUrl={checkoutUrl}
+      orderId={orderId!}
+      qrCode={qrCode}
+      expiredAt={expiredAt}
+      orderSummary={orderSummary}
+      setOnClose={setOnClose}
+    />
+  );
+}
 
 
 
