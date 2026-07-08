@@ -1,6 +1,7 @@
 package ctu.student.regreen.dto.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,5 +34,7 @@ public class ProductResponse {
 
     private String categoryName;
 
-    private Integer fileId;
+    private List<ProductMaterialResponse> materials;
+
+    private List<String> imageUrls;
 }
