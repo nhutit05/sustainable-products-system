@@ -42,7 +42,7 @@ export const CustomerProvider = ({ children }: { children: React.ReactNode }) =>
       try {
         if (token) {
           const response = await fetch(
-            `http://localhost:8080/api/customers/me?username=${username}`,
+            `http://localhost:8080/api/customers/me`,
             {
               method: 'GET',
               headers: {

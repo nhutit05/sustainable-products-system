@@ -23,8 +23,8 @@ public class CustomerController {
     }
 
     @GetMapping("me")
-    public CustomerResponse getCustomerByUsername(@RequestParam(value = "username") String username) {
-        return service.getByUsername(username);
+    public CustomerResponse getCustomerByUsername() {
+        return service.getByUsername();
     }
 
     // [GET] /api/customers/{id}

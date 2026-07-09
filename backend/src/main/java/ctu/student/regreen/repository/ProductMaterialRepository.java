@@ -19,4 +19,6 @@ public interface ProductMaterialRepository extends JpaRepository<ProductMaterial
 
     Optional<ProductMaterial> deleteByProductProductIdAndMaterialMaterialId(Integer productId, Integer materialId);
 
+    List<ProductMaterial> findByProductProductIdIn(List<Integer> productIds);
+
 }

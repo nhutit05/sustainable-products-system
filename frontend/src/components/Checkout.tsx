@@ -205,11 +205,12 @@ export default function Checkout({
     }
   }
 
-  if (checkoutUrl && orderSummary) {
+  if (checkoutUrl && orderSummary && qrCode) {
     return (
       <PayOSEmbedded
         checkoutUrl={checkoutUrl}
         orderId={orderId!}
+        qrCode={qrCode}
         expiredAt={expiredAt}
         setOnClose={setOnClose}
         orderSummary={orderSummary}
