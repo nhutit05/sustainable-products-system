@@ -148,13 +148,48 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAll() {
+        // Lay danh sach toan bo product trong database
+        List<Product> products = repository.findAll();
 
-//        return repository.findAll()
-//                .stream()
-//                .map(mapper::toResponse)
-//                .toList();
+        List<ProductResponse> productsList = new ArrayList<ProductResponse>();
 
-        return null;
+        for(Product product : products) {
+            // Danh sach nguyen lieu cua product
+            List<ProductMaterialResponse> productMaterials = productMaterialRepository.findAllByProductProductId(product.getProductId())
+                    .stream()
+                    .map(productMaterialMapper::toResponse)
+                    .toList();
+
+            // Lay danh sach imageURL cua product
+            List<String> productImages = productImageService.getAllProductImagesByProductId(product.getProductId())
+                    .stream()
+                    .map(productImageResponse -> productImageResponse.getImageUrl())
+                    .toList();
+
+            ProductResponse response = new ProductResponse(
+                    product.getProductId(),
+                    product.getProductName(),
+                    product.getProductPrice(),
+                    product.getProductCarbonIndex(),
+                    product.getBaseEcoPoints(),
+                    product.getInventory(),
+                    product.getOriginal(),
+                    product.getStatusSale(),
+                    product.getExpiredAt(),
+                    product.getWeight(),
+
+                    product.getCategory().getCategoryId(),
+                    product.getCategory().getCategoryName(),
+
+                    productMaterials,
+
+                    productImages
+            );
+
+            productsList.add(response);
+        }
+
+        return productsList;
     }
 
     @Override

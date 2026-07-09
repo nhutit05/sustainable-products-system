@@ -21,7 +21,7 @@ public class ProductMapper {
     public Product toEntity(
             ProductRequest request,
             Category category
-            ) {
+    ) {
 
         Product product = new Product();
 
@@ -61,8 +61,8 @@ public class ProductMapper {
 
     public ProductResponse toResponse(
             Product product,
-                                      List<ProductMaterialResponse> materials,
-                                      List<String> imageResponses) {
+            List<ProductMaterialResponse> materials,
+            List<String> imageResponses) {
 
         return new ProductResponse(
                 product.getProductId(),
