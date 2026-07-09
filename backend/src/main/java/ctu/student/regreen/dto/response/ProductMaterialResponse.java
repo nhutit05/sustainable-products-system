@@ -8,8 +8,10 @@ import lombok.Data;
 public class ProductMaterialResponse {
 
     private Integer productId;
+    private String productName;
 
     private Integer materialId;
+    private String materialName;
 
     private Float percentage;
 }

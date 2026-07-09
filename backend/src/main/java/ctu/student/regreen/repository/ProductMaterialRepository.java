@@ -11,7 +11,7 @@ public interface ProductMaterialRepository extends JpaRepository<ProductMaterial
 
     List<ProductMaterial> findAllByProductProductIdAndMaterialMaterialId(Integer productId, Integer materialId);
 
-    List<ProductMaterial> findAllByProductProductId(Integer productId);
+    List<ProductMaterial    > findAllByProductProductId(Integer productId);
 
     List<ProductMaterial> findAllByMaterialMaterialId(Integer materialId);
 

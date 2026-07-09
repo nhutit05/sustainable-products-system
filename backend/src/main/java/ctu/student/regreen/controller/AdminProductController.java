@@ -4,7 +4,9 @@ import ctu.student.regreen.dto.request.ProductRequest;
 import ctu.student.regreen.dto.response.ProductResponse;
 import ctu.student.regreen.service.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,9 +18,13 @@ public class AdminProductController {
 
     private final ProductService service;
 
-    @PostMapping
-    public ProductResponse create(@RequestBody ProductRequest request) {
-
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductResponse create(
+            @RequestPart("request") ProductRequest request,
+            @RequestPart("images")List<MultipartFile> images
+    ) {
+        request.setImagesFiles(images);
+        System.out.println("request: " + request);
         return service.create(request);
     }
 
