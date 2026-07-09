@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  Award,
   Calculator,
   CheckCircle,
   Heart,
@@ -8,48 +7,25 @@ import {
   Recycle,
   TrendingUp,
   Wind,
-  Leaf,
-  Sprout,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import type { ProductIntroduce, ProductDetail, ProductImage } from '../model/product.model'
+import { useNavigate } from 'react-router-dom'
+import type { ProductResponse } from '../model/product.model'
 import ProductCard from '../components/ProductCard'
 
 export default function Homepage() {
   const navigate = useNavigate()
 
-  const [products, setProducts] = useState<ProductIntroduce[]>([])
+  const [products, setProducts] = useState<ProductResponse[]>([])
 
   useEffect(() => {
-    const fetchImageProduct = async (productId: number) => {
-      try {
-        const reponse = await fetch(`http://localhost:8080/api/products/${productId}/images`)
-        if (reponse.ok) {
-          const imageData = await reponse.json()
-          imageData.sort((a: ProductImage, b: ProductImage) => a.productImageId - b.productImageId)
-          if (imageData && imageData.length > 0) {
-            return imageData[0].imageUrl
-          }
-        }
-      } catch (error) {
-        console.error(`Error fetching image for product ${productId}:`, error)
-      }
-    }
-
     const fetchProducts = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/products?page=1&limit=4')
 
         if (response.ok) {
           const data = await response.json()
-          const filteredProducts: ProductIntroduce[] = await Promise.all(
-            data.map(async (product: ProductDetail) => {
-              const imageUrl = await fetchImageProduct(product.productId)
-              return { ...product, productImage: imageUrl }
-            })
-          )
-          setProducts(filteredProducts)
+          setProducts(data)
         }
       } catch (error) {
         console.error('Error fetching products:', error)
