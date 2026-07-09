@@ -1,34 +1,42 @@
 import { CloudUpload, X } from 'lucide-react'
-import type { CategoryResponse, Material, ProductRequest } from '../model/product.model'
+import type {
+  CategoryResponse,
+  Material,
+  ProductRequest,
+  ProductResponse,
+} from '../model/product.model'
 import { useEffect, useState } from 'react'
 import AddProductReviewImage from './AddProductReviewImage'
 import { useNotification } from '../context/useNotification'
 import Loading from './Loading'
+import { useNavigate } from 'react-router-dom'
 
-interface AddProductProps {
+interface EditProductProps {
   setIsModalOpen: (value: boolean) => void
-  setShowAddProduct: (value: boolean) => void
+  setShowEditProduct: (value: boolean) => void
   categories: CategoryResponse[]
+  selectedProduct: ProductResponse
 }
 
-export default function AdmAddProduct({
+export default function AdmEditProduct({
   setIsModalOpen,
-  setShowAddProduct,
+  setShowEditProduct,
   categories,
-}: AddProductProps) {
+  selectedProduct,
+}: EditProductProps) {
   const [productRequest, setProductRequest] = useState<ProductRequest>({
-    baseEcoPoints: '',
-    materialIds: [],
-    original: '',
-    productCarbonIndex: '',
-    percentageMaterialIds: [],
-    expiredAt: '2026-09-07',
-    weight: '',
-    categoryId: '',
-    statusSale: false,
-    productName: '',
-    productPrice: '',
-    inventory: '',
+    baseEcoPoints: selectedProduct.baseEcoPoints,
+    materialIds: selectedProduct.materials.map((material) => material.materialId),
+    original: selectedProduct.original,
+    productCarbonIndex: selectedProduct.productCarbonIndex,
+    percentageMaterialIds: selectedProduct.materials.map((material) => material.percentage),
+    expiredAt: selectedProduct.expiredAt,
+    weight: selectedProduct.weight,
+    categoryId: selectedProduct.categoryId,
+    statusSale: selectedProduct.statusSale,
+    productName: selectedProduct.productName,
+    productPrice: selectedProduct.productPrice,
+    inventory: selectedProduct.inventory,
   })
 
   const [loading, setLoading] = useState(false)
@@ -47,6 +55,8 @@ export default function AdmAddProduct({
       imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
     }
   }, [imagePreviewUrls])
+
+  const navigate = useNavigate()
 
   // Fetch materials
   useEffect(() => {
@@ -68,9 +78,9 @@ export default function AdmAddProduct({
     fetchMaterials()
   }, [])
 
-  const CloseAddProduct = () => {
+  const CloseEditProduct = () => {
     setIsModalOpen(false)
-    setShowAddProduct(false)
+    setShowEditProduct(false)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -93,25 +103,31 @@ export default function AdmAddProduct({
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8080/api/admin/products', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      })
+      const response = await fetch(
+        `http://localhost:8080/api/admin/products/${selectedProduct.productId}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: formData,
+        }
+      )
 
       if (response.ok) {
         showNotification({
-          message: 'Thêm sản phẩm thành công!',
+          message: 'Chỉnh sửa sản phẩm thành công!',
           type: 'SUCCESS',
           duration: 3000,
         })
-        CloseAddProduct()
+        setTimeout(() => {
+          CloseEditProduct()
+          navigate(0) // Refresh the page after 3 seconds
+        }, 3000)
       }
     } catch (error) {
       showNotification({
-        message: 'Thêm sản phẩm thất bại!',
+        message: 'Chỉnh sửa sản phẩm thất bại!',
         type: 'ERROR',
         duration: 3000,
       })
@@ -137,12 +153,12 @@ export default function AdmAddProduct({
       <X
         className="absolute text-gray-400 hover:cursor-pointer hover:text-gray-700 transition-colors top-4 right-4 cursor-pointer"
         size={24}
-        onClick={CloseAddProduct}
+        onClick={CloseEditProduct}
       />
       <h2 className="text-xl font-semibold mb-4 uppercase text-green-900 text-center">
-        Thêm sản phẩm mới
+        Chỉnh sửa sản phẩm
       </h2>
-      <form id="add-product-form" className="mb-4" onSubmit={handleSubmit}>
+      <form id="edit-product-form" className="mb-4" onSubmit={handleSubmit}>
         <div className="grid grid-cols-4 gap-4">
           {/* TEN SAN PHAM */}
           <div className="form-group col-span-2">
@@ -435,8 +451,29 @@ export default function AdmAddProduct({
 
         {/* HINH ANH SAN PHAM */}
         <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="col-span-2 mt-4">
+            <label className="block font-semibold mb-1 text-green-900">
+              Hình ảnh sản phẩm hiện tại
+            </label>
+            {selectedProduct.imageUrls && selectedProduct.imageUrls.length > 0 ? (
+              <div className="flex justify-evenly items-center">
+                {selectedProduct.imageUrls.map((imageUrl, index) => (
+                  <img
+                    key={index}
+                    src={imageUrl}
+                    alt={`Hình ảnh sản phẩm ${index + 1}`}
+                    className="w-48 h-32 object-cover rounded-lg mr-2 shadow-md hover:scale-105 transition-transform"
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">Không có hình ảnh sản phẩm</p>
+            )}
+          </div>
           <div className="form-group">
-            <label className="block font-semibold mb-1 text-green-900">Hình ảnh sản phẩm</label>
+            <label className="block font-semibold mb-1 text-green-900">
+              Thêm hình ảnh sản phẩm
+            </label>
             <div
               onClick={() =>
                 document.querySelector<HTMLInputElement>('#addProductImageUpload')?.click()
@@ -455,34 +492,7 @@ export default function AdmAddProduct({
               onChange={handleImageChange}
             />
           </div>
-          {/* XEM TRUOC ANH */}
-          {/* <div className="uploadImage_review">
-            <div className="image_preview w-full h-48 border border-gray-300 rounded-xl overflow-y-auto bg-gray-50 p-2">
-              {imagePreviewUrls.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {imagePreviewUrls.map((previewUrl, index) => (
-                    <div
-                      key={`${previewUrl}-${index}`}
-                      className="relative h-40 overflow-hidden rounded-xl border border-gray-200 bg-white"
-                    >
-                      <img
-                        src={previewUrl}
-                        alt={`Ảnh xem trước ${index + 1}`}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-400">
-                  Chưa có hình ảnh xem trước
-                </div>
-              )}
-            </div>
-            {imageFiles.length > 0 && (
-              <p className="mt-2 text-sm text-gray-500">Đã chọn {imageFiles.length} file ảnh</p>
-            )}
-          </div> */}
+
           <AddProductReviewImage imageFiles={imageFiles} imagePreviewUrls={imagePreviewUrls} />
         </div>
       </form>
@@ -490,7 +500,7 @@ export default function AdmAddProduct({
       <div className="mt-4 flex justify-end">
         <button
           className="bg-white text-red-500 px-4 py-2 hover:cursor-pointer rounded-xl border border-red-500 hover:bg-red-500 hover:text-white transition-colors mr-2"
-          onClick={() => CloseAddProduct()}
+          onClick={() => CloseEditProduct()}
         >
           Đóng
         </button>
@@ -498,13 +508,13 @@ export default function AdmAddProduct({
         <button
           className="bg-blue-500 text-white px-4 py-2 hover:cursor-pointer rounded-xl hover:bg-blue-600 hover:active:scale-98 transition-all"
           type="submit"
-          form="add-product-form"
+          form="edit-product-form"
         >
           Lưu sản phẩm
         </button>
       </div>
 
-      {loading && <Loading message="Đang thêm sản phẩm. Vui lòng chờ trong giây lát !" />}
+      {loading && <Loading message="Đang cập nhật sản phẩm. Vui lòng chờ trong giây lát !" />}
     </div>
   )
 }

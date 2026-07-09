@@ -21,17 +21,18 @@ public class AdminProductController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ProductResponse create(
             @RequestPart("request") ProductRequest request,
-            @RequestPart("images")List<MultipartFile> images
+            @RequestPart(value="images", required = false)List<MultipartFile> images
     ) {
-        request.setImagesFiles(images);
-        System.out.println("request: " + request);
+        request.setImagesFiles(images == null ? Collections.emptyList() : images);
         return service.create(request);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ProductResponse update(
             @PathVariable Integer id,
-            @RequestBody ProductRequest request) {
+            @RequestPart("request") ProductRequest request,
+            @RequestPart(value = "images", required = false)List<MultipartFile> images) {
+        request.setImagesFiles(images == null ? Collections.emptyList() : images);
         return service.update(id, request);
     }
 

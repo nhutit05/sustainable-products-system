@@ -30,18 +30,25 @@ export type ProductImage = {
   imageUrl: string
 }
 
+export type Material = {
+  materialId: number
+  materialName: string
+  emissionIndex: number
+}
+
 export type ProductRequest = {
-  productName: string
-  productPrice: number
-  productCarbonIndex: number
-  baseEcoPoints: number
-  inventory: number
+  baseEcoPoints: number | ''
+  materialIds: number[]
   original: string
-  statusSale: boolean
+  productCarbonIndex: number | ''
+  percentageMaterialIds: number[]
   expiredAt: string
-  weight: number
-  categoryId: number
-  fileId: number
+  weight: number | ''
+  categoryId: number | ''
+  statusSale: boolean
+  productName: string
+  productPrice: number | ''
+  inventory: number | ''
 }
 
 export type ProductMaterial = {
