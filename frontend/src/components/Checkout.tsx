@@ -306,7 +306,7 @@ console.log("orderSummary =", orderSummary);
                 value={orderReceiver}
                 onChange={(e) => setOrderReceiver(e.target.value)}
                 placeholder="Nhập tên người nhận"
-                className="w-full border rounded-xl p-3"
+                className="w-full border border-slate-200 rounded-xl p-3"
               />
 
             </div>
@@ -325,7 +325,7 @@ console.log("orderSummary =", orderSummary);
                 value={orderReceiverPhone}
                 onChange={(e) => setOrderReceiverPhone(e.target.value)}
                 placeholder="Nhập số điện thoại"
-                className="w-full border rounded-xl p-3"
+                className="w-full border border-slate-200 rounded-xl p-3"
               />
 
             </div>
@@ -346,7 +346,7 @@ console.log("orderSummary =", orderSummary);
                   key={address.addressId}
                   type="button"
                   onClick={() => setSelectedAddress(address)}
-                  className={`w-full text-left border rounded-2xl p-4 ${
+                  className={`w-full text-left border border-slate-200 rounded-2xl p-4 ${
                     selectedAddress?.addressId === address.addressId
                       ? 'bg-emerald-50 border-emerald-500'
                       : ''
@@ -371,7 +371,7 @@ console.log("orderSummary =", orderSummary);
 
             <button
               type="button"
-              className="text-sm text-gray-500 hover:underline"
+              className="text-sm font-bold text-gray-500 hover:underline"
               onClick={() => setShowAddressList(!showAddressList)}
             >
               -- Chọn địa chỉ khác --
@@ -383,7 +383,7 @@ console.log("orderSummary =", orderSummary);
             {
               showAddressList && (
 
-                <div className="border rounded-xl p-3 space-y-2">
+                <div className="border border-slate-200 rounded-xl p-3 space-y-2">
 
                   {
                     addresses.map(address => (
@@ -460,7 +460,7 @@ console.log("orderSummary =", orderSummary);
 
 
 
-            <div className="border rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 rounded-2xl overflow-hidden">
 
 
               <table className="w-full">
@@ -498,7 +498,7 @@ console.log("orderSummary =", orderSummary);
                   {
                     cartItems.map(item => (
 
-                      <tr key={item.productId} className="border-t">
+                      <tr key={item.productId} className="border-t border border-slate-200">
 
 
                         <td className="p-3">
@@ -569,7 +569,7 @@ console.log("orderSummary =", orderSummary);
 
               <select
 
-                className="flex-1 border rounded-xl p-3"
+                className="flex-1 border border-slate-300 rounded-xl p-3"
 
                 onChange={(e) => {
 
@@ -653,7 +653,7 @@ console.log("orderSummary =", orderSummary);
 
 
 
-            <div className="flex justify-between items-center border rounded-2xl p-5">
+            <div className="flex justify-between items-center border border-slate-200 rounded-2xl p-5">
 
 
               <span className="text-xl font-bold text-green-900">
