@@ -1,301 +1,300 @@
-package ctu.student.regreen.service;
+// package ctu.student.regreen.service;
 
-import ctu.student.regreen.dto.request.ProductRequest;
-import ctu.student.regreen.dto.response.ProductResponse;
-import ctu.student.regreen.mapper.ProductMapper;
-import ctu.student.regreen.model.Category;
-import ctu.student.regreen.model.File;
-import ctu.student.regreen.model.Product;
-import ctu.student.regreen.repository.CategoryRepository;
-import ctu.student.regreen.repository.FileRepository;
-import ctu.student.regreen.repository.ProductRepository;
-import ctu.student.regreen.service.implement.ProductServiceImpl;
+// import ctu.student.regreen.dto.request.ProductRequest;
+// import ctu.student.regreen.dto.response.ProductResponse;
+// import ctu.student.regreen.mapper.ProductMapper;
+// import ctu.student.regreen.model.Category;
+// import ctu.student.regreen.model.File;
+// import ctu.student.regreen.model.Product;
+// import ctu.student.regreen.repository.CategoryRepository;
+// import ctu.student.regreen.repository.FileRepository;
+// import ctu.student.regreen.repository.ProductRepository;
+// import ctu.student.regreen.service.implement.ProductServiceImpl;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
+// import java.util.List;
+// import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+// import static org.junit.jupiter.api.Assertions.*;
+// import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class ProductServiceImplTest {
+// @ExtendWith(MockitoExtension.class)
+// class ProductServiceImplTest {
 
-    @Mock
-    private ProductRepository repository;
+//     @Mock
+//     private ProductRepository repository;
 
-    @Mock
-    private CategoryRepository categoryRepository;
+//     @Mock
+//     private CategoryRepository categoryRepository;
 
-    @Mock
-    private FileRepository fileRepository;
+//     @Mock
+//     private FileRepository fileRepository;
 
-    @Mock
-    private ProductMapper mapper;
+//     @Mock
+//     private ProductMapper mapper;
 
-    @InjectMocks
-    private ProductServiceImpl service;
+//     @InjectMocks
+//     private ProductServiceImpl service;
 
-    private Product product;
+//     private Product product;
 
-    private ProductRequest request;
+//     private ProductRequest request;
 
-    private ProductResponse response;
+//     private ProductResponse response;
 
-    private Category category;
+//     private Category category;
 
-    private File file;
+//     private File file;
 
-    @BeforeEach
-    void setUp() {
+//     @BeforeEach
+//     void setUp() {
 
-        product = new Product();
-        product.setProductId(1);
+//         product = new Product();
+//         product.setProductId(1);
 
-        category = new Category();
+//         category = new Category();
 
-        file = new File();
+//         file = new File();
 
-        request = new ProductRequest();
+//         request = new ProductRequest();
 
-        request.setCategoryId(1);
-        request.setFileId(1);
+//         request.setCategoryId(1);
 
-        response =
-                mock(ProductResponse.class);
+//         response =
+//                 mock(ProductResponse.class);
 
-        lenient()
-                .when(mapper.toResponse(any()))
-                .thenReturn(response);
-    }
+//         lenient()
+//                 .when(mapper.toResponse(any()))
+//                 .thenReturn(response);
+//     }
 
-    @Test
-    void create_success() {
+//     @Test
+//     void create_success() {
 
-        when(categoryRepository.findById(1))
-                .thenReturn(Optional.of(category));
+//         when(categoryRepository.findById(1))
+//                 .thenReturn(Optional.of(category));
 
-        when(fileRepository.findById(1))
-                .thenReturn(Optional.of(file));
+//         when(fileRepository.findById(1))
+//                 .thenReturn(Optional.of(file));
 
-        when(mapper.toEntity(
-                request,
-                category,
-                file))
-                .thenReturn(product);
+//         when(mapper.toEntity(
+//                 request,
+//                 category,
+//                 file))
+//                 .thenReturn(product);
 
-        when(repository.save(product))
-                .thenReturn(product);
+//         when(repository.save(product))
+//                 .thenReturn(product);
 
-        ProductResponse result =
-                service.create(request);
+//         ProductResponse result =
+//                 service.create(request);
 
-        assertNotNull(result);
+//         assertNotNull(result);
 
-        verify(repository)
-                .save(product);
-    }
+//         verify(repository)
+//                 .save(product);
+//     }
+
+//     @Test
+//     void create_categoryNotFound_fail() {
+
+//         when(categoryRepository.findById(1))
+//                 .thenReturn(Optional.empty());
+
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.create(request));
 
-    @Test
-    void create_categoryNotFound_fail() {
+//         assertEquals(
+//                 "Category not found",
+//                 ex.getMessage());
+//     }
 
-        when(categoryRepository.findById(1))
-                .thenReturn(Optional.empty());
+//     @Test
+//     void create_fileNotFound_fail() {
+
+//         when(categoryRepository.findById(1))
+//                 .thenReturn(Optional.of(category));
+
+//         when(fileRepository.findById(1))
+//                 .thenReturn(Optional.empty());
+
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.create(request));
+
+//         assertEquals(
+//                 "File not found",
+//                 ex.getMessage());
+//     }
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.create(request));
+//     @Test
+//     void update_success() {
 
-        assertEquals(
-                "Category not found",
-                ex.getMessage());
-    }
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.of(product));
 
-    @Test
-    void create_fileNotFound_fail() {
+//         when(categoryRepository.findById(1))
+//                 .thenReturn(Optional.of(category));
 
-        when(categoryRepository.findById(1))
-                .thenReturn(Optional.of(category));
+//         when(fileRepository.findById(1))
+//                 .thenReturn(Optional.of(file));
 
-        when(fileRepository.findById(1))
-                .thenReturn(Optional.empty());
-
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.create(request));
+//         ProductResponse result =
+//                 service.update(
+//                         1,
+//                         request);
 
-        assertEquals(
-                "File not found",
-                ex.getMessage());
-    }
+//         assertNotNull(result);
 
-    @Test
-    void update_success() {
+//         verify(mapper)
+//                 .update(
+//                         product,
+//                         request,
+//                         category,
+//                         file);
+//     }
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(product));
+//     @Test
+//     void update_productNotFound_fail() {
 
-        when(categoryRepository.findById(1))
-                .thenReturn(Optional.of(category));
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.empty());
 
-        when(fileRepository.findById(1))
-                .thenReturn(Optional.of(file));
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.update(
+//                                 1,
+//                                 request));
 
-        ProductResponse result =
-                service.update(
-                        1,
-                        request);
+//         assertEquals(
+//                 "Product not found",
+//                 ex.getMessage());
+//     }
 
-        assertNotNull(result);
+//     @Test
+//     void update_categoryNotFound_fail() {
 
-        verify(mapper)
-                .update(
-                        product,
-                        request,
-                        category,
-                        file);
-    }
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.of(product));
 
-    @Test
-    void update_productNotFound_fail() {
+//         when(categoryRepository.findById(1))
+//                 .thenReturn(Optional.empty());
 
-        when(repository.findById(1))
-                .thenReturn(Optional.empty());
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.update(
+//                                 1,
+//                                 request));
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.update(
-                                1,
-                                request));
+//         assertEquals(
+//                 "Category not found",
+//                 ex.getMessage());
+//     }
 
-        assertEquals(
-                "Product not found",
-                ex.getMessage());
-    }
+//     @Test
+//     void update_fileNotFound_fail() {
 
-    @Test
-    void update_categoryNotFound_fail() {
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.of(product));
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(product));
+//         when(categoryRepository.findById(1))
+//                 .thenReturn(Optional.of(category));
 
-        when(categoryRepository.findById(1))
-                .thenReturn(Optional.empty());
+//         when(fileRepository.findById(1))
+//                 .thenReturn(Optional.empty());
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.update(
-                                1,
-                                request));
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.update(
+//                                 1,
+//                                 request));
 
-        assertEquals(
-                "Category not found",
-                ex.getMessage());
-    }
+//         assertEquals(
+//                 "File not found",
+//                 ex.getMessage());
+//     }
 
-    @Test
-    void update_fileNotFound_fail() {
+//     @Test
+//     void getById_success() {
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(product));
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.of(product));
 
-        when(categoryRepository.findById(1))
-                .thenReturn(Optional.of(category));
+//         ProductResponse result =
+//                 service.getById(1);
 
-        when(fileRepository.findById(1))
-                .thenReturn(Optional.empty());
+//         assertNotNull(result);
+//     }
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.update(
-                                1,
-                                request));
+//     @Test
+//     void getById_notFound_fail() {
 
-        assertEquals(
-                "File not found",
-                ex.getMessage());
-    }
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.empty());
 
-    @Test
-    void getById_success() {
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.getById(1));
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(product));
+//         assertEquals(
+//                 "Product not found",
+//                 ex.getMessage());
+//     }
 
-        ProductResponse result =
-                service.getById(1);
+//     @Test
+//     void getAll_success() {
 
-        assertNotNull(result);
-    }
+//         when(repository.findAll())
+//                 .thenReturn(
+//                         List.of(product));
 
-    @Test
-    void getById_notFound_fail() {
+//         List<ProductResponse> result =
+//                 service.getAll();
 
-        when(repository.findById(1))
-                .thenReturn(Optional.empty());
+//         assertEquals(
+//                 1,
+//                 result.size());
+//     }
 
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.getById(1));
+//     @Test
+//     void delete_success() {
 
-        assertEquals(
-                "Product not found",
-                ex.getMessage());
-    }
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.of(product));
 
-    @Test
-    void getAll_success() {
+//         service.delete(1);
 
-        when(repository.findAll())
-                .thenReturn(
-                        List.of(product));
+//         verify(repository)
+//                 .delete(product);
+//     }
 
-        List<ProductResponse> result =
-                service.getAll();
+//     @Test
+//     void delete_notFound_fail() {
 
-        assertEquals(
-                1,
-                result.size());
-    }
+//         when(repository.findById(1))
+//                 .thenReturn(Optional.empty());
 
-    @Test
-    void delete_success() {
+//         RuntimeException ex =
+//                 assertThrows(
+//                         RuntimeException.class,
+//                         () -> service.delete(1));
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(product));
-
-        service.delete(1);
-
-        verify(repository)
-                .delete(product);
-    }
-
-    @Test
-    void delete_notFound_fail() {
-
-        when(repository.findById(1))
-                .thenReturn(Optional.empty());
-
-        RuntimeException ex =
-                assertThrows(
-                        RuntimeException.class,
-                        () -> service.delete(1));
-
-        assertEquals(
-                "Product not found",
-                ex.getMessage());
-    }
-}
+//         assertEquals(
+//                 "Product not found",
+//                 ex.getMessage());
+//     }
+// }

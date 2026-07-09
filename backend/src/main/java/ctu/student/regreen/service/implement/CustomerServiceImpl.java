@@ -9,6 +9,8 @@ import ctu.student.regreen.repository.CartRepository;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.service.interfaces.CustomerService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +39,11 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
 
-    public CustomerResponse getByUsername(String username) {
+    public CustomerResponse getByUsername() {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
         return customerRepository.findByUsername(username)
                 .map(customerMapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));

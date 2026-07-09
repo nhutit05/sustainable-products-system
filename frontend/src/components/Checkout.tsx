@@ -205,11 +205,12 @@ export default function Checkout({
     }
   }
 
-  if (checkoutUrl && orderSummary) {
+  if (checkoutUrl && orderSummary && qrCode) {
     return (
       <PayOSEmbedded
         checkoutUrl={checkoutUrl}
         orderId={orderId!}
+        qrCode={qrCode}
         expiredAt={expiredAt}
         setOnClose={setOnClose}
         orderSummary={orderSummary}
@@ -241,7 +242,7 @@ export default function Checkout({
                 value={orderReceiver}
                 onChange={(e) => setOrderReceiver(e.target.value)}
                 placeholder="Nhập tên người nhận"
-                className="w-full border rounded-xl p-3"
+                className="w-full border border-slate-200 rounded-xl p-3"
               />
             </div>
 
@@ -252,7 +253,7 @@ export default function Checkout({
                 value={orderReceiverPhone}
                 onChange={(e) => setOrderReceiverPhone(e.target.value)}
                 placeholder="Nhập số điện thoại"
-                className="w-full border rounded-xl p-3"
+                className="w-full border border-slate-200 rounded-xl p-3"
               />
             </div>
 
@@ -265,7 +266,7 @@ export default function Checkout({
                   key={address.addressId}
                   type="button"
                   onClick={() => setSelectedAddress(address)}
-                  className={`w-full text-left border rounded-2xl p-4 ${
+                  className={`w-full text-left border border-slate-200 rounded-2xl p-4 ${
                     selectedAddress?.addressId === address.addressId
                       ? 'bg-emerald-50 border-emerald-500'
                       : ''
@@ -281,25 +282,36 @@ export default function Checkout({
 
             <button
               type="button"
-              className="text-sm text-gray-500 hover:underline"
+              className="text-sm font-bold text-gray-500 hover:underline"
               onClick={() => setShowAddressList(!showAddressList)}
             >
               -- Chọn địa chỉ khác --
             </button>
 
-            {showAddressList && (
-              <div className="border rounded-xl p-3 space-y-2">
-                {addresses.map((address) => (
-                  <button
-                    key={address.addressId}
-                    type="button"
-                    className="block w-full text-left p-3 rounded-xl hover:bg-emerald-50"
-                    onClick={() => {
-                      setSelectedAddress(address)
-                      setShowAddressList(false)
-                    }}
-                  >
-                    <p className="font-semibold">{address.addressName}</p>
+
+
+
+            {
+              showAddressList && (
+
+                <div className="border border-slate-200 rounded-xl p-3 space-y-2">
+
+                  {
+                    addresses.map(address => (
+
+                      <button
+                        key={address.addressId}
+                        type="button"
+                        className="block w-full text-left p-3 rounded-xl hover:bg-emerald-50"
+                        onClick={() => {
+                          setSelectedAddress(address)
+                          setShowAddressList(false)
+                        }}
+                      >
+
+                        <p className="font-semibold">
+                          {address.addressName}
+                        </p>
 
                     <p className="text-sm">
                       {address.addressStreet}, {address.villageName}, {address.cityName}
@@ -331,7 +343,9 @@ export default function Checkout({
           <main className="col-span-2 space-y-5">
             <h2 className="text-xl font-bold text-green-900">Thông tin đơn hàng</h2>
 
-            <div className="border rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 rounded-2xl overflow-hidden">
+
+
               <table className="w-full">
                 <thead className="bg-emerald-50">
                   <tr>
@@ -346,10 +360,15 @@ export default function Checkout({
                 </thead>
 
                 <tbody>
-                  {cartItems.map((item) => (
-                    <tr key={item.productId} className="border-t">
-                      <td className="p-3">{item.productName}</td>
 
+
+                  {
+                    cartItems.map(item => (
+
+                      <tr key={item.productId} className="border-t border border-slate-200">
+
+                      <td className="p-3">{item.productName}</td>
+                      
                       <td className="p-3">{item.quantity}</td>
 
                       <td className="p-3">
@@ -375,7 +394,9 @@ export default function Checkout({
               <label className="font-semibold text-green-900">Mã giảm giá</label>
 
               <select
-                className="flex-1 border rounded-xl p-3"
+
+                className="flex-1 border border-slate-300 rounded-xl p-3"
+
                 onChange={(e) => {
                   const selected = vouchers.find(
                     (voucher) => voucher.voucherId === Number(e.target.value)
@@ -408,8 +429,14 @@ export default function Checkout({
               <span className="font-bold text-green-700">{paymentMethodName}</span>
             </div>
 
-            <div className="flex justify-between items-center border rounded-2xl p-5">
-              <span className="text-xl font-bold text-green-900">Tổng thanh toán</span>
+            <div className="flex justify-between items-center border border-slate-200 rounded-2xl p-5">
+
+
+              <span className="text-xl font-bold text-green-900">
+                Tổng thanh toán
+              </span>
+
+
 
               <span className="text-2xl font-bold text-red-500">
                 {Intl.NumberFormat('vi-VN', {

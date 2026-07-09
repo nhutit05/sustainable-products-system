@@ -15,6 +15,7 @@ import AdminDashboard from '../pages/AdminDashboard'
 import AdminSystemCategories from '../pages/AdminSystemCategories'
 import AdminOrders from '../pages/AdminOrders'
 import AdminProducts from '../pages/AdminProducts'
+import KnowledgePage from '../pages/knowledge/KnowledgePage'
 
 export default function AdminLayout() {
   // Set danh sach NAV_LINKS
@@ -123,6 +124,7 @@ export default function AdminLayout() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="refunds" element={<h1>Refunds</h1>} />
           <Route path="vouchers" element={<h1>Vouchers</h1>} />
+          <Route path="/admin/knowledge" element={<KnowledgePage />} />
         </Routes>
       </main>
     </div>

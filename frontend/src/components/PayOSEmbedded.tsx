@@ -1,433 +1,351 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from 'react'
-import { usePayOS } from '@payos/payos-checkout'
-import type { PayOSConfig } from '@payos/payos-checkout'
-import type { CartItemResponse } from '../model/cart.model'
+import { useEffect, useMemo, useState } from "react";
+import QRCode from "react-qr-code";
+import { Copy, ExternalLink, CheckCircle2, Clock3, QrCode } from "lucide-react";
+import { useNotification } from "../context/useNotification";
+import { useNavigate } from "react-router-dom";
 
 interface OrderSummary {
-  items: CartItemResponse[]
-  total: number
-  discount: number
-  paymentMethod: string
-  receiver: string
-  phone: string
-  address: string
+  items: {
+    productId: number;
+    productName: string;
+    quantity: number;
+    subtotal: number;
+  }[];
+  total: number;
+  discount: number;
+  paymentMethod: string;
+  receiver: string;
+  phone: string;
+  address: string;
 }
 
 interface PayOSEmbeddedProps {
-  checkoutUrl: string
-  orderId: number
-  expiredAt: string | null
-  setOnClose: (value: boolean) => void
-  orderSummary: OrderSummary
+  checkoutUrl: string;
+  orderId: number;
+  qrCode: string
+  expiredAt: string | null;
+  setOnClose: (value: boolean) => void;
+  orderSummary: OrderSummary;
 }
 
 export default function PayOSEmbedded({
   checkoutUrl,
   orderId,
+  qrCode,
   expiredAt,
   setOnClose,
   orderSummary,
 }: PayOSEmbeddedProps) {
-  const [opened, setOpened] = useState(false)
 
-  const [remainingSeconds, setRemainingSeconds] = useState(15 * 60)
+    console.log("PayOSEmbedded render");
+console.log(orderSummary);
+  const [remainingSeconds, setRemainingSeconds] = useState(15 * 60);
+  const [copied, setCopied] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"PENDING" | "PAID" | "EXPIRED">("PENDING");
+const { showNotification } = useNotification()
+const navigate = useNavigate()
 
-  const payOSConfig = useMemo<PayOSConfig>(
-    () => ({
-      RETURN_URL: window.location.href,
-      ELEMENT_ID: 'payos-container',
-      CHECKOUT_URL: checkoutUrl,
-      embedded: true,
 
-      onSuccess: (event: any) => {
-        console.log('PayOS Success', event)
-      },
+// const [remainingSeconds, setRemainingSeconds] = useState(0);
 
-      onCancel: (event: any) => {
-        console.log('PayOS Cancel', event)
-      },
 
-      onExit: (event: any) => {
-        console.log('PayOS Exit', event)
-      },
-    }),
-    [checkoutUrl]
-  )
-
-  const { open } = usePayOS(payOSConfig)
 
   useEffect(() => {
-    if (!checkoutUrl || opened) return
+    if (paymentStatus !== "PENDING") return;
+    const timer = setInterval(async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!response.ok) return;
+        const order = await response.json();
+       if (order.paymentStatusName === "PAID") {
+    setPaymentStatus("PAID");
+    clearInterval(timer);
 
-    const timer = setTimeout(() => {
-      open()
+    showNotification({
+        message: "Thanh toán thành công!",
+        type: "SUCCESS",
+        duration: 3000,
+    });
 
-      setOpened(true)
-    }, 300)
+    setTimeout(() => {
+        setOnClose(true);
+        navigate("/");
+    }, 1500);
+}
+      } catch (err) {
+        console.error(err);
+      }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [orderId, paymentStatus]);
 
-    return () => clearTimeout(timer)
-  }, [checkoutUrl, open, opened])
+    useEffect(() => {
+    if (!expiredAt) return;
+    const target = new Date(expiredAt + "Z").getTime();
+   
+    console.log("expiredAt =", expiredAt);
+console.log("target =", target);
+console.log("Date.now() =", Date.now());
+console.log("diff =", target - Date.now());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setRemainingSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
+    const update = () => {
+      const diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
+      
+      setRemainingSeconds(diff);
+      if (diff <= 0) {
+        setPaymentStatus("EXPIRED");
+      }
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [expiredAt]);
 
-          return 0
-        }
+// useEffect(() => {
+//     if (!expiredAt) return;
 
-        return prev - 1
-      })
-    }, 1000)
+//     const target = new Date(expiredAt).getTime();
 
-    return () => clearInterval(timer)
-  }, [])
+//     const update = () => {
+//         const diff = Math.max(0, Math.floor((target - Date.now()) / 1000));
 
-  const minutes = Math.floor(remainingSeconds / 60)
+//         setRemainingSeconds(diff);
 
-  const seconds = remainingSeconds % 60
+//         if (diff <= 0) {
+//             setPaymentStatus("EXPIRED");
+//         }
+//     };
 
-  const countdown = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+//     update();
 
-  return (
-    <div
-      className="
-            fixed
-            inset-0
-            z-52
-            flex
-            items-center
-            justify-center
-            bg-black/30
-        "
-    >
-      <div
-        className="
-                w-[95vw]
-                max-w-7xl
-                h-[90vh]
-                bg-white
-                rounded-3xl
-                shadow-2xl
-                p-6
-                flex
-                flex-col
-                overflow-hidden
-            "
-      >
-        <header
-          className="
-                    flex
-                    items-center
-                    justify-between
-                    border-b
-                    pb-4
-                    mb-5
-                "
-        >
-          <div>
-            <h1
-              className="
-                            text-3xl
-                            font-bold
-                            text-green-900
-                        "
-            >
-              Thanh toán đơn hàng
-            </h1>
+//     const timer = setInterval(() => {
+//         update();
+//     }, 1000);
 
-            <p
-              className="
-                            text-gray-500
-                            mt-1
-                        "
-            >
-              Quét mã QR để hoàn tất thanh toán
-            </p>
+//     return () => clearInterval(timer);
+
+// }, [expiredAt]);
+
+
+  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
+const seconds = String(remainingSeconds % 60).padStart(2, "0");
+
+  const copyCheckoutLink = async () => {
+    try {
+      await navigator.clipboard.writeText(checkoutUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const openPayOS = () => {
+    window.open(checkoutUrl, "_blank");
+  };
+return (
+  <div className="fixed inset-0 z-52 flex items-center justify-center bg-black/30">
+    <div className="flex h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
+
+      {/* Header */}
+      <div className="border-b bg-gradient-to-r from-emerald-700 to-green-600 px-6 py-5 text-white lg:px-8">
+        <h2 className="text-2xl font-bold lg:text-3xl">Thanh toán đơn hàng</h2>
+        <p className="mt-1 text-sm text-emerald-100">
+          Quét QR bằng ứng dụng ngân hàng hoặc mở PayOS để hoàn tất thanh toán.
+        </p>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="grid gap-6 p-4 lg:p-6 xl:grid-cols-[1.7fr_1fr]">
+
+          {/* LEFT */}
+          <div className="flex flex-col gap-6">
+
+            <section className="flex min-h-[520px] items-center justify-center rounded-3xl border bg-gray-50 p-4 lg:min-h-[620px]">
+              <div className="rounded-3xl bg-white p-4 shadow-xl lg:p-8">
+                <QRCode value={qrCode} size={window.innerWidth < 768 ? 260 : window.innerWidth < 1280 ? 340 : 430} />
+              </div>
+            </section>
+
+            <section className="rounded-3xl border bg-white p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-gray-500">Liên kết thanh toán</p>
+
+                  <p className="mt-1 break-all text-sm font-medium text-emerald-700">
+                    {checkoutUrl}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-emerald-50 px-5 py-3 text-center">
+                  <p className="text-xs uppercase tracking-wider text-gray-500">
+                    Mã đơn
+                  </p>
+
+                  <p className="text-2xl font-bold text-emerald-700">
+                    #{orderId}
+                  </p>
+                </div>
+
+              </div>
+            </section>
+
           </div>
 
-          <button
-            onClick={() => setOnClose(true)}
-            className="
-                            text-xl
-                            text-gray-500
-                            hover:text-red-500
-                            transition
-                        "
-          >
-            ✕
-          </button>
-        </header>
+          {/* RIGHT */}
+          <div className="flex flex-col gap-5">
 
-        <div
-          className="
-                    grid
-                    grid-cols-[1fr_380px]
-                    gap-6
-                    flex-1
-                    overflow-hidden
-                "
-        >
-          <section
-            className="
-                        rounded-3xl
-                        border
-                        bg-gray-50
-                        p-5
-                        flex
-                        items-center
-                        justify-center
-                        overflow-hidden
-                    "
-          >
-            <div
-              id="payos-container"
-              className="
-                                w-full
-                                h-full
-                                flex
-                                items-center
-                                justify-center
-                                [&_*]:max-w-full
-                            "
-            />
-          </section>
-          <aside
-            className="
-                        overflow-y-auto
-                        pr-2
-                        space-y-4
-                    "
-          >
-            <div
-              className="
-                            rounded-2xl
-                            border
-                            border-red-200
-                            bg-red-50
-                            p-5
-                            text-center
-                        "
-            >
-              <p
-                className="
-                                text-sm
-                                text-gray-600
-                            "
-              >
-                Thời gian thanh toán còn lại
-              </p>
+            {/* countdown */}
 
-              <p
-                className="
-                                mt-2
-                                text-4xl
-                                font-bold
-                                tracking-widest
-                                text-red-600
-                            "
-              >
-                {countdown}
-              </p>
+            {/* trạng thái */}
+
+            {/* thông tin */}
+
+            {/* sản phẩm */}
+
+            {/* buttons */}
+
+             <div className="rounded-3xl border bg-white p-6">
+
+              <p className="text-sm uppercase tracking-wide text-gray-500">Thời gian còn lại</p>
+
+              <div className="mt-3 text-6xl font-black tracking-wider text-red-600">
+                {minutes}:{seconds}
+              </div> 
+
             </div>
 
-            <div
-              className="
-                            rounded-2xl
-                            border
-                            bg-white
-                            shadow-sm
-                            p-5
-                        "
-            >
-              <h2
-                className="
-                                text-xl
-                                font-bold
-                                text-green-900
-                                mb-4
-                            "
-              >
-                Thông tin đơn hàng
-              </h2>
+            <div className={`rounded-3xl border p-5 transition-all ${paymentStatus === "PAID" ? "border-green-300 bg-green-50" : paymentStatus === "EXPIRED" ? "border-red-300 bg-red-50" : "border-amber-300 bg-amber-50"}`}>
 
-              <div
-                className="
-                                space-y-3
-                                text-sm
-                            "
-              >
+              <div className="flex items-center gap-3">
+
+                {paymentStatus === "PAID" ? <CheckCircle2 className="text-green-600" size={28} /> : <Clock3 className={paymentStatus === "EXPIRED" ? "text-red-600" : "text-amber-600"} size={28} />}
+
+                <div>
+
+                  <p className="text-lg font-bold">
+                    {paymentStatus === "PAID" ? "Đã thanh toán" : paymentStatus === "EXPIRED" ? "QR đã hết hạn" : "Đang chờ thanh toán..."}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    {paymentStatus === "PAID" ? "Hệ thống đã xác nhận giao dịch." : paymentStatus === "EXPIRED" ? "Liên kết thanh toán đã hết hạn." : "Trạng thái sẽ tự động cập nhật."}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="rounded-3xl border bg-white p-6">
+
+              <h3 className="mb-4 text-xl font-bold">Thông tin đơn hàng</h3>
+
+              <div className="space-y-3 text-sm">
+
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Mã đơn hàng</span>
+                  <span className="text-gray-500">Người nhận</span>
+                  <span className="font-semibold">{orderSummary.receiver}</span>
+                </div>
 
-                  <b>#{orderId}</b>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Số điện thoại</span>
+                  <span className="font-semibold">{orderSummary.phone}</span>
+                </div>
+
+                <div>
+                  <p className="text-gray-500 mb-1">Địa chỉ</p>
+                  <p className="font-medium">{orderSummary.address}</p>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-gray-500">Thanh toán</span>
-
-                  <b>{orderSummary.paymentMethod}</b>
+                  <span className="font-semibold">{orderSummary.paymentMethod}</span>
                 </div>
+
               </div>
+
             </div>
 
-            <div
-              className="
-                            rounded-2xl
-                            border
-                            bg-white
-                            shadow-sm
-                            p-5
-                        "
-            >
-              <h2
-                className="
-                                font-bold
-                                text-green-900
-                                mb-3
-                            "
-              >
-                Người nhận
-              </h2>
+            <div className="rounded-3xl border bg-white p-6">
 
-              <p>{orderSummary.receiver}</p>
+              <h3 className="mb-4 text-xl font-bold">Sản phẩm</h3>
 
-              <p>{orderSummary.phone}</p>
+              <div className="max-h-64 space-y-3 overflow-y-auto">
 
-              <p
-                className="
-                                mt-2
-                                text-sm
-                                text-gray-600
-                            "
-              >
-                {orderSummary.address}
-              </p>
-            </div>
-
-            <div
-              className="
-                            rounded-2xl
-                            border
-                            bg-white
-                            shadow-sm
-                            p-5
-                        "
-            >
-              <h2
-                className="
-                                font-bold
-                                text-green-900
-                                mb-3
-                            "
-              >
-                Sản phẩm
-              </h2>
-
-              <div
-                className="
-                                space-y-3
-                            "
-              >
-                {orderSummary.items.map((item) => (
-                  <div
-                    key={item.productId}
-                    className="
-                                                flex
-                                                justify-between
-                                                gap-3
-                                                text-sm
-                                            "
-                  >
-                    <span>
-                      {item.productName} x{item.quantity}
+                {orderSummary.items.map(item => (
+                  <div key={item.productId} className="flex items-start justify-between rounded-2xl bg-gray-50 p-3">
+                    <div>
+                      <p className="font-semibold">{item.productName}</p>
+                      <p className="text-sm text-gray-500">x{item.quantity}</p>
+                    </div>
+                    <span className="font-semibold">
+                      {Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(item.subtotal)}
                     </span>
-
-                    <b>
-                      {Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND',
-                      }).format(item.subtotal)}
-                    </b>
                   </div>
                 ))}
+
               </div>
+
+              <div className="mt-5 space-y-2 border-t pt-4">
+
+                <div className="flex justify-between">
+                  <span>Giảm giá</span>
+                  <span className="font-semibold text-red-500">
+                    -{Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(orderSummary.discount)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-xl font-bold">
+                  <span>Tổng tiền</span>
+                  <span className="text-emerald-700">
+                    {Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(orderSummary.total)}
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+                        <div className="space-y-3">
+
+              <button
+                onClick={copyCheckoutLink}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 font-semibold text-white transition hover:bg-emerald-700"
+              >
+                <Copy size={18} />
+                {copied ? "Đã sao chép liên kết" : "Sao chép link thanh toán"}
+              </button>
+
+              <button
+                onClick={openPayOS}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-600 py-3 font-semibold text-emerald-700 transition hover:bg-emerald-50"
+              >
+                <ExternalLink size={18} />
+                Mở trang PayOS
+              </button>
+
+              <button
+                onClick={() => setOnClose(true)}
+                className="w-full rounded-2xl border border-gray-300 py-3 font-semibold transition hover:bg-gray-100"
+              >
+                Đóng
+              </button>
+
             </div>
 
-            <div
-              className="
-                            rounded-2xl
-                            bg-emerald-50
-                            border
-                            border-emerald-200
-                            p-5
-                        "
-            >
-              <div
-                className="
-                                flex
-                                justify-between
-                            "
-              >
-                <span>Giảm giá</span>
+          </div>
 
-                <b
-                  className="
-                                    text-red-500
-                                "
-                >
-                  -
-                  {Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  }).format(orderSummary.discount)}
-                </b>
-              </div>
-
-              <div
-                className="
-                                flex
-                                justify-between
-                                mt-4
-                                text-xl
-                                font-bold
-                            "
-              >
-                <span>Tổng tiền</span>
-
-                <span
-                  className="
-                                    text-green-900
-                                "
-                >
-                  {Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  }).format(orderSummary.total)}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setOnClose(true)}
-              className="
-                                w-full
-                                rounded-2xl
-                                border
-                                border-gray-300
-                                py-3
-                                font-semibold
-                                hover:bg-gray-100
-                                transition
-                            "
-            >
-              Đóng
-            </button>
-          </aside>
         </div>
       </div>
+
     </div>
-  )
+  </div>
+);
+
 }
