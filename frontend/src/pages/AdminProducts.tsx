@@ -1,7 +1,9 @@
 import { CircleCheckBig, Eye, Search, SquarePenIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { ProductDetail, CategoryResponse } from '../model/product.model'
+import type { ProductDetail, CategoryResponse, ProductResponse } from '../model/product.model'
 import AdmAddProduct from '../components/AdmAddProduct'
+import AdmProductDetail from '../components/AdmProductDetail'
+import AdmEditProduct from '../components/AdmEditProduct'
 
 export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -11,14 +13,19 @@ export default function AdminProducts() {
   const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [selectedCategory, setSelectedCategory] = useState<CategoryResponse | null>(null)
 
-  const [products, setProducts] = useState<ProductDetail[]>([])
+  const [products, setProducts] = useState<ProductResponse[]>([])
 
   const [currentPage, setCurrentPage] = useState<number>(1)
 
   //   MODAL
   const [isModalOpen, setIsModalOpen] = useState(false)
+  // ADD PRODUCT
   const [showAddProduct, setShowAddProduct] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<ProductDetail | null>(null)
+  const [showEditProduct, setShowEditProduct] = useState(false)
+  const [showProductDetail, setShowProductDetail] = useState(false)
+
+  // SELECT PRODUCT
+  const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null)
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -164,8 +171,24 @@ export default function AdminProducts() {
                   </td>
                   <td className="p-3 border-b border-gray-200">{product.categoryName}</td>
                   <td className="p-3 border-b border-gray-200 text-lg font-bold flex items-center gap-2">
-                    <Eye className="hover:cursor-pointer text-amber-500" size={20} />
-                    <SquarePenIcon className="hover:cursor-pointer text-blue-600" size={20} />
+                    <Eye
+                      onClick={() => {
+                        setSelectedProduct(product)
+                        setIsModalOpen(true)
+                        setShowProductDetail(true)
+                      }}
+                      className="hover:cursor-pointer text-amber-500"
+                      size={20}
+                    />
+                    <SquarePenIcon
+                      onClick={() => {
+                        setSelectedProduct(product)
+                        setIsModalOpen(true)
+                        setShowEditProduct(true)
+                      }}
+                      className="hover:cursor-pointer text-blue-600"
+                      size={20}
+                    />
                     <CircleCheckBig className="hover:cursor-pointer text-green-500" size={20} />
                   </td>
                 </tr>
@@ -221,6 +244,25 @@ export default function AdminProducts() {
                 categories={categories}
               />
             ) : null}
+
+            {/* Product Detail Modal */}
+            {showProductDetail && selectedProduct && (
+              <AdmProductDetail
+                product={selectedProduct}
+                setIsModalOpen={setIsModalOpen}
+                setShowProduct={setShowProductDetail}
+              />
+            )}
+
+            {/* Edit Product Modal */}
+            {showEditProduct && selectedProduct && (
+              <AdmEditProduct
+                setIsModalOpen={setIsModalOpen}
+                setShowEditProduct={setShowEditProduct}
+                categories={categories}
+                selectedProduct={selectedProduct}
+              />
+            )}
           </div>
         </div>
       )}
