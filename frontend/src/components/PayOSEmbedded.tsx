@@ -9,6 +9,7 @@ interface OrderSummary {
     productId: number;
     productName: string;
     quantity: number;
+    productPrice: number;
     subtotal: number;
   }[];
   total: number;
@@ -44,11 +45,6 @@ console.log(orderSummary);
   const [paymentStatus, setPaymentStatus] = useState<"PENDING" | "PAID" | "EXPIRED">("PENDING");
 const { showNotification } = useNotification()
 const navigate = useNavigate()
-
-
-// const [remainingSeconds, setRemainingSeconds] = useState(0);
-
-
 
   useEffect(() => {
     if (paymentStatus !== "PENDING") return;
@@ -286,7 +282,7 @@ return (
                       <p className="text-sm text-gray-500">x{item.quantity}</p>
                     </div>
                     <span className="font-semibold">
-                      {Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(item.subtotal)}
+                      {Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(item.productPrice)}
                     </span>
                   </div>
                 ))}
