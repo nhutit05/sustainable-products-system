@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { ProductDetail, ProductImage } from '../model/product.model'
+import type { ProductDetail, ProductImage, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/ProductCardSuggest'
 import type { Cart } from '../model/cart.model'
@@ -13,9 +13,9 @@ export default function ProductDetail() {
 
   const productId = location.pathname.split('/').pop() // Lấy productId từ URL
 
-  const [product, setProduct] = useState<ProductDetail | null>(null)
+  const [product, setProduct] = useState<ProductResponse | null>(null)
 
-  const [listImage, setListImage] = useState<ProductImage[]>([])
+  const [listImage, setListImage] = useState<string[]>(product?.imageUrls || [])
 
   const [activeImg, setActiveImg] = useState(0)
 
@@ -164,6 +164,8 @@ export default function ProductDetail() {
     }
   }
 
+  console.log('product', product)
+
   return (
     <div className="page-cus_product-detail mt-14 min-h-screen bg-[#F8FFF4] text-left">
       {/* Breadcrumb */}
@@ -192,22 +194,26 @@ export default function ProductDetail() {
               <div>
                 <div className="rounded-3xl overflow-hidden bg-green-100 mb-2 aspect-4/3">
                   <img
-                    src={listImage.length > 0 ? listImage[activeImg].imageUrl : ''}
+                    src={
+                      product.imageUrls && product.imageUrls.length > 0
+                        ? product.imageUrls[activeImg]
+                        : ''
+                    }
                     alt={product.productName}
                     className="w-full h-full object-cover transition-all duration-300"
                   />
                 </div>
                 <div className="grid grid-cols-4 gap-3">
-                  {listImage.map((img, i) => (
+                  {product.imageUrls?.map((url, index) => (
                     <button
-                      key={i}
-                      onClick={() => setActiveImg(i)}
+                      key={index}
+                      onClick={() => setActiveImg(index)}
                       className={`rounded-2xl overflow-hidden aspect-square border-2 transition-all 
-                      ${activeImg === i ? 'border-emerald-500 shadow-md' : 'border-transparent hover:border-green-300'}`}
+                      ${activeImg === index ? 'border-emerald-500 shadow-md' : 'border-transparent hover:border-green-300'}`}
                     >
                       <img
-                        src={img.imageUrl}
-                        alt={`View ${i + 1}`}
+                        src={url}
+                        alt={`View ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
                     </button>

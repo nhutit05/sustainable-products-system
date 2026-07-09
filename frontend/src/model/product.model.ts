@@ -44,6 +44,31 @@ export type ProductRequest = {
   fileId: number
 }
 
+export type ProductMaterial = {
+  productId: number
+  productName: string
+  materialId: number
+  materialName: string
+  percentage: number
+}
+
+export type ProductResponse = {
+  productId: number
+  productName: string
+  productPrice: number
+  productCarbonIndex: number
+  baseEcoPoints: number
+  inventory: number
+  original: string
+  statusSale: boolean
+  expiredAt: string
+  weight: number
+  categoryId: number
+  categoryName: string
+  materials: ProductMaterial[]
+  imageUrls: string[]
+}
+
 // CATEGORIES
 
 export type CategoryResponse = {
