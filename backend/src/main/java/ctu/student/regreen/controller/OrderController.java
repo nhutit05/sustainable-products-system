@@ -16,6 +16,7 @@ import ctu.student.regreen.dto.request.OrderRequest;
 import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.service.interfaces.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,7 +27,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/checkout")
-    public CheckoutResponse checkout(@RequestBody OrderRequest request) {
+    public CheckoutResponse checkout(@Valid @RequestBody OrderRequest request) {
         return orderService.checkout(request);
     }
 

@@ -1,5 +1,8 @@
 {
-  "dependencies": {
-    "payos-checkout": "^1.0.9"
+  "scripts": {
+    "dev": "concurrently -n backend,frontend,ngrok -c blue,green,yellow \"cd backend && mvn spring-boot:run\" \"cd frontend && npm run dev\" \"ngrok http 8080\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
   }
 }

@@ -367,6 +367,8 @@ export default function Checkout({
 
                       <tr key={item.productId} className="border-t border border-slate-200">
 
+                      <td className="p-3">{item.productName}</td>
+                      
                       <td className="p-3">{item.quantity}</td>
 
                       <td className="p-3">
