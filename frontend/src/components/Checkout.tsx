@@ -46,6 +46,7 @@ export default function Checkout({
   const [showAddAddress, setShowAddAddress] = useState(false)
 
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+  const [qrCode, setQrCode] = useState<string | null>(null)
   const [orderId, setOrderId] = useState<number>()
   const [expiredAt, setExpiredAt] = useState<string | null>(null)
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
@@ -180,6 +181,7 @@ export default function Checkout({
       setCheckoutUrl(result.checkoutUrl)
 
       setExpiredAt(result.expiredAt)
+      setQrCode(result.qrCode)
 
       setOrderSummary({
         items: cartItems,
