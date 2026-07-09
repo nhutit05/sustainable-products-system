@@ -106,3 +106,25 @@ ul {
   background: rgba(255, 255, 255, 0.8); /* White with 80% opacity */
   backdrop-filter: blur(12px);
 }
+
+#payos-container {
+    width: 100% !important;
+    height: 100% !important;
+    margin-top: 5px;
+}
+
+/* 
+#payos-container > div {
+    width: 100% !important;
+    height: 100% !important;
+    transform: scale(1.15);
+    transform-origin: center;
+} */
+
+
+#payos-container iframe {
+    width: 100% !important;
+    height: 100% !important;
+    /* min-height: 720px !important; */
+    border: none !important;
+}
