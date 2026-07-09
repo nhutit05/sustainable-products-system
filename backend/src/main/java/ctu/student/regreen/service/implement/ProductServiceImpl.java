@@ -2,6 +2,8 @@ package ctu.student.regreen.service.implement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import ctu.student.regreen.dto.request.ProductMaterialRequest;
 import ctu.student.regreen.dto.response.MaterialResponse;
@@ -37,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMaterialMapper productMaterialMapper;
 
     private final ProductImageService productImageService;
+    private final ProductImageRepository productImageRepository;
 
 
     @Override
@@ -115,58 +118,158 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse update(Integer id, ProductRequest request) {
-        return null;
-//
-//        Product product = repository.findById(id)
-//                .orElseThrow(() ->
-//                        new RuntimeException("Product not found"));
-//
-//        Category category = categoryRepository.findById(request.getCategoryId())
-//                .orElseThrow(() ->
-//                        new RuntimeException("Category not found"));
-////
-////        File file = fileRepository.findById(request.getFileId())
-////                .orElseThrow(() ->
-////                        new RuntimeException("File not found"));
-//
-////        mapper.update(product, request, category, file);
-//
-//        return mapper.toResponse(product);
+        Product product = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found"));
+
+        // Lay loai san pham
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() ->
+                        new RuntimeException("Category not found"));
+
+        // Danh sach nguyen lieu cua product
+        List<ProductMaterialResponse> productMaterials = productMaterialRepository.findAllByProductProductId(id)
+                .stream()
+                .map(productMaterialMapper::toResponse)
+                .toList();
+
+        // Danh sach hinh anh cua product
+        List<ProductImageResponse> images = productImageService.getAllProductImagesByProductId(id);
+
+        // Cap nhat thong tin product & category
+        mapper.update(request, product, category);
+
+        // Cap nhat danh sach nguyen lieu cua product
+        for (int i = 0; i < request.getMaterialIds().size(); i++) {
+            // Lay thong tin nguyen lieu tu request
+            Integer materialId = request.getMaterialIds().get(i);
+            Float percentage = request.getPercentageMaterialIds().get(i);
+
+            // Lay thong tin nguyen lieu tu database
+            Material material = materialRepository.findById(materialId)
+                    .orElseThrow(() ->
+                            new RuntimeException("Material not found"));
+
+            // Lay thong tin product_material tu database
+            ProductMaterial productMaterial = productMaterialRepository.findByProductProductIdAndMaterialMaterialId(id, materialId)
+                    .orElseThrow(() ->
+                            new RuntimeException("ProductMaterial not found"));
+
+
+            // Cap nhat thong tin product_material
+            productMaterial.setPercentage(percentage);
+
+            productMaterialRepository.save(productMaterial);
+        }
+
+        // Cap nhat danh sach hinh anh cua product
+        for (MultipartFile imageFile : request.getImagesFiles()) {
+            // Gui file moi thi tao anh
+            ProductImageResponse response = productImageService.createProductImage(product.getProductId(), imageFile);
+            images.add(response);
+        }
+
+        return new ProductResponse(
+                product.getProductId(),
+                product.getProductName(),
+                product.getProductPrice(),
+                product.getProductCarbonIndex(),
+                product.getBaseEcoPoints(),
+                product.getInventory(),
+                product.getOriginal(),
+                product.getStatusSale(),
+                product.getExpiredAt(),
+                product.getWeight(),
+
+                category.getCategoryId(),
+                category.getCategoryName(),
+
+                productMaterials,
+
+                images.stream().map(ProductImageResponse::getImageUrl).toList()
+        );
     }
 
     @Override
     public ProductResponse getById(Integer id) {
 
-//        Product product = repository.findById(id)
-//                .orElseThrow(() ->
-//                        new RuntimeException("Product not found"));
-//
-//        return mapper.toResponse(product);
+        Product product = repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Product not found"));
 
-        return null;
+        // Danh sach nguyen lieu cua product
+        List<ProductMaterialResponse> productMaterials = productMaterialRepository.findAllByProductProductId(product.getProductId())
+                .stream()
+                .map(productMaterialMapper::toResponse)
+                .toList();
+
+        // Lay danh sach imageURL cua product
+        List<String> productImages = productImageService.getAllProductImagesByProductId(product.getProductId())
+                .stream()
+                .map(productImageResponse -> productImageResponse.getImageUrl())
+                .toList();
+
+        return new ProductResponse(
+                product.getProductId(),
+                product.getProductName(),
+                product.getProductPrice(),
+                product.getProductCarbonIndex(),
+                product.getBaseEcoPoints(),
+                product.getInventory(),
+                product.getOriginal(),
+                product.getStatusSale(),
+                product.getExpiredAt(),
+                product.getWeight(),
+
+                product.getCategory().getCategoryId(),
+                product.getCategory().getCategoryName(),
+
+                productMaterials,
+
+                productImages
+        );
     }
 
     @Override
     public List<ProductResponse> getAll() {
-        // Lay danh sach toan bo product trong database
+        // 1. Lấy toàn bộ sản phẩm
         List<Product> products = repository.findAll();
+        if (products.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-        List<ProductResponse> productsList = new ArrayList<ProductResponse>();
+        // 2. Gom tất cả Product ID lại thành một danh sách
+        List<Integer> productIds = products
+                .stream()
+                .map(Product::getProductId)
+                .toList();
 
-        for(Product product : products) {
-            // Danh sach nguyen lieu cua product
-            List<ProductMaterialResponse> productMaterials = productMaterialRepository.findAllByProductProductId(product.getProductId())
-                    .stream()
-                    .map(productMaterialMapper::toResponse)
-                    .toList();
+        // Lấy TOÀN BỘ Materials
+        List<ProductMaterial> allMaterials = productMaterialRepository.findAllByProductProductIdIn(productIds);
+        // Nhóm lại theo ProductId
+        Map<Integer, List<ProductMaterialResponse>> materialsMap = allMaterials.stream()
+                .collect(Collectors.groupingBy(
+                        pm -> pm.getProduct().getProductId(),
+                        Collectors.mapping(productMaterialMapper::toResponse, Collectors.toList())
+                ));
 
-            // Lay danh sach imageURL cua product
-            List<String> productImages = productImageService.getAllProductImagesByProductId(product.getProductId())
-                    .stream()
-                    .map(productImageResponse -> productImageResponse.getImageUrl())
-                    .toList();
+        // 4. Lấy TOÀN BỘ Images của tất cả products
+        List<ProductImage> allImages = productImageRepository.findAllByProductProductIdIn(productIds);
+        Map<Integer, List<String>> imagesMap = allImages.stream()
+                .collect(Collectors.groupingBy(
+                        pi -> pi.getProduct().getProductId(),
+                        Collectors.mapping(ProductImage::getImageUrl, Collectors.toList())
+                ));
 
-            ProductResponse response = new ProductResponse(
+        // 5. Map dữ liệu lại với nhau
+        return products.stream().map(product -> {
+            Integer productId = product.getProductId();
+
+            // Lấy từ Map ra, nếu không có thì trả về list rỗng tránh NullPointerException
+            List<ProductMaterialResponse> productMaterials = materialsMap.getOrDefault(productId, List.of());
+            List<String> productImages = imagesMap.getOrDefault(productId, List.of());
+
+            return new ProductResponse(
                     product.getProductId(),
                     product.getProductName(),
                     product.getProductPrice(),
@@ -182,14 +285,9 @@ public class ProductServiceImpl implements ProductService {
                     product.getCategory().getCategoryName(),
 
                     productMaterials,
-
                     productImages
             );
-
-            productsList.add(response);
-        }
-
-        return productsList;
+        }).toList();
     }
 
     @Override

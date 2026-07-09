@@ -41,10 +41,9 @@ public class ProductMapper {
     }
 
     public void update(
-            Product product,
             ProductRequest request,
-            Category category,
-            File file) {
+            Product product,
+            Category category) {
 
         product.setProductName(request.getProductName());
         product.setProductPrice(request.getProductPrice());

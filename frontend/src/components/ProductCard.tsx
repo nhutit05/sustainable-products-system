@@ -1,10 +1,10 @@
 import { Heart, Leaf, Sprout } from 'lucide-react'
-import type { ProductIntroduce } from '../model/product.model'
+import type { ProductResponse } from '../model/product.model'
 import { useNavigate } from 'react-router-dom'
 import heroImage from '../assets/hero.png'
 
 interface ProductCardProps {
-  product: ProductIntroduce
+  product: ProductResponse
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -21,7 +21,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       <div className="product_card--image h-52 overflow-hidden bg-green-100 relative">
         <img
-          src={product.productImage || heroImage}
+          src={product.imageUrls[0] || heroImage}
           alt={product.productName}
           className="product-img object-cover w-full h-full hover:scale-105 transition-transform duration-300"
           loading="lazy"
