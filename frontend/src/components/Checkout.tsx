@@ -9,7 +9,6 @@ import type { Addressresponse } from '../model/address.model'
 import AddNewAddress from './AddNewAddress'
 import PayOSEmbedded from './PayOSEmbedded'
 
-
 interface OrderSummary {
   items: CartItemResponse[]
   total: number
@@ -20,8 +19,6 @@ interface OrderSummary {
   address: string
 }
 
-
-
 interface CheckoutProps {
   cartItems: CartItemResponse[]
   totalPrice: number
@@ -29,10 +26,12 @@ interface CheckoutProps {
   setOnClose: (value: boolean) => void
 }
 
-
-
-export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOnClose }: CheckoutProps) {
-
+export default function Checkout({
+  cartItems,
+  totalPrice,
+  paymentMethodId,
+  setOnClose,
+}: CheckoutProps) {
   const navigate = useNavigate()
   const token = localStorage.getItem('token')
   const { showNotification } = useNotification()
@@ -47,20 +46,24 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
   const [showAddAddress, setShowAddAddress] = useState(false)
 
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
-  const [qrCode, setQrCode] = useState< string | null>(null)
+  const [qrCode, setQrCode] = useState<string | null>(null)
   const [orderId, setOrderId] = useState<number>()
   const [expiredAt, setExpiredAt] = useState<string | null>(null)
-  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
 
-  const [vouchers, setVouchers] = useState<{ voucherId: number; code: string; discountValue: number }[]>([])
+  const [vouchers, setVouchers] = useState<
+    { voucherId: number; code: string; discountValue: number }[]
+  >([])
 
-  const [selectedVoucher, setSelectedVoucher] = useState<{ voucherId: number; code: string; discountValue: number } | null>(null)
+  const [selectedVoucher, setSelectedVoucher] = useState<{
+    voucherId: number
+    code: string
+    discountValue: number
+  } | null>(null)
 
   const [valueSale, setValueSale] = useState(0)
 
   const paymentMethodName = PaymentMethodName[paymentMethodId as keyof typeof PaymentMethodName]
-
-
 
   const refreshAddresses = async (preferSelectedId?: number) => {
     try {
@@ -87,8 +90,6 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
     }
   }
 
-
-
   useEffect(() => {
     if (selectedVoucher) {
       setValueSale((selectedVoucher.discountValue / 100) * totalPrice)
@@ -97,10 +98,7 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
     }
   }, [selectedVoucher, totalPrice])
 
-
-
   useEffect(() => {
-
     const fetchVouchers = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/vouchers', {
@@ -120,37 +118,28 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
             }))
           )
         }
-
       } catch (error) {
         console.error('Fetch voucher error:', error)
       }
     }
 
-
     if (token) {
-      void fetchVouchers()
-      void refreshAddresses()
+      fetchVouchers()
+      refreshAddresses()
     }
-
   }, [token])
 
   const handleSubmitCheckout = async () => {
-
-
     const request = {
       orderReceiver,
       orderReceiverPhone,
       paymentMethodId,
       addressId: selectedAddress?.addressId,
       voucherId: selectedVoucher?.voucherId ?? null,
-      productIds: cartItems.map(item => item.productId),
+      productIds: cartItems.map((item) => item.productId),
     }
 
-
     try {
-
-      console.log("CLICK");
-
       const response = await fetch('http://localhost:8080/api/orders/checkout', {
         method: 'POST',
         headers: {
@@ -160,10 +149,7 @@ export default function Checkout({ cartItems, totalPrice, paymentMethodId, setOn
         body: JSON.stringify(request),
       })
 
-
-console.log("status:", response.status);
       const result = await response.json()
-console.log(result);
 
       if (!response.ok) {
         showNotification({
@@ -174,12 +160,9 @@ console.log(result);
         return
       }
 
-
-
       // COD
 
-      if (!result.checkoutUrl && !result.qrCode) {
-
+      if (!result.checkoutUrl) {
         showNotification({
           message: 'Đặt hàng thành công!',
           type: 'SUCCESS',
@@ -191,11 +174,6 @@ console.log(result);
         return
       }
 
-
-console.log("checkoutUrl =", result.checkoutUrl);
-console.log("expiredAt =", result.expiredAt);
-
-
       // PAYOS
 
       setOrderId(result.order.orderId)
@@ -205,26 +183,18 @@ console.log("expiredAt =", result.expiredAt);
       setExpiredAt(result.expiredAt)
       setQrCode(result.qrCode)
 
-
-
-
-
       setOrderSummary({
-  items: cartItems,
-  total: totalPrice - valueSale,
-  discount: valueSale,
-  paymentMethod: paymentMethodName,
-  receiver: orderReceiver,
-  phone: orderReceiverPhone,
-  address: selectedAddress
-    ? `${selectedAddress.addressStreet}, ${selectedAddress.villageName}, ${selectedAddress.cityName}`
-    : "Chưa có địa chỉ",
-});
-
-
-
+        items: cartItems,
+        total: totalPrice - valueSale,
+        discount: valueSale,
+        paymentMethod: paymentMethodName,
+        receiver: orderReceiver,
+        phone: orderReceiverPhone,
+        address: selectedAddress
+          ? `${selectedAddress.addressStreet}, ${selectedAddress.villageName}, ${selectedAddress.cityName}`
+          : 'Chưa có địa chỉ',
+      })
     } catch (error) {
-
       console.error(error)
 
       showNotification({
@@ -232,75 +202,40 @@ console.log("expiredAt =", result.expiredAt);
         type: 'ERROR',
         duration: 3000,
       })
-
     }
-
   }
 
-
-
-
-console.log("checkoutUrl =", checkoutUrl);
-console.log("orderSummary =", orderSummary);
-
-  if (checkoutUrl && qrCode && orderSummary) {
-  return (
-    <PayOSEmbedded
-      checkoutUrl={checkoutUrl}
-      orderId={orderId!}
-      qrCode={qrCode}
-      expiredAt={expiredAt}
-      orderSummary={orderSummary}
-      setOnClose={setOnClose}
-    />
-  );
-}
-
-
-
-
-
+  if (checkoutUrl && orderSummary) {
+    return (
+      <PayOSEmbedded
+        checkoutUrl={checkoutUrl}
+        orderId={orderId!}
+        expiredAt={expiredAt}
+        setOnClose={setOnClose}
+        orderSummary={orderSummary}
+      />
+    )
+  }
 
   return (
-
     <div className="fixed inset-0 z-52 flex items-center justify-center bg-black/30">
-
       <div className="bg-white rounded-3xl shadow-xl w-[90vw] max-w-6xl max-h-[90vh] overflow-y-auto p-6 relative">
-
-
         <X
           size={24}
           className="absolute right-5 top-5 cursor-pointer hover:text-red-500"
           onClick={() => setOnClose(true)}
         />
 
-
-
         <h1 className="text-3xl font-bold text-center text-green-900 mb-6">
           Xác nhận đơn đặt hàng
         </h1>
 
-
-
-
         <div className="grid grid-cols-3 gap-6">
-
-
-
-
           <aside className="space-y-5">
-
-            <h2 className="text-xl font-bold text-green-900">
-              Thông tin người nhận
-            </h2>
-
+            <h2 className="text-xl font-bold text-green-900">Thông tin người nhận</h2>
 
             <div>
-
-              <label className="block font-semibold text-green-900 mb-2">
-                Tên người nhận
-              </label>
-
+              <label className="block font-semibold text-green-900 mb-2">Tên người nhận</label>
 
               <input
                 value={orderReceiver}
@@ -308,18 +243,10 @@ console.log("orderSummary =", orderSummary);
                 placeholder="Nhập tên người nhận"
                 className="w-full border border-slate-200 rounded-xl p-3"
               />
-
             </div>
 
-
-
-
             <div>
-
-              <label className="block font-semibold text-green-900 mb-2">
-                Số điện thoại
-              </label>
-
+              <label className="block font-semibold text-green-900 mb-2">Số điện thoại</label>
 
               <input
                 value={orderReceiverPhone}
@@ -327,21 +254,13 @@ console.log("orderSummary =", orderSummary);
                 placeholder="Nhập số điện thoại"
                 className="w-full border border-slate-200 rounded-xl p-3"
               />
-
             </div>
 
+            <h2 className="text-xl font-bold text-green-900">Địa chỉ giao hàng</h2>
 
-
-
-            <h2 className="text-xl font-bold text-green-900">
-              Địa chỉ giao hàng
-            </h2>
-
-
-
-            {
-              addresses.filter(address => address.isDefault).map(address => (
-
+            {addresses
+              .filter((address) => address.isDefault)
+              .map((address) => (
                 <button
                   key={address.addressId}
                   type="button"
@@ -352,22 +271,13 @@ console.log("orderSummary =", orderSummary);
                       : ''
                   }`}
                 >
-
-                  <p className="font-bold text-green-900">
-                    {address.addressName}
-                  </p>
+                  <p className="font-bold text-green-900">{address.addressName}</p>
 
                   <p className="text-sm text-gray-600">
                     {address.addressStreet}, {address.villageName}, {address.cityName}
                   </p>
-
-
                 </button>
-
-              ))
-            }
-
-
+              ))}
 
             <button
               type="button"
@@ -402,95 +312,51 @@ console.log("orderSummary =", orderSummary);
                           {address.addressName}
                         </p>
 
-                        <p className="text-sm">
-                          {address.addressStreet}, {address.villageName}, {address.cityName}
-                        </p>
-
-                      </button>
-
-                    ))
-                  }
-
-
-
-                  <button
-                    className="text-sm text-gray-500 hover:underline"
-                    onClick={() => {
-                      setShowAddressList(false)
-                      setShowAddAddress(true)
-                    }}
-                  >
-                    + Thêm địa chỉ mới
+                    <p className="text-sm">
+                      {address.addressStreet}, {address.villageName}, {address.cityName}
+                    </p>
                   </button>
+                ))}
 
+                <button
+                  className="text-sm text-gray-500 hover:underline"
+                  onClick={() => {
+                    setShowAddressList(false)
+                    setShowAddAddress(true)
+                  }}
+                >
+                  + Thêm địa chỉ mới
+                </button>
+              </div>
+            )}
 
-                </div>
-
-              )
-            }
-
-
-
-            {
-              showAddAddress && (
-
-                <AddNewAddress
-                  setShowAddAddress={setShowAddAddress}
-                  redirectToProfile={false}
-                  onSuccess={() => refreshAddresses()}
-                />
-
-              )
-            }
-
-
+            {showAddAddress && (
+              <AddNewAddress
+                setShowAddAddress={setShowAddAddress}
+                redirectToProfile={false}
+                onSuccess={() => refreshAddresses()}
+              />
+            )}
           </aside>
 
-          
-
-
-
           <main className="col-span-2 space-y-5">
-
-
-            <h2 className="text-xl font-bold text-green-900">
-              Thông tin đơn hàng
-            </h2>
-
-
-
+            <h2 className="text-xl font-bold text-green-900">Thông tin đơn hàng</h2>
 
             <div className="border border-slate-200 rounded-2xl overflow-hidden">
 
 
               <table className="w-full">
-
-
                 <thead className="bg-emerald-50">
-
                   <tr>
+                    <th className="p-3 text-left">Sản phẩm</th>
 
-                    <th className="p-3 text-left">
-                      Sản phẩm
-                    </th>
+                    <th className="p-3 text-left">Số lượng</th>
 
-                    <th className="p-3 text-left">
-                      Số lượng
-                    </th>
+                    <th className="p-3 text-left">Đơn giá</th>
 
-                    <th className="p-3 text-left">
-                      Đơn giá
-                    </th>
-
-                    <th className="p-3 text-left">
-                      Thành tiền
-                    </th>
-
+                    <th className="p-3 text-left">Thành tiền</th>
                   </tr>
-
                 </thead>
-
-
 
                 <tbody>
 
@@ -500,158 +366,65 @@ console.log("orderSummary =", orderSummary);
 
                       <tr key={item.productId} className="border-t border border-slate-200">
 
+                      <td className="p-3">{item.quantity}</td>
 
-                        <td className="p-3">
-                          {item.productName}
-                        </td>
+                      <td className="p-3">
+                        {Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        }).format(item.subtotal / item.quantity)}
+                      </td>
 
-
-                        <td className="p-3">
-                          {item.quantity}
-                        </td>
-
-
-                        <td className="p-3">
-
-                          {
-                            Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND',
-                            }).format(item.subtotal / item.quantity)
-                          }
-
-                        </td>
-
-
-
-                        <td className="p-3 font-semibold">
-
-                          {
-                            Intl.NumberFormat('vi-VN', {
-                              style: 'currency',
-                              currency: 'VND',
-                            }).format(item.subtotal)
-                          }
-
-                        </td>
-
-
-
-                      </tr>
-
-                    ))
-                  }
-
-
+                      <td className="p-3 font-semibold">
+                        {Intl.NumberFormat('vi-VN', {
+                          style: 'currency',
+                          currency: 'VND',
+                        }).format(item.subtotal)}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
-
-
               </table>
-
-
             </div>
 
-
-
-
-
-
-
-
             <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
-
-
-              <label className="font-semibold text-green-900">
-                Mã giảm giá
-              </label>
-
-
+              <label className="font-semibold text-green-900">Mã giảm giá</label>
 
               <select
 
                 className="flex-1 border border-slate-300 rounded-xl p-3"
 
                 onChange={(e) => {
-
                   const selected = vouchers.find(
-                    voucher => voucher.voucherId === Number(e.target.value)
+                    (voucher) => voucher.voucherId === Number(e.target.value)
                   )
 
                   setSelectedVoucher(selected ?? null)
-
                 }}
-
               >
+                <option value="">Chọn voucher</option>
 
-                <option value="">
-                  Chọn voucher
-                </option>
-
-
-
-                {
-                  vouchers.map(voucher => (
-
-                    <option
-                      key={voucher.voucherId}
-                      value={voucher.voucherId}
-                    >
-
-                      {voucher.code} - {voucher.discountValue}%
-
-                    </option>
-
-                  ))
-                }
-
-
+                {vouchers.map((voucher) => (
+                  <option key={voucher.voucherId} value={voucher.voucherId}>
+                    {voucher.code} - {voucher.discountValue}%
+                  </option>
+                ))}
               </select>
 
-
-
               <span className="font-bold text-red-500">
-
-
                 -
-                {
-                  Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  }).format(valueSale)
-                }
-
-
+                {Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                }).format(valueSale)}
               </span>
-
-
             </div>
-
-
-
-
-
-
 
             <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl">
+              <span className="font-semibold text-green-900">Phương thức thanh toán</span>
 
-
-              <span className="font-semibold text-green-900">
-                Phương thức thanh toán
-              </span>
-
-
-              <span className="font-bold text-green-700">
-                {paymentMethodName}
-              </span>
-
-
+              <span className="font-bold text-green-700">{paymentMethodName}</span>
             </div>
-
-
-
-
-
-
 
             <div className="flex justify-between items-center border border-slate-200 rounded-2xl p-5">
 
@@ -663,29 +436,15 @@ console.log("orderSummary =", orderSummary);
 
 
               <span className="text-2xl font-bold text-red-500">
-
-                {
-                  Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                  }).format(totalPrice - valueSale)
-                }
-
+                {Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+                }).format(totalPrice - valueSale)}
               </span>
-
-
             </div>
 
-
-
-
-
-
-
             <button
-
               onClick={handleSubmitCheckout}
-
               className="
                 w-full
                 bg-primary
@@ -697,33 +456,12 @@ console.log("orderSummary =", orderSummary);
                 hover:scale-[1.02]
                 active:scale-95
               "
-
             >
-
               Xác nhận thanh toán
-
-
             </button>
-
-
-
-
           </main>
-
-
-
         </div>
-
-
-
       </div>
-
-
-
     </div>
-
-
   )
-
-
 }

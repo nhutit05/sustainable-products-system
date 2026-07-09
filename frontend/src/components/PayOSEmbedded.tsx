@@ -1,37 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
-import QRCode from "react-qr-code";
-import { Copy, ExternalLink, CheckCircle2, Clock3, QrCode } from "lucide-react";
-import { useNotification } from "../context/useNotification";
-import { useNavigate } from "react-router-dom";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useMemo, useState } from 'react'
+import { usePayOS } from '@payos/payos-checkout'
+import type { PayOSConfig } from '@payos/payos-checkout'
+import type { CartItemResponse } from '../model/cart.model'
 
 interface OrderSummary {
-  items: {
-    productId: number;
-    productName: string;
-    quantity: number;
-    subtotal: number;
-  }[];
-  total: number;
-  discount: number;
-  paymentMethod: string;
-  receiver: string;
-  phone: string;
-  address: string;
+  items: CartItemResponse[]
+  total: number
+  discount: number
+  paymentMethod: string
+  receiver: string
+  phone: string
+  address: string
 }
 
 interface PayOSEmbeddedProps {
-  checkoutUrl: string;
-  orderId: number;
-  qrCode: string
-  expiredAt: string | null;
-  setOnClose: (value: boolean) => void;
-  orderSummary: OrderSummary;
+  checkoutUrl: string
+  orderId: number
+  expiredAt: string | null
+  setOnClose: (value: boolean) => void
+  orderSummary: OrderSummary
 }
 
 export default function PayOSEmbedded({
   checkoutUrl,
   orderId,
-  qrCode,
   expiredAt,
   setOnClose,
   orderSummary,

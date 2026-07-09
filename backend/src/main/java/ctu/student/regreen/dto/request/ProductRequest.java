@@ -1,9 +1,12 @@
 package ctu.student.regreen.dto.request;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class ProductRequest {
@@ -44,5 +47,10 @@ public class ProductRequest {
     @NotNull
     private Integer categoryId;
 
-    private Integer fileId;
+    private List<Integer> materialIds;
+
+    private List<Float> percentageMaterialIds;
+
+    @JsonIgnore
+    private List<MultipartFile> imagesFiles;
 }

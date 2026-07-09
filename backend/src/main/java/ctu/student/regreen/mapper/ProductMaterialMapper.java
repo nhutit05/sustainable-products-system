@@ -32,7 +32,11 @@ public class ProductMaterialMapper {
     public ProductMaterialResponse toResponse(ProductMaterial productMaterial) {
         return new ProductMaterialResponse(
                 productMaterial.getProduct().getProductId(),
+                productMaterial.getProduct().getProductName(),
+
                 productMaterial.getMaterial().getMaterialId(),
+                productMaterial.getMaterial().getMaterialName(),
+
                 productMaterial.getPercentage()
         );
     }

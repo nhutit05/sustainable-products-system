@@ -1,5 +1,7 @@
 package ctu.student.regreen.mapper;
 
+import ctu.student.regreen.dto.response.ProductMaterialResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import ctu.student.regreen.dto.request.ProductRequest;
@@ -8,13 +10,18 @@ import ctu.student.regreen.model.Category;
 import ctu.student.regreen.model.File;
 import ctu.student.regreen.model.Product;
 
+import java.util.List;
+
 @Component
+@RequiredArgsConstructor
 public class ProductMapper {
+
+    private final ProductMaterialMapper productMaterialMapper;
 
     public Product toEntity(
             ProductRequest request,
-            Category category,
-            File file) {
+            Category category
+    ) {
 
         Product product = new Product();
 
@@ -29,7 +36,6 @@ public class ProductMapper {
         product.setWeight(request.getWeight());
 
         product.setCategory(category);
-        product.setFile(file);
 
         return product;
     }
@@ -51,10 +57,12 @@ public class ProductMapper {
         product.setWeight(request.getWeight());
 
         product.setCategory(category);
-        product.setFile(file);
     }
 
-    public ProductResponse toResponse(Product product) {
+    public ProductResponse toResponse(
+            Product product,
+            List<ProductMaterialResponse> materials,
+            List<String> imageResponses) {
 
         return new ProductResponse(
                 product.getProductId(),
@@ -69,7 +77,9 @@ public class ProductMapper {
                 product.getWeight(),
                 product.getCategory().getCategoryId(),
                 product.getCategory().getCategoryName(),
-                product.getFile().getFileId()
+                materials,
+                imageResponses
         );
+
     }
 }
