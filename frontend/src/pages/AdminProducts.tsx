@@ -1,14 +1,23 @@
-import { CircleCheckBig, Eye, Search, SquarePenIcon } from 'lucide-react'
+import { CircleCheckBig, Eye, Search, SquarePenIcon, Trash, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { ProductDetail, CategoryResponse, ProductResponse } from '../model/product.model'
+import type { CategoryResponse, ProductResponse } from '../model/product.model'
 import AdmAddProduct from '../components/AdmAddProduct'
 import AdmProductDetail from '../components/AdmProductDetail'
 import AdmEditProduct from '../components/AdmEditProduct'
+import { useNotification } from '../context/useNotification'
+import { useNavigate } from 'react-router-dom'
+import Loading from '../components/Loading'
 
 export default function AdminProducts() {
   const [searchQuery, setSearchQuery] = useState<string>('')
 
   const token = localStorage.getItem('token')
+
+  const [loading, setLoading] = useState(false)
+
+  const { showNotification } = useNotification()
+
+  const navigate = useNavigate()
 
   const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [selectedCategory, setSelectedCategory] = useState<CategoryResponse | null>(null)
@@ -65,6 +74,39 @@ export default function AdminProducts() {
       fetchProducts()
     }
   }, [token, currentPage])
+
+  const removeProduct = async (productId: number) => {
+    setLoading(true)
+    try {
+      const response = await fetch(`http://localhost:8080/api/admin/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        showNotification({
+          message: 'Xóa sản phẩm thành công',
+          type: 'SUCCESS',
+          duration: 3000,
+        })
+
+        setTimeout(() => {
+          navigate(0) // Refresh the page after 3 seconds
+        }, 3000)
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      showNotification({
+        message: 'Xóa sản phẩm thất bại',
+        type: 'ERROR',
+        duration: 3000,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <div className="adm_products px-4">
       <header className="product-header p-4 rounded-2xl shadow bg-white">
@@ -189,7 +231,15 @@ export default function AdminProducts() {
                       className="hover:cursor-pointer text-blue-600"
                       size={20}
                     />
-                    <CircleCheckBig className="hover:cursor-pointer text-green-500" size={20} />
+                    <Trash2
+                      onClick={async () => {
+                        if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) {
+                          await removeProduct(product.productId)
+                        }
+                      }}
+                      className="hover:cursor-pointer text-red-500"
+                      size={20}
+                    />
                   </td>
                 </tr>
               ))}
@@ -266,6 +316,8 @@ export default function AdminProducts() {
           </div>
         </div>
       )}
+
+      {loading && <Loading message="Đang xóa sản phẩm. Vui lòng chờ trong giây lát ..." />}
     </div>
   )
 }

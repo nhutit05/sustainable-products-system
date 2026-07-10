@@ -34,7 +34,6 @@ export type ProductImage = {
 export type Material = {
   materialId: number
   materialName: string
-  emissionIndex: number
 }
 
 export type ProductRequest = {
