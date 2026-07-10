@@ -6,6 +6,7 @@ export type ProductIntroduce = {
   baseEcoPoints: number
   productImage: string
   categoryName: string
+  imageUrls: string[]
 }
 
 export type ProductDetail = {
@@ -21,7 +22,7 @@ export type ProductDetail = {
   weight: number
   categoryId: number
   categoryName: string
-  fileId: number
+  imageUrls: string[]
 }
 
 export type ProductImage = {

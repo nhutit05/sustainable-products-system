@@ -1,10 +1,10 @@
 import { Heart, Leaf, Sprout } from 'lucide-react'
-import type { ProductResponse } from '../model/product.model'
+import type { ProductIntroduce, ProductResponse } from '../model/product.model'
 import { useNavigate } from 'react-router-dom'
 import heroImage from '../assets/hero.png'
 
 interface ProductCardProps {
-  product: ProductResponse
+  product: ProductIntroduce
 }
 
 export default function ProductCard({ product }: ProductCardProps) {

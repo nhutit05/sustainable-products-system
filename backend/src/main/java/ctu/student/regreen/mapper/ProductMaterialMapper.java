@@ -48,7 +48,6 @@ public class ProductMaterialMapper {
 
         productMaterial.setProduct(product);
         productMaterial.setMaterial(material);
-
         productMaterial.setPercentage(request.getPercentage());
     }
 }

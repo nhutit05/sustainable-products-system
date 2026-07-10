@@ -1,80 +1,137 @@
-import api from "./api";
 import type {
-  DocumentQueryParams,
-  KnowledgeDocument,
-  KnowledgeStatistics,
-  UploadResponse,
+    DocumentQueryParams,
+    KnowledgeDocument,
+    KnowledgeStatistics,
+    UploadResponse,
 } from "../types/knowledge";
 
-const BASE_URL = "/admin/knowledge";
+const API = "http://localhost:8080/api/admin/knowledge";
 
-export const knowledgeService = {
-  /**
-   * Upload tài liệu
-   */
-  uploadDocument: async (
+/**
+ * Upload tài liệu
+ */
+export async function uploadDocument(
+    token: string,
     file: File
-  ): Promise<UploadResponse> => {
+): Promise<UploadResponse> {
+
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await api.post(
-      `${BASE_URL}/upload`,
-      formData,
-      {
+    const response = await fetch(`${API}/upload`, {
+        method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
         },
-      }
-    );
-
-    return response.data;
-  },
-
-  /**
-   * Lấy danh sách tài liệu
-   */
-  getDocuments: async (
-    params?: DocumentQueryParams
-  ): Promise<KnowledgeDocument[]> => {
-    const response = await api.get(BASE_URL, {
-      params,
+        body: formData,
     });
 
-    return response.data;
-  },
+    if (!response.ok) {
+        throw new Error("Upload document failed");
+    }
 
-  /**
-   * Lấy chi tiết tài liệu
-   */
-  getDocumentById: async (
-    id: number
-  ): Promise<KnowledgeDocument> => {
-    const response = await api.get(
-      `${BASE_URL}/${id}`
+    return response.json();
+}
+
+/**
+ * Lấy danh sách tài liệu
+ */
+export async function getDocuments(
+    token: string,
+    params?: DocumentQueryParams
+): Promise<KnowledgeDocument[]> {
+
+    const query = new URLSearchParams();
+
+    if (params?.keyword) {
+        query.append("keyword", params.keyword);
+    }
+
+    if (params?.status) {
+        query.append("status", params.status);
+    }
+
+    if (params?.page !== undefined) {
+        query.append("page", params.page.toString());
+    }
+
+    if (params?.size !== undefined) {
+        query.append("size", params.size.toString());
+    }
+
+    const response = await fetch(
+        `${API}?${query.toString()}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
     );
 
-    return response.data;
-  },
+    if (!response.ok) {
+        throw new Error("Cannot get documents");
+    }
 
-  /**
-   * Lấy thống kê
-   */
-  getStatistics:
-    async (): Promise<KnowledgeStatistics> => {
-      const response = await api.get(
-        `${BASE_URL}/statistics`
-      );
+    return response.json();
+}
 
-      return response.data;
-    },
-
-  /**
-   * Xóa tài liệu
-   */
-  deleteDocument: async (
+/**
+ * Lấy chi tiết tài liệu
+ */
+export async function getDocumentById(
+    token: string,
     id: number
-  ): Promise<void> => {
-    await api.delete(`${BASE_URL}/${id}`);
-  },
-};
+): Promise<KnowledgeDocument> {
+
+    const response = await fetch(`${API}/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error("Cannot get document");
+    }
+
+    return response.json();
+}
+
+/**
+ * Lấy thống kê
+ */
+export async function getStatistics(
+    token: string
+): Promise<KnowledgeStatistics> {
+
+    const response = await fetch(`${API}/statistics`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error("Cannot get statistics");
+    }
+
+    return response.json();
+}
+
+/**
+ * Xóa tài liệu
+ */
+export async function deleteDocument(
+    token: string,
+    id: number
+): Promise<void> {
+
+    const response = await fetch(`${API}/${id}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error("Delete document failed");
+    }
+}
