@@ -11,7 +11,7 @@ import ctu.student.regreen.dto.response.UploadDocumentResponse;
 import ctu.student.regreen.service.interfaces.DocumentService;
 
 @RestController
-@RequestMapping("/api/admin/documents")
+@RequestMapping("/api/admin/knowledge")
 @RequiredArgsConstructor
 public class DocumentController {
 

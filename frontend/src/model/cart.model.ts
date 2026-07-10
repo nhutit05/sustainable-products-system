@@ -2,6 +2,7 @@ export type CartItemResponse = {
   cartId: number
   productId: number
   productName: string
+  productPrice: number
   quantity: number
   subtotal: number
 }

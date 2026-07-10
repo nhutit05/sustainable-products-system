@@ -114,12 +114,20 @@ export default function Products() {
           }
 
           setHasNextPage(totalPages !== null ? currentPage < totalPages : data.length === PAGE_SIZE)
+          // setProducts(
+          //   data.map((product: ProductDetail) => ({
+          //     ...product,
+          //     productImage: '',
+          //     imageUrls: []
+          //   }))
+          // )
+
           setProducts(
-            data.map((product: ProductDetail) => ({
-              ...product,
-              productImage: '',
-            }))
-          )
+  data.map((product) => ({
+    ...product,
+    productImage: product.imageUrls?.[0] ?? ''
+  }))
+)
 
           void Promise.all(
             data.map(async (product: ProductDetail) => {
