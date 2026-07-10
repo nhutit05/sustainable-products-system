@@ -57,8 +57,6 @@ public class ProductServiceImpl implements ProductService {
 
         repository.save(product);
 
-        System.out.println("product: " + product);
-
         List<ProductMaterialResponse> materials = new ArrayList<ProductMaterialResponse>();
 
         // Tao phan tram nguyen lieu cung cap vao
@@ -139,28 +137,60 @@ public class ProductServiceImpl implements ProductService {
         // Cap nhat thong tin product & category
         mapper.update(request, product, category);
 
-        // Cap nhat danh sach nguyen lieu cua product
-        for (int i = 0; i < request.getMaterialIds().size(); i++) {
-            // Lay thong tin nguyen lieu tu request
-            Integer materialId = request.getMaterialIds().get(i);
-            Float percentage = request.getPercentageMaterialIds().get(i);
+        // Xoa toan bo danh sach nguyen lieu cu cua product
+        productMaterialRepository.deleteAllByProductProductId(id);
 
-            // Lay thong tin nguyen lieu tu database
-            Material material = materialRepository.findById(materialId)
-                    .orElseThrow(() ->
-                            new RuntimeException("Material not found"));
+        List<ProductMaterialResponse> productMaterialsNew = new ArrayList<>();
 
-            // Lay thong tin product_material tu database
-            ProductMaterial productMaterial = productMaterialRepository.findByProductProductIdAndMaterialMaterialId(id, materialId)
-                    .orElseThrow(() ->
-                            new RuntimeException("ProductMaterial not found"));
+        if (request.getMaterialIds() != null && !request.getMaterialIds().isEmpty()) {
 
+            for (int i = 0; i < request.getMaterialIds().size(); i++) {
 
-            // Cap nhat thong tin product_material
-            productMaterial.setPercentage(percentage);
+                Integer materialId = request.getMaterialIds().get(i);
+                Float percentage = request.getPercentageMaterialIds().get(i);
 
-            productMaterialRepository.save(productMaterial);
+                Material material = materialRepository.findById(materialId)
+                        .orElseThrow(() -> new RuntimeException("Material not found"));
+
+                ProductMaterial productMaterial = new ProductMaterial();
+
+                // Tao EmbeddedId cho ProductMaterial
+                ProductMaterialId productMaterialId =
+                        new ProductMaterialId(product.getProductId(), material.getMaterialId());
+
+                productMaterial.setId(productMaterialId);
+                productMaterial.setProduct(product);
+                productMaterial.setMaterial(material);
+                productMaterial.setPercentage(percentage);
+
+                productMaterialRepository.save(productMaterial);
+
+                productMaterialsNew.add(productMaterialMapper.toResponse(productMaterial));
+            }
         }
+
+//        // Cap nhat danh sach nguyen lieu cua product
+//        for (int i = 0; i < request.getMaterialIds().size(); i++) {
+//            // Lay thong tin nguyen lieu tu request
+//            Integer materialId = request.getMaterialIds().get(i);
+//            Float percentage = request.getPercentageMaterialIds().get(i);
+//
+//            // Lay thong tin nguyen lieu tu database
+//            Material material = materialRepository.findById(materialId)
+//                    .orElseThrow(() ->
+//                            new RuntimeException("Material not found"));
+//
+//            // Lay thong tin product_material tu database
+//            ProductMaterial productMaterial = productMaterialRepository.findByProductProductIdAndMaterialMaterialId(id, materialId)
+//                    .orElseThrow(() ->
+//                            new RuntimeException("ProductMaterial not found"));
+//
+//
+//            // Cap nhat thong tin product_material
+//            productMaterial.setPercentage(percentage);
+//
+//            productMaterialRepository.save(productMaterial);
+//        }
 
         // Cap nhat danh sach hinh anh cua product
         for (MultipartFile imageFile : request.getImagesFiles()) {
@@ -291,12 +321,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void delete(Integer id) {
+    public Boolean delete(Integer id) {
 
-        Product product = repository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Product not found"));
+        try {
+            Product product = repository.findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException("Product not found"));
 
-        repository.delete(product);
+            // xoa toan bo anh
+            productImageRepository.deleteAllByProductProductId(product.getProductId());
+
+            // Xoa toan bo nguyen lieu trong product_material
+            productMaterialRepository.deleteAllByProductProductId(product.getProductId());
+
+            // Xoa Product
+            repository.delete(product);
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

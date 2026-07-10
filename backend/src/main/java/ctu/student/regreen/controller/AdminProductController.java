@@ -37,8 +37,8 @@ public class AdminProductController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
-        service.delete(id);
+    public Boolean delete(@PathVariable Integer id) {
+        return service.delete(id);
     }
 
     @GetMapping

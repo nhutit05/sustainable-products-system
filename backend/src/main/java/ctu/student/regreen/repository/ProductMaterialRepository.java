@@ -4,6 +4,8 @@ import ctu.student.regreen.model.ProductMaterial;
 import ctu.student.regreen.model.ProductMaterialId;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +22,6 @@ public interface ProductMaterialRepository extends JpaRepository<ProductMaterial
     Optional<ProductMaterial> findByProductProductIdAndMaterialMaterialId(Integer productId, Integer materialId);
 
     Optional<ProductMaterial> deleteByProductProductIdAndMaterialMaterialId(Integer productId, Integer materialId);
+
+    Optional<ProductMaterial> deleteAllByProductProductId(Integer productId);
 }

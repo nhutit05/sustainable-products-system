@@ -17,5 +17,5 @@ public interface ProductService {
 
     List<ProductResponse> getAll();
 
-    void delete(Integer id);
+    Boolean delete(Integer id);
 }

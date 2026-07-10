@@ -45,8 +45,17 @@ export default function AdmEditProduct({
 
   const [materials, setMaterials] = useState<Material[]>([])
 
-  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
-  const [percentages, setPercentages] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) // Assuming a maximum of 10 materials for simplicity
+  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>(
+    [
+      selectedProduct.materials.map((material) => ({
+        materialId: material.materialId,
+        materialName: material.materialName,
+      })),
+    ].flat()
+  )
+  const [percentages, setPercentages] = useState<number[]>(
+    [selectedProduct.materials.map((material) => material.percentage)].flat()
+  ) // Assuming a maximum of 10 materials for simplicity
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
 
@@ -101,6 +110,8 @@ export default function AdmEditProduct({
     })
 
     setLoading(true)
+
+    console.log('Submitting form with data:', dataSubmit)
 
     try {
       const response = await fetch(
