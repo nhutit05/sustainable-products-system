@@ -77,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
                 }
 
                 if (order.getVoucher() != null) {
-                        total -= Math.round(order.getVoucher().getDiscountValue());
+                        total = total - Math.round(total * order.getVoucher().getDiscountValue()/100.0);
                 }
 
                 return total;
