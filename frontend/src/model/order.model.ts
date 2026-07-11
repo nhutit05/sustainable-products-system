@@ -7,7 +7,7 @@ export type orderStatusResponse = {
 
 // ================ ORDER ===============
 
-export interface OrderResponse {
+export interface orderResponse {
   orderId: number
   orderedAt: string
 

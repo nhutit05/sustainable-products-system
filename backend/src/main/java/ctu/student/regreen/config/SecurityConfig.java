@@ -86,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers("/jacoco/**").permitAll()
                         .requestMatchers("/api/chat/**").permitAll()
                         // fallback
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
 
                 .addFilterBefore(
                         filter,
