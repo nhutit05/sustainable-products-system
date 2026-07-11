@@ -95,18 +95,21 @@ public class StorageServiceImpl implements StorageService {
                 }
         }
 
+       
         @Override
         public void delete(String storagePath) {
 
+
+                String endpoint = supabaseProperties.getUrl()
+                                + "/storage/v1/object/"
+                                + supabaseProperties.getStorage().getBucket()
+                                + "/"
+                                + storagePath;
+
+
+                System.out.println("DELETE URL = " + endpoint);
+
                 try {
-
-                        String encodedPath = UriUtils.encodePath(storagePath, StandardCharsets.UTF_8);
-
-                        String endpoint = supabaseProperties.getUrl()
-                                        + "/storage/v1/object/"
-                                        + supabaseProperties.getStorage().getBucket()
-                                        + "/"
-                                        + encodedPath;
 
                         RestClient.create()
                                         .method(HttpMethod.DELETE)
@@ -122,10 +125,13 @@ public class StorageServiceImpl implements StorageService {
 
                 } catch (Exception e) {
 
+                        e.printStackTrace();
+
                         throw new RuntimeException(
                                         "Failed to delete file from Supabase Storage",
                                         e);
                 }
+
         }
 
 }

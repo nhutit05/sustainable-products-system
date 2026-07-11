@@ -29,4 +29,8 @@ public interface DocumentChunkRepository
             @Param("limit") int limit
     );
 
+    long count();
+
+    int countByDocument_Id(UUID documentId);
+
 }

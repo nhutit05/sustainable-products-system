@@ -19,7 +19,7 @@ export default function AdminOrders() {
   const [currentPage, setCurrentPage] = useState<number>(1)
 
   // TOKEN DE XAC THUC NGUOI DUNG
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token')?? ""
 
   const vietnameseDateFormatter = (dateString: string) => {
     const date = new Date(dateString)

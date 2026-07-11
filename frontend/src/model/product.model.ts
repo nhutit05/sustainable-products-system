@@ -73,6 +73,7 @@ export type ProductResponse = {
   categoryId: number
   categoryName: string
   materials: ProductMaterial[]
+  productImage: string
   imageUrls: string[]
 }
 
