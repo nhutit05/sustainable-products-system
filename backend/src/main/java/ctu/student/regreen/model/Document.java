@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import ctu.student.regreen.enums.DocumentStatus;
@@ -38,6 +40,15 @@ public class Document {
 
     private LocalDateTime uploadedAt;
 
-    @OneToOne(mappedBy = "document", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "document", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private DocumentContent documentContent;
+
+    @OneToMany(
+        mappedBy = "document",
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+)
+@Builder.Default
+private List<DocumentChunk> documentChunks = new ArrayList<>();
 }

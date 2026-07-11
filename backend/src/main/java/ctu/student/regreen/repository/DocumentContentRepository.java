@@ -11,4 +11,6 @@ public interface DocumentContentRepository
         extends JpaRepository<DocumentContent, UUID> {
 
     Optional<DocumentContent> findByDocument_Id(UUID documentId);
+
+    
 }

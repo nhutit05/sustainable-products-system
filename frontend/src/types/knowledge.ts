@@ -5,37 +5,37 @@ export type DocumentStatus =
   | "EMBEDDED"
   | "FAILED";
 
-export interface KnowledgeDocument {
-  id: number;
+// export interface KnowledgeDocument {
+//   id: number;
 
-  fileName: string;
+//   fileName: string;
 
-  fileType: string;
+//   fileType: string;
 
-  fileSize: number;
+//   fileSize: number;
 
-  uploadedAt: string;
+//   uploadedAt: string;
 
-  status: DocumentStatus;
+//   status: DocumentStatus;
 
-  chunkCount: number;
+//   chunkCount: number;
 
-  characterCount: number;
+//   characterCount: number;
 
-  wordCount: number;
+//   wordCount: number;
 
-  preview?: string;
-}
+//   preview?: string;
+// }
 
-export interface KnowledgeStatistics {
-  totalDocuments: number;
+// export interface KnowledgeStatistics {
+//   totalDocuments: number;
 
-  totalChunks: number;
+//   totalChunks: number;
 
-  embeddedDocuments: number;
+//   embeddedDocuments: number;
 
-  failedDocuments: number;
-}
+//   failedDocuments: number;
+// }
 
 export interface DocumentQueryParams {
   keyword?: string;
@@ -53,3 +53,48 @@ export interface UploadResponse {
   message: string;
 }
 
+export interface KnowledgeStatistics {
+
+    totalDocuments: number;
+
+    totalChunks: number;
+
+    embeddedDocuments: number;
+
+    failedDocuments: number;
+
+}
+
+export interface KnowledgeDocument {
+
+    documentId: string;
+
+    fileName: string;
+
+    documentType: "PDF" | "DOCX";
+
+    fileSize: number;
+
+    uploadedAt: string;
+
+    status:
+        | "UPLOADED"
+        | "PARSED"
+        | "CHUNKED"
+        | "EMBEDDED"
+        | "FAILED";
+
+    chunkCount: number;
+
+    characterCount: number;
+
+    wordCount: number;
+
+}
+
+export interface KnowledgeDocumentDetail
+    extends KnowledgeDocument {
+
+    preview: string;
+
+}
