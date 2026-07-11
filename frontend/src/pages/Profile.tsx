@@ -2,11 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { customerResponse, meResponse } from '../model/customer'
 import { Heart, Leaf, MapPinIcon, Package, User } from 'lucide-react'
-import {
-  CustomerTypeColor,
-  CustomerTypeName,
-  type CustomerTypeRoleKey,
-} from '../enum/Customer.enum'
+import { CustomerTypeName, type CustomerTypeRoleKey } from '../enum/Customer.enum'
 import NavbarProfile from '../components/NavbarProfile'
 import { useCustomer } from '../context/useCustomer'
 
