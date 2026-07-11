@@ -1,6 +1,6 @@
 import { Heart, MapPinIcon, Package, SquareArrowDownRight, User } from 'lucide-react'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 interface NavbarItem {
   NAV_LINKS: { label: string; to: string; icon: React.ReactNode }[]
@@ -9,7 +9,20 @@ interface NavbarItem {
 export default function NavbarProfile({ NAV_LINKS }: NavbarItem) {
   const navigate = useNavigate()
 
-  const [activeItem, setActiveItem] = useState<number | null>(0)
+  const location = useLocation()
+
+  // const [activeItem, setActiveItem] = useState<number | null>(0)
+
+  const currentPath = location.pathname
+  const activeIndex = NAV_LINKS.findIndex((item) => {
+    if (item.to === '') {
+      return currentPath.endsWith('/profile') || currentPath.split('/').filter(Boolean).length === 1
+    }
+    return currentPath.includes(`/${item.to}`)
+  })
+
+  // 2. Gán giá trị trực tiếp cho biến activeItem
+  const activeItem = activeIndex !== -1 ? activeIndex : null
 
   const handleSignOut = () => {
     const confirmed = window.confirm('Bạn có chắc chắn muốn đăng xuất không?')
@@ -30,7 +43,7 @@ export default function NavbarProfile({ NAV_LINKS }: NavbarItem) {
             className={`flex items-center text-green-900 gap-2 p-3 rounded-2xl hover:bg-emerald-50 cursor-pointer ${activeItem === index ? 'bg-primary text-white font-bold' : ''}`}
             onClick={() => {
               navigate(item.to)
-              setActiveItem(index)
+              // setActiveItem(index)
             }}
           >
             {item.icon}

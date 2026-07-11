@@ -14,6 +14,7 @@ import PaymentOnline from '../components/PaymentOnline'
 import { CustomerProvider } from '../context/CustomerContext'
 import ProfileInfo from '../components/ProfileInfo'
 import ProfileAddress from '../components/ProfileAddress'
+import MyOrder from '../components/MyOrder'
 // import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {
@@ -73,7 +74,7 @@ export default function CustomerLayout() {
             }
           >
             <Route path="" element={<ProfileInfo />} />
-            <Route path="orders" element={<h1>Đơn hàng của tôi</h1>} />
+            <Route path="orders" element={<MyOrder />} />
             <Route path="addresses" element={<ProfileAddress />} />
             <Route path="favorites" element={<h1>Sản phẩm yêu thích</h1>} />
           </Route>
