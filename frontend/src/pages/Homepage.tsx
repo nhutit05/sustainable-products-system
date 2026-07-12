@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ProductResponse } from '../model/product.model'
-import ProductCard from '../components/ProductCard'
+import ProductCard from '../components/product/ProductCard'
 
 export default function Homepage() {
   const navigate = useNavigate()

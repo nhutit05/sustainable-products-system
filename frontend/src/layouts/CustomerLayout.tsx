@@ -10,11 +10,11 @@ import Products from '../pages/Products'
 import ProductDetail from '../pages/ProductDetail'
 import Cart from '../pages/Cart'
 import { useEffect } from 'react'
-import PaymentOnline from '../components/PaymentOnline'
+import PaymentOnline from '../components/order/PaymentOnline'
 import { CustomerProvider } from '../context/CustomerContext'
 import ProfileInfo from '../components/ProfileInfo'
 import ProfileAddress from '../components/ProfileAddress'
-import MyOrder from '../components/MyOrder'
+import MyOrder from '../components/order/MyOrder'
 // import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {

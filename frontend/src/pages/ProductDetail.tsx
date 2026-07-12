@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { ProductDetail, ProductImage, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
-import ProductCardSuggest from '../components/ProductCardSuggest'
+import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
-import ProductReview from '../components/ProductReview'
+import ProductReview from '../components/product/ProductReview'
 export default function ProductDetail() {
   const location = useLocation()
 

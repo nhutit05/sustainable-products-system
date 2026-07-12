@@ -18,4 +18,6 @@ public interface ProductService {
     List<ProductResponse> getAll();
 
     Boolean delete(Integer id);
+
+    Integer countProducts();
 }

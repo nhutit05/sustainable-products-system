@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Addressresponse } from '../model/address.model'
 import { Plus, X } from 'lucide-react'
-import AddressItem from './AddressItem'
-import AddNewAddress from './AddNewAddress'
+import AddressItem from './admin/AddressItem'
+import AddNewAddress from './admin/AddNewAddress'
 import UpdateAddress from './UpdateAddress'
 
 export default function ProfileAddress() {
