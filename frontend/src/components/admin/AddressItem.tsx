@@ -1,5 +1,5 @@
 import { MapPin, SquarePen } from 'lucide-react'
-import type { Addressresponse } from '../model/address.model'
+import type { Addressresponse } from '../../model/address.model'
 
 interface AddressItemProps {
   address: Addressresponse

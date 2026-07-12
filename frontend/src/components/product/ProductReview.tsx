@@ -1,11 +1,11 @@
 import { EllipsisVertical, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { ReviewResponse } from '../model/review.model'
-import AddNewReviewModal from './AddNewReviewModal'
-import { useCustomer } from '../context/useCustomer'
+import type { ReviewResponse } from '../../model/review.model'
+import AddNewReviewModal from '../admin/AddNewReviewModal'
+import { useCustomer } from '../../context/useCustomer'
 import EditReviewModal from './EditReviewModal'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useNotification } from '../context/useNotification'
+import { useNotification } from '../../context/useNotification'
 
 interface ProductReviewProps {
   productId: number

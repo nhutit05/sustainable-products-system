@@ -44,4 +44,9 @@ public class ProductController {
     public ProductResponse getById(@PathVariable Integer id) {
         return service.getById(id);
     }
+
+    @GetMapping("/count")
+    public Integer countProducts() {
+         return service.countProducts();
+    }
 }

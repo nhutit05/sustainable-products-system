@@ -1,9 +1,9 @@
 import { Leaf, X } from 'lucide-react'
-import type { Material, ProductRequest, ProductResponse } from '../model/product.model'
+import type { Material, ProductRequest, ProductResponse } from '../../model/product.model'
 import { useEffect, useState } from 'react'
-import { useNotification } from '../context/useNotification'
-import Loading from './Loading'
-import { useCustomer } from '../context/useCustomer'
+import { useNotification } from '../../context/useNotification'
+import Loading from '../Loading'
+import { useCustomer } from '../../context/useCustomer'
 
 interface ProductDetailProps {
   product: ProductResponse

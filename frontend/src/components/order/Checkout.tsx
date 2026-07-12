@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import type { CartItemResponse } from '../model/cart.model'
+import type { CartItemResponse } from '../../model/cart.model'
 import { X } from 'lucide-react'
-import type { voucherResponse } from '../model/voucher.model'
-import { PaymentMethodName } from '../enum/PaymentMethod.enum'
+import type { voucherResponse } from '../../model/voucher.model'
+import { PaymentMethodName } from '../../enum/PaymentMethod.enum'
 import { useNavigate } from 'react-router-dom'
-import { useNotification } from '../context/useNotification'
-import type { Addressresponse } from '../model/address.model'
-import AddNewAddress from './AddNewAddress'
+import { useNotification } from '../../context/useNotification'
+import type { Addressresponse } from '../../model/address.model'
+import AddNewAddress from '../admin/AddNewAddress'
 import PayOSEmbedded from './PayOSEmbedded'
 
 interface OrderSummary {
@@ -288,30 +288,19 @@ export default function Checkout({
               -- Chọn địa chỉ khác --
             </button>
 
-
-
-
-            {
-              showAddressList && (
-
-                <div className="border border-slate-200 rounded-xl p-3 space-y-2">
-
-                  {
-                    addresses.map(address => (
-
-                      <button
-                        key={address.addressId}
-                        type="button"
-                        className="block w-full text-left p-3 rounded-xl hover:bg-emerald-50"
-                        onClick={() => {
-                          setSelectedAddress(address)
-                          setShowAddressList(false)
-                        }}
-                      >
-
-                        <p className="font-semibold">
-                          {address.addressName}
-                        </p>
+            {showAddressList && (
+              <div className="border border-slate-200 rounded-xl p-3 space-y-2">
+                {addresses.map((address) => (
+                  <button
+                    key={address.addressId}
+                    type="button"
+                    className="block w-full text-left p-3 rounded-xl hover:bg-emerald-50"
+                    onClick={() => {
+                      setSelectedAddress(address)
+                      setShowAddressList(false)
+                    }}
+                  >
+                    <p className="font-semibold">{address.addressName}</p>
 
                     <p className="text-sm">
                       {address.addressStreet}, {address.villageName}, {address.cityName}
@@ -344,8 +333,6 @@ export default function Checkout({
             <h2 className="text-xl font-bold text-green-900">Thông tin đơn hàng</h2>
 
             <div className="border border-slate-200 rounded-2xl overflow-hidden">
-
-
               <table className="w-full">
                 <thead className="bg-emerald-50">
                   <tr>
@@ -360,13 +347,8 @@ export default function Checkout({
                 </thead>
 
                 <tbody>
-
-
-                  {
-                    cartItems.map(item => (
-
-                      <tr key={item.productId} className="border-t border border-slate-200">
-
+                  {cartItems.map((item) => (
+                    <tr key={item.productId} className="border-t border border-slate-200">
                       <td className="p-3">{item.productName}</td>
                       <td className="p-3">{item.quantity}</td>
 
@@ -393,7 +375,6 @@ export default function Checkout({
               <label className="font-semibold text-green-900">Mã giảm giá</label>
 
               <select
-
                 className="flex-1 border border-slate-300 rounded-xl p-3"
 
                 onChange={(e) => {
@@ -429,13 +410,7 @@ export default function Checkout({
             </div>
 
             <div className="flex justify-between items-center border border-slate-200 rounded-2xl p-5">
-
-
-              <span className="text-xl font-bold text-green-900">
-                Tổng thanh toán
-              </span>
-
-
+              <span className="text-xl font-bold text-green-900">Tổng thanh toán</span>
 
               <span className="text-2xl font-bold text-red-500">
                 {Intl.NumberFormat('vi-VN', {

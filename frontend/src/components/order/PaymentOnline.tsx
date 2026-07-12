@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import QRCode from './QRCode'
 
 export default function PaymentOnline() {

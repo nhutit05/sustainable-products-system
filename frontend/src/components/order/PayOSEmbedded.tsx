@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { Copy, ExternalLink, CheckCircle2, Clock3, QrCode } from 'lucide-react'
-import { useNotification } from '../context/useNotification'
+import { useNotification } from '../../context/useNotification'
 import { useNavigate } from 'react-router-dom'
 
 interface OrderSummary {

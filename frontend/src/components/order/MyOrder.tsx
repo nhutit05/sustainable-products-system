@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useCustomer } from '../context/useCustomer'
-import type { OrderResponse } from '../model/checkout.model'
-import { OrderStatusColor, OrderStatusIcon, OrderStatusName } from '../enum/OrderStatus.enum'
+import { useCustomer } from '../../context/useCustomer'
+import type { OrderResponse } from '../../model/checkout.model'
+import { OrderStatusColor, OrderStatusIcon, OrderStatusName } from '../../enum/OrderStatus.enum'
 import { ArrowRight, Download } from 'lucide-react'
 
 export default function MyOrder() {

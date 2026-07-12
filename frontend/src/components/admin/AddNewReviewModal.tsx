@@ -1,18 +1,18 @@
 import { CloudUpload, X } from 'lucide-react'
 import { useState } from 'react'
-import type { ReviewRequest, ReviewResponse } from '../model/review.model'
-import { useCustomer } from '../context/useCustomer'
-import { useNotification } from '../context/useNotification'
+import type { ReviewRequest } from '../../model/review.model'
+import { useCustomer } from '../../context/useCustomer'
+import { useNotification } from '../../context/useNotification'
 import { useNavigate } from 'react-router-dom'
 
-interface EditReviewModalProps {
+interface AddNewReviewModalProps {
   onClose: () => void
-  review: ReviewResponse
+  productId: number
 }
 
-export default function EditReviewModal({ onClose, review }: EditReviewModalProps) {
-  const [content, setContent] = useState<string>(review.reviewContent)
-  const [rating, setRating] = useState<number>(review.reviewRating)
+export default function AddNewReviewModal({ onClose, productId }: AddNewReviewModalProps) {
+  const [content, setContent] = useState<string>('')
+  const [rating, setRating] = useState<number>(0)
 
   const { showNotification } = useNotification()
 
@@ -27,8 +27,8 @@ export default function EditReviewModal({ onClose, review }: EditReviewModalProp
       reviewRating: rating,
     }
 
-    const response = await fetch(`http://localhost:8080/api/reviews/${review.reviewId}`, {
-      method: 'PUT',
+    const response = await fetch(`http://localhost:8080/api/products/${productId}/reviews`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -38,15 +38,17 @@ export default function EditReviewModal({ onClose, review }: EditReviewModalProp
 
     if (response.ok) {
       showNotification({
-        message: 'Đánh giá đã được cập nhật thành công!',
+        message: 'Đánh giá đã được gửi thành công!',
         type: 'SUCCESS',
         duration: 3000,
       })
+
       setTimeout(() => {
         onClose() // Close the modal after successful submission
-        navigate(`/products/${review.productId}`)
-      }, 3000)
+        navigate(0)
+      }, 3000) // Refresh the page to show the new review
     } else {
+      console.error('Error submitting review:', response.statusText)
       showNotification({
         message: 'Có lỗi xảy ra khi gửi đánh giá!',
         type: 'ERROR',
@@ -62,7 +64,7 @@ export default function EditReviewModal({ onClose, review }: EditReviewModalProp
         onClick={onClose}
       />
       <h2 className="text-green-900 text-lg font-semibold mg-4 uppercase text-center">
-        Chỉnh sửa đánh giá
+        Thêm đánh giá
       </h2>
       <form action="" onSubmit={handleSubmit}>
         <div className="form-group mb-4">
@@ -130,7 +132,7 @@ export default function EditReviewModal({ onClose, review }: EditReviewModalProp
             type="submit"
             className=" bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 hover:cursor-pointer shadow transition-colors"
           >
-            Lưu đánh giá
+            Gửi đánh giá
           </button>
         </div>
       </form>

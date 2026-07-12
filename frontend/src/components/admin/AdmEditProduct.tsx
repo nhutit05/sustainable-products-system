@@ -4,11 +4,11 @@ import type {
   Material,
   ProductRequest,
   ProductResponse,
-} from '../model/product.model'
+} from '../../model/product.model'
 import { useEffect, useState } from 'react'
 import AddProductReviewImage from './AddProductReviewImage'
-import { useNotification } from '../context/useNotification'
-import Loading from './Loading'
+import { useNotification } from '../../context/useNotification'
+import Loading from '../Loading'
 import { useNavigate } from 'react-router-dom'
 
 interface EditProductProps {

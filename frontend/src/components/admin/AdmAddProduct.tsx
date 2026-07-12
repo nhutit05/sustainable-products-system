@@ -1,9 +1,9 @@
 import { CloudUpload, X } from 'lucide-react'
-import type { CategoryResponse, Material, ProductRequest } from '../model/product.model'
+import type { CategoryResponse, Material, ProductRequest } from '../../model/product.model'
 import { useEffect, useState } from 'react'
 import AddProductReviewImage from './AddProductReviewImage'
-import { useNotification } from '../context/useNotification'
-import Loading from './Loading'
+import { useNotification } from '../../context/useNotification'
+import Loading from '../Loading'
 
 interface AddProductProps {
   setIsModalOpen: (value: boolean) => void

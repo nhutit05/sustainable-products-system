@@ -1,8 +1,8 @@
 import { X } from 'lucide-react'
-import { useCustomer } from '../context/useCustomer'
-import type { VillageResponse, CityResponse } from '../model/address.model'
+import { useCustomer } from '../../context/useCustomer'
+import type { VillageResponse, CityResponse } from '../../model/address.model'
 import { useEffect, useState } from 'react'
-import { useNotification } from '../context/useNotification'
+import { useNotification } from '../../context/useNotification'
 import { useNavigate } from 'react-router-dom'
 
 interface AddNewAddressProps {

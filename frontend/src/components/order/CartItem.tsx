@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState, useRef, useCallback } from 'react'
-import type { CartItemResponse } from '../model/cart.model'
-import type { ProductIntroduce } from '../model/product.model'
+import type { CartItemResponse } from '../../model/cart.model'
+import type { ProductIntroduce } from '../../model/product.model'
 import { Leaf, Minus, Plus, Trash2 } from 'lucide-react'
 
 interface CartItemProps {

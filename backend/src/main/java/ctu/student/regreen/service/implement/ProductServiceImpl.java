@@ -323,4 +323,8 @@ public class ProductServiceImpl implements ProductService {
             return false;
         }
     }
+
+    public Integer countProducts() {
+        return (int) repository.count();
+    }
 }
