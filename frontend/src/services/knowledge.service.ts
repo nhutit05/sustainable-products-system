@@ -5,6 +5,8 @@ import type {
     UploadResponse,
 } from "../types/knowledge";
 
+import type { PageResponse } from "../types/page";
+
 const API = "http://localhost:8080/api/admin/knowledge";
 
 export async function uploadDocument(
@@ -30,22 +32,47 @@ export async function uploadDocument(
     return response.json();
 }
 
-export async function getDocuments(
-    token: string
-): Promise<KnowledgeDocument[]> {
+// export async function getDocuments(
+//     token: string,
+//     page: number,
+//     size: number
+// ): Promise<PageResponse<KnowledgeDocument>> {
 
-    const response = await fetch(API, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+//     const response = await fetch(`${API}?page=${page}&size=${size}`, {
+//         headers: {
+//             Authorization: `Bearer ${token}`,
+//         },
+//     });
+
+//     if (!response.ok) {
+//         throw new Error(await response.text());
+//     }
+
+//     return response.json();
+// }
+
+export const getDocuments = async (
+    token: string,
+    page: number,
+    size: number,
+    keyword: string,
+    status: string
+) => {
+
+    const response = await fetch(`${API}?page=${page}&size=${size}&keyword=${keyword}&status=${status}`, 
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
 
     if (!response.ok) {
         throw new Error(await response.text());
     }
 
     return response.json();
-}
+};
 
 export async function getStatistics(
     token: string

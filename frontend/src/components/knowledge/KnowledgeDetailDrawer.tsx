@@ -103,7 +103,7 @@ export default function KnowledgeDetailDrawer({
                         <Descriptions.Item label="Uploaded">
 
                             {new Date(
-                                document.uploadedAt
+                                document.uploadedAt + "Z"
                             ).toLocaleString()}
 
                         </Descriptions.Item>

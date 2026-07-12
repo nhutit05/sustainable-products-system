@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import ctu.student.regreen.dto.response.OrderItemResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.dto.response.OrderSummaryResponse;
 import ctu.student.regreen.model.Order;
 import lombok.RequiredArgsConstructor;
 
@@ -17,21 +18,20 @@ public class OrderMapper {
 
     public OrderResponse toResponse(Order order) {
 
-        List<OrderItemResponse> items =
-                order.getOrderItems()
-                        .stream()
-                        .map(itemMapper::toResponse)
-                        .toList();
+        List<OrderItemResponse> items = order.getOrderItems()
+                .stream()
+                .map(itemMapper::toResponse)
+                .toList();
 
-        Float total =
-                order.getOrderItems()
-                        .stream()
-                        .map(i -> i.getPurchasedPrice() * i.getQuantity())
-                        .reduce(0f, Float::sum);
+        Float total = order.getOrderItems()
+                .stream()
+                .map(i -> i.getPurchasedPrice() * i.getQuantity())
+                .reduce(0f, Float::sum);
 
         if (order.getVoucher() != null) {
             total -= order.getVoucher().getDiscountValue();
-            if (total < 0) total = 0f;
+            if (total < 0)
+                total = 0f;
         }
 
         return new OrderResponse(
@@ -59,7 +59,43 @@ public class OrderMapper {
                 order.getPaymentStatus().getPaymentStatusName(),
 
                 total,
-                items
-        );
+                items);
+    }
+
+    public OrderSummaryResponse toSummary(Order order) {
+
+        Float total = order.getOrderItems()
+                .stream()
+                .map(i -> i.getPurchasedPrice() * i.getQuantity())
+                .reduce(0f, Float::sum);
+
+        if (order.getVoucher() != null) {
+
+            total -= order.getVoucher().getDiscountValue();
+
+            if (total < 0) {
+                total = 0f;
+            }
+        }
+
+        return new OrderSummaryResponse(
+
+                order.getOrderId(),
+
+                order.getOrderedAt(),
+
+                order.getCustomer().getUserId(),
+                order.getCustomer().getUsername(),
+
+                order.getPaymentMethod().getPaymentMethodId(),
+                order.getPaymentMethod().getPaymentMethodName(),
+
+                order.getPaymentStatus().getPaymentStatusId(),
+                order.getPaymentStatus().getPaymentStatusName(),
+
+                order.getOrderStatus().getOrderStatusId(),
+                order.getOrderStatus().getOrderStatusName(),
+
+                total);
     }
 }

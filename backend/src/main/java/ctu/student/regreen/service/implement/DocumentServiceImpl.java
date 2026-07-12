@@ -5,6 +5,10 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ctu.student.regreen.dto.response.KnowledgeDocumentDetailResponse;
 import ctu.student.regreen.dto.response.KnowledgeDocumentResponse;
 import ctu.student.regreen.dto.response.KnowledgeStatisticsResponse;
+import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.dto.response.UploadDocumentResponse;
 import ctu.student.regreen.enums.DocumentStatus;
 import ctu.student.regreen.mapper.DocumentMapper;
@@ -47,13 +52,56 @@ public class DocumentServiceImpl
 
         }
 
+        // @Override
+        // @Transactional(readOnly = true)
+        // public List<KnowledgeDocumentResponse> getDocuments() {
+
+        // List<Document> documents =
+        // documentRepository.findAllByOrderByUploadedAtDesc();
+
+        // return documents.stream()
+        // .map(document -> {
+
+        // int chunkCount = documentChunkRepository.countByDocument_Id(
+        // document.getId());
+
+        // return documentMapper.toKnowledgeDocumentResponse(
+        // document,
+        // chunkCount);
+
+        // })
+        // .toList();
+
+        // }
+
         @Override
         @Transactional(readOnly = true)
-        public List<KnowledgeDocumentResponse> getDocuments() {
 
-                List<Document> documents = documentRepository.findAllByOrderByUploadedAtDesc();
+        public PageResponse<KnowledgeDocumentResponse> getDocuments(
+                        int page,
+                        int size,
+                String keyword,
+        DocumentStatus status) {
 
-                return documents.stream()
+                Pageable pageable = PageRequest.of(
+                                page,
+                                size,
+                                Sort.by("uploadedAt").descending());
+               if (keyword == null) {
+    keyword = "";
+}
+
+keyword = keyword.trim();
+
+
+                Page<Document> documentPage =
+        documentRepository.searchDocuments(
+                keyword,
+                status,
+                pageable
+        );
+                List<KnowledgeDocumentResponse> responses = documentPage.getContent()
+                                .stream()
                                 .map(document -> {
 
                                         int chunkCount = documentChunkRepository.countByDocument_Id(
@@ -62,10 +110,23 @@ public class DocumentServiceImpl
                                         return documentMapper.toKnowledgeDocumentResponse(
                                                         document,
                                                         chunkCount);
-
                                 })
                                 .toList();
+                return PageResponse.<KnowledgeDocumentResponse>builder()
 
+                                .content(responses)
+
+                                .page(documentPage.getNumber())
+
+                                .size(documentPage.getSize())
+
+                                .totalElements(documentPage.getTotalElements())
+
+                                .totalPages(documentPage.getTotalPages())
+
+                                .last(documentPage.isLast())
+
+                                .build();
         }
 
         @Override
