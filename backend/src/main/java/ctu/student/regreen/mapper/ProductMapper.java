@@ -33,6 +33,7 @@ public class ProductMapper {
         product.setStatusSale(request.getStatusSale());
         product.setExpiredAt(request.getExpiredAt());
         product.setWeight(request.getWeight());
+        product.setIsDeleted(request.getIsDelete() != null ? request.getIsDelete() : false);
 
         product.setCategory(category);
 

@@ -37,4 +37,5 @@ public class ProductResponse {
     private List<ProductMaterialResponse> materials;
 
     private List<String> imageUrls;
+
 }

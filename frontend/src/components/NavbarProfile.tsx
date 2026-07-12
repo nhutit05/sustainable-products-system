@@ -1,5 +1,4 @@
-import { Heart, MapPinIcon, Package, SquareArrowDownRight, User } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { SquareArrowDownRight } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 interface NavbarItem {

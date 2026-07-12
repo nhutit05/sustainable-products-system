@@ -7,7 +7,7 @@ import {
   ShoppingCart,
   Ticket,
   Warehouse,
-  CloudUpload
+  CloudUpload,
 } from 'lucide-react'
 import { useEffect } from 'react'
 import AdminNavbar from '../components/AdminNavbar'
@@ -91,10 +91,10 @@ export default function AdminLayout() {
           label: 'Quản lý tài liệu huấn luyện',
           title: 'Quản lý tài liệu huấn luyện',
           to: '/admin/knowledge',
-          icon: <CloudUpload/>
-        }
-      ]
-    }
+          icon: <CloudUpload />,
+        },
+      ],
+    },
   ]
 
   // Cau hinh scroll to top khi chuyen trang

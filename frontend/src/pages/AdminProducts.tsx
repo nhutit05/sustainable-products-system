@@ -63,7 +63,11 @@ export default function AdminProducts() {
           }
         )
         if (response.ok) {
-          setProducts(await response.json())
+          const data = await response.json()
+          const sortIndexProducts = (products: ProductResponse[]) => {
+            return products.sort((a, b) => a.productId - b.productId)
+          }
+          setProducts(sortIndexProducts(data))
         }
       } catch (error) {
         console.error('Error fetching products:', error)
@@ -180,39 +184,37 @@ export default function AdminProducts() {
       {/* PRODUCTS LIST */}
       <main className="bg-white p-4 rounded-2xl shadow mt-4">
         <section className="order-list">
-          <table className="w-full border border-gray-200 rounded-2xl">
-            <thead className="bg-emerald-50/80">
+          <table className="w-full border border-gray-200 rounded-t-2xl overflow-hidden">
+            <thead className="bg-emerald-50/80 border-b border-gray-200">
               <tr>
-                <th className="p-3 border-b border-gray-200 text-left">ID</th>
-                <th className="p-3 border-b border-gray-200 text-left">Tên sản phẩm</th>
-                <th className="p-3 border-b border-gray-200 text-left">Giá trị</th>
-                <th className="p-3 border-b border-gray-200 text-left">Chỉ số Carbon</th>
-                <th className="p-3 border-b border-gray-200 text-left">Số lượng</th>
-                <th className="p-3 border-b border-gray-200 text-left">Trạng thái</th>
-                <th className="p-3 border-b border-gray-200 text-left">Loại sản phẩm</th>
-                <th className="p-3 border-b border-gray-200 text-left">Thao tác</th>
+                <th className="p-3 text-left">Index</th>
+                <th className="p-3 text-left">Tên sản phẩm</th>
+                <th className="p-3 text-left">Giá trị</th>
+                <th className="p-3 text-left">Chỉ số Carbon</th>
+                <th className="p-3 text-left">Số lượng</th>
+                <th className="p-3 text-left">Trạng thái</th>
+                <th className="p-3 text-left">Loại sản phẩm</th>
+                <th className="p-3 text-left">Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {products.map((product) => (
-                <tr key={product.productId} className="hover:bg-gray-100">
-                  <td className="p-3 border-b border-gray-200">{product.productId}</td>
-                  <td className="p-3 border-b border-gray-200">{product.productName}</td>
-                  <td className="p-3 border-b border-gray-200">
+              {products.map((product, index) => (
+                <tr key={product.productId} className="hover:bg-gray-100 border-b border-gray-200">
+                  <td className="p-3 ">{index + 1}</td>
+                  <td className="p-3 ">{product.productName}</td>
+                  <td className="p-3 ">
                     {Intl.NumberFormat('vi-VN', {
                       style: 'currency',
                       currency: 'VND',
                     }).format(product.productPrice)}
                   </td>
-                  <td className="p-3 border-b border-gray-200">{product.productCarbonIndex}</td>
-                  <td className="p-3 border-b border-gray-200">{product.inventory}</td>
-                  <td
-                    className={`p-3 border-b border-gray-200 ${product.statusSale ? 'text-green-500' : 'text-gray-500'}`}
-                  >
+                  <td className="p-3 ">{product.productCarbonIndex}</td>
+                  <td className="p-3 ">{product.inventory}</td>
+                  <td className={`p-3  ${product.statusSale ? 'text-green-500' : 'text-gray-500'}`}>
                     {product.statusSale ? 'Đang bán' : 'Ngừng bán'}
                   </td>
-                  <td className="p-3 border-b border-gray-200">{product.categoryName}</td>
-                  <td className="p-3 border-b border-gray-200 text-lg font-bold flex items-center gap-2">
+                  <td className="p-3 ">{product.categoryName}</td>
+                  <td className="p-3   text-medium flex items-center gap-2">
                     <Eye
                       onClick={() => {
                         setSelectedProduct(product)
