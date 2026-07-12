@@ -169,10 +169,16 @@ export default function ProductFilter({
                 {[20, 30, 40].map((s) => (
                   <button
                     key={s}
-                    onClick={() => setSelectedMinScore(s)}
+                    onClick={() => {
+                      if (selectedMinScore === s) {
+                        setSelectedMinScore(null)
+                      } else {
+                        setSelectedMinScore(s)
+                      }
+                    }}
                     className={`px-3 py-1.5 text-xs font-semibold border border-green-200 rounded-lg text-green-700 
                       hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
-                      ${selectedMinScore === s ? 'bg-emerald-500 text-white' : ''}`}
+                      ${selectedMinScore === s ? 'bg-emerald-500 text-white hover:text-emerald-300' : ''}`}
                   >
                     {s}+
                   </button>
@@ -187,10 +193,16 @@ export default function ProductFilter({
                 {originals.map((origin) => (
                   <button
                     key={origin.id}
-                    onClick={() => setSelectedOrigin(origin.name)}
+                    onClick={() => {
+                      if (selectedOrigin === origin.name) {
+                        setSelectedOrigin(null)
+                      } else {
+                        setSelectedOrigin(origin.name)
+                      }
+                    }}
                     className={`px-3 py-1.5 text-xs font-semibold border border-green-200 rounded-lg text-green-700 
                       hover:bg-emerald-50 hover:border-emerald-300 transition-colors 
-                      ${selectedOrigin === origin.name ? 'bg-emerald-500 text-white' : ''}`}
+                      ${selectedOrigin === origin.name ? 'bg-emerald-500 text-white hover:text-emerald-300' : ''}`}
                   >
                     {origin.name}
                   </button>
@@ -225,7 +237,11 @@ export default function ProductFilter({
                 }`}
                 key={category.categoryId}
                 onClick={() => {
-                  setSelectedCategory(category.categoryId)
+                  if (selectedCategory === category.categoryId) {
+                    setSelectedCategory(null)
+                  } else {
+                    setSelectedCategory(category.categoryId)
+                  }
                 }}
               >
                 {category.categoryName}

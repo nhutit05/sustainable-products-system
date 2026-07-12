@@ -153,6 +153,7 @@ export default function Products() {
     paginationProducts()
 
     const updateTotalPages = () => {
+      setCurrentPage(1) // Reset current page to 1 when filters change
       setTotalPages(Math.max(1, Math.ceil(resultFilter.length / PAGE_SIZE)))
     }
 
@@ -193,6 +194,7 @@ export default function Products() {
           selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory}
         />
+
         {/* Product List */}
         <div className="product_list--grid mt-6 text-left relative">
           {filteredProducts.length > 0 ? (
@@ -211,6 +213,17 @@ export default function Products() {
               <p className="font-semibold text-green-900">Đang tải sản phẩm...</p>
             </div>
           ) : null}
+        </div>
+        {/* HIEN THI SO LUONG */}
+        <div className="product_list--count text-sm text-green-700/60 mt-3 text-right">
+          {filteredProducts.length > 0 ? (
+            <p>
+              Hiển thị <span className="font-semibold">{filteredProducts.length}</span> /
+              <span className="font-semibold">{resultFilter.length}</span> sản phẩm
+            </p>
+          ) : (
+            <p>Không có sản phẩm nào</p>
+          )}
         </div>
         <div className="product_list--slide flex items-center justify-center gap-3 mt-6">
           <button
