@@ -32,6 +32,20 @@ interface DocumentTableProps {
         documentId: string
     ) => void;
 
+    currentPage: number;
+
+    pageSize: number;
+
+    total: number;
+
+    onPageChange: (
+
+        page: number,
+
+        pageSize: number
+
+    ) => void;
+
 }
 
 export default function DocumentTable({
@@ -43,6 +57,14 @@ export default function DocumentTable({
     refreshData,
 
     onView,
+
+    currentPage,
+
+    pageSize,
+
+    total,
+
+    onPageChange,
 
 }: DocumentTableProps) {
 
@@ -219,7 +241,7 @@ export default function DocumentTable({
             width: 200,
 
             render: (value: string) =>
-                new Date(value).toLocaleString(),
+                new Date(value + "Z").toLocaleDateString(),
 
         },
 
@@ -277,7 +299,7 @@ export default function DocumentTable({
 
     return (
 
-        <Table 
+        <Table
 
             rowKey="documentId"
 
@@ -288,11 +310,26 @@ export default function DocumentTable({
             loading={loading}
 
             pagination={{
-                pageSize: 10,
-                showSizeChanger: false,
+
+                current: currentPage,
+
+                pageSize,
+
+                total,
+
+                showSizeChanger: true,
+
+                pageSizeOptions: ["5", "10", "20", "50"],
+
+                showTotal: (total) =>
+
+                    `Tổng ${total} tài liệu`,
+
+                onChange: onPageChange,
+
             }}
 
-            scroll={{x:900}}
+            scroll={{ x: 900 }}
 
         />
 

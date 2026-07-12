@@ -24,12 +24,24 @@ export default function AdmEditProduct({
   categories,
   selectedProduct,
 }: EditProductProps) {
+  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>(
+    [
+      selectedProduct.materials.map((material) => ({
+        materialId: material.materialId,
+        materialName: material.materialName,
+      })),
+    ].flat()
+  )
+  const [percentages, setPercentages] = useState<number[]>(
+    [selectedProduct.materials.map((material) => material.percentage)].flat()
+  ) // Assuming a maximum of 10 materials for simplicity
+
   const [productRequest, setProductRequest] = useState<ProductRequest>({
     baseEcoPoints: selectedProduct.baseEcoPoints,
-    materialIds: selectedProduct.materials.map((material) => material.materialId),
+    materialIds: selectedMaterials.map((material) => material.materialId),
     original: selectedProduct.original,
     productCarbonIndex: selectedProduct.productCarbonIndex,
-    percentageMaterialIds: selectedProduct.materials.map((material) => material.percentage),
+    percentageMaterialIds: percentages,
     expiredAt: selectedProduct.expiredAt,
     weight: selectedProduct.weight,
     categoryId: selectedProduct.categoryId,
@@ -45,17 +57,6 @@ export default function AdmEditProduct({
 
   const [materials, setMaterials] = useState<Material[]>([])
 
-  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>(
-    [
-      selectedProduct.materials.map((material) => ({
-        materialId: material.materialId,
-        materialName: material.materialName,
-      })),
-    ].flat()
-  )
-  const [percentages, setPercentages] = useState<number[]>(
-    [selectedProduct.materials.map((material) => material.percentage)].flat()
-  ) // Assuming a maximum of 10 materials for simplicity
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
 
@@ -86,6 +87,11 @@ export default function AdmEditProduct({
 
     fetchMaterials()
   }, [])
+
+  const removeSelectedMaterial = (materialId: number, index: number) => {
+    setSelectedMaterials((prev) => prev.filter((material) => material.materialId !== materialId))
+    setPercentages((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const CloseEditProduct = () => {
     setIsModalOpen(false)
@@ -428,11 +434,7 @@ export default function AdmEditProduct({
                       <X
                         className="hover:cursor-pointer text-red-500"
                         size={16}
-                        onClick={() =>
-                          setSelectedMaterials((prev) =>
-                            prev.filter((m) => m.materialId !== selected.materialId)
-                          )
-                        }
+                        onClick={() => removeSelectedMaterial(selected.materialId, index)}
                       />
                     </div>
                     <div className="relative col-span-1">

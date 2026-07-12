@@ -1,12 +1,15 @@
 package ctu.student.regreen.controller;
 
-import java.util.List;
+import java.time.LocalDate;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.dto.response.OrderSummaryResponse;
 import ctu.student.regreen.service.interfaces.AdminOrderService;
 import lombok.RequiredArgsConstructor;
 
@@ -18,9 +21,51 @@ public class AdminOrderController {
 
     private final AdminOrderService adminOrderService;
 
+    // @GetMapping
+    // public ResponseEntity<List<OrderSummaryResponse>> getAll() {
+    // return ResponseEntity.ok(adminOrderService.getAllOrders());
+    // }
+
+    // @GetMapping
+    // public ResponseEntity<Page<OrderSummaryResponse>> getOrders(
+
+    // @PageableDefault(
+    // size = 10,
+    // sort = "orderedAt",
+    // direction = Sort.Direction.DESC)
+    // Pageable pageable) {
+
+    // return ResponseEntity.ok(
+    // adminOrderService.getOrders(pageable));
+    // }
+
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getAll() {
-        return ResponseEntity.ok(adminOrderService.getAllOrders());
+    public ResponseEntity<Page<OrderSummaryResponse>> getOrders(
+
+            @RequestParam(required = false) String keyword,
+
+            @RequestParam(required = false) Integer orderStatusId,
+
+            @RequestParam(required = false) Integer paymentStatusId,
+
+            @RequestParam(required = false) Integer paymentMethodId,
+
+            @RequestParam(required = false) LocalDate startDate,
+
+            @RequestParam(required = false) LocalDate endDate,
+
+            Pageable pageable) {
+
+        return ResponseEntity.ok(
+                adminOrderService.getOrders(
+                        keyword,
+                        orderStatusId,
+                        paymentStatusId,
+                        paymentMethodId,
+                        startDate,
+
+                        endDate,
+                        pageable));
     }
 
     @GetMapping("/{id}")

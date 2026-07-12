@@ -45,34 +45,40 @@ const KnowledgePage = () => {
     const [selectedDocument, setSelectedDocument] =
         useState<KnowledgeDocumentDetail>();
 
-        const [keyword, setKeyword] = useState("");
+    const [keyword, setKeyword] = useState("");
 
-const [statusFilter, setStatusFilter] = useState("ALL");
+    const [statusFilter, setStatusFilter] = useState("ALL");
 
-const filteredDocuments = documents.filter((document) => {
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const matchKeyword =
-        document.fileName
-            .toLowerCase()
-            .includes(keyword.toLowerCase());
+    const [pageSize, setPageSize] = useState(10);
 
-    const matchStatus =
-        statusFilter === "ALL"
-            ? true
-            : document.status === statusFilter;
+    const [total, setTotal] = useState(0);
 
-    return matchKeyword && matchStatus;
+    // const filteredDocuments = documents.filter((document) => {
 
-});
+    //     const matchKeyword =
+    //         document.fileName
+    //             .toLowerCase()
+    //             .includes(keyword.toLowerCase());
 
-    const fetchDocuments = useCallback(async () => {
+    //     const matchStatus =
+    //         statusFilter === "ALL"
+    //             ? true
+    //             : document.status === statusFilter;
 
-        const data = await getDocuments(token);
-        console.log("Documents:", data);
+    //     return matchKeyword && matchStatus;
 
-        setDocuments(data);
+    // });
 
-    }, [token]);
+    // const fetchDocuments = useCallback(async () => {
+
+    //     const data = await getDocuments(token);
+    //     console.log("Documents:", data);
+
+    //     setDocuments(data);
+
+    // }, [token]);
 
     const fetchStatistics = useCallback(async () => {
 
@@ -82,16 +88,77 @@ const filteredDocuments = documents.filter((document) => {
 
     }, [token]);
 
+    //     const refreshData = useCallback(async () => {
+
+    //     setLoading(true);
+
+    //     try {
+
+    //         const pageResponse =
+    //             await getDocuments(
+    //                 token,
+    //                 currentPage - 1,
+    //                 pageSize
+    //             );
+
+    //         setDocuments(
+    //             pageResponse.content
+    //         );
+
+    //         setTotal(
+    //             pageResponse.totalElements
+    //         );
+
+    //         const statistic =
+    //             await getStatistics(
+    //                 token
+    //             );
+
+    //         setStatistics(
+    //             statistic
+    //         );
+
+    //     } finally {
+
+    //         setLoading(false);
+
+    //     }
+
+    // }, [
+    //     token,
+    //     currentPage,
+    //     pageSize
+    // ]);
+
+    useEffect(() => {
+
+        setCurrentPage(1);
+
+    }, [keyword, statusFilter]);
+
     const refreshData = useCallback(async () => {
 
         setLoading(true);
 
         try {
 
-            await Promise.all([
-                fetchDocuments(),
-                fetchStatistics(),
-            ]);
+            const pageResponse =
+                await getDocuments(
+                    token,
+                    currentPage - 1,
+                    pageSize,
+                    keyword,
+                    statusFilter
+                );
+
+            setDocuments(pageResponse.content);
+
+            setTotal(pageResponse.totalElements);
+
+            const statistic =
+                await getStatistics(token);
+
+            setStatistics(statistic);
 
         } finally {
 
@@ -100,8 +167,11 @@ const filteredDocuments = documents.filter((document) => {
         }
 
     }, [
-        fetchDocuments,
-        fetchStatistics,
+        token,
+        currentPage,
+        pageSize,
+        keyword,
+        statusFilter
     ]);
 
     const handleView = useCallback(
@@ -138,57 +208,76 @@ const filteredDocuments = documents.filter((document) => {
 
 
     return (
-<Row gutter={[24, 24]}>
+        <Row gutter={[24, 24]}>
 
-        <Space
-            orientation="vertical"
-            size="large"
-            style={{ width: "97%", padding: 10}}
-        >
+            <Space
+                orientation="vertical"
+                size="large"
+                style={{ width: "97%", padding: 10 }}
+            >
 
- 
-            
-       <Col xs={24}>
-        <UploadCard refreshData={refreshData}/>
-    </Col>
 
-<Col xs={24}>
-        <KnowledgeToolbar
-    keyword={keyword}
-    statusFilter={statusFilter}
-    onKeywordChange={setKeyword}
-    onStatusChange={setStatusFilter}
-    onRefresh={refreshData}
-/>
-</Col>
 
-            <Col xs={24}>
-        <StatisticCards statistics={statistics}/>
-    </Col>
-
-            <Row>
-
-                <Col span={24}>
-
-                    <DocumentTable
-                        documents={filteredDocuments}
-                        loading={loading}
-                        refreshData={refreshData}
-                        onView={handleView}
-                    />
-
+                <Col xs={24}>
+                    <UploadCard refreshData={refreshData} />
                 </Col>
 
-            </Row>
-<Col xs={24}>
-            <KnowledgeDetailDrawer
-                open={drawerOpen}
-                onClose={() => setDrawerOpen(false)}
-                document={selectedDocument}
-            />
-             </Col>
+                <Col xs={24}>
+                    <KnowledgeToolbar
+                        keyword={keyword}
+                        statusFilter={statusFilter}
+                        onKeywordChange={setKeyword}
+                        onStatusChange={setStatusFilter}
+                        onRefresh={refreshData}
+                    />
+                </Col>
 
-        </Space>
+                <Col xs={24}>
+                    <StatisticCards statistics={statistics} />
+                </Col>
+
+                <Row>
+
+                    <Col span={24} style={{ padding: "0 12px" }}>
+
+                        <DocumentTable
+
+                            documents={documents}
+
+                            loading={loading}
+
+                            refreshData={refreshData}
+
+                            onView={handleView}
+
+                            currentPage={currentPage}
+
+                            pageSize={pageSize}
+
+                            total={total}
+
+                            onPageChange={(page, size) => {
+
+                                setCurrentPage(page);
+
+                                setPageSize(size);
+
+                            }}
+
+                        />
+
+                    </Col>
+
+                </Row>
+                <Col xs={24}>
+                    <KnowledgeDetailDrawer
+                        open={drawerOpen}
+                        onClose={() => setDrawerOpen(false)}
+                        document={selectedDocument}
+                    />
+                </Col>
+
+            </Space>
         </Row>
 
     );

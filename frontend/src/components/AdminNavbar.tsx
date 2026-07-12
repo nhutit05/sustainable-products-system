@@ -1,6 +1,7 @@
 import { Leaf, LogOut, UserCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 interface AdminNavbarProps {
   NAV_LINKS: {
@@ -81,13 +82,13 @@ export default function AdminNavbar({ NAV_LINKS }: AdminNavbarProps) {
                       : ''
                   }`}
                 >
-                  <a
-                    href={child.to}
-                    className="flex items-center p-3 gap-2 text-sm text-gray-300 hover:text-white transition-colors"
-                  >
-                    {child.icon}
-                    {child.label}
-                  </a>
+                  <NavLink
+  to={child.to}
+  className="flex items-center p-3 gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+>
+  {child.icon}
+  {child.label}
+</NavLink>
                 </li>
               ))}
             </ul>

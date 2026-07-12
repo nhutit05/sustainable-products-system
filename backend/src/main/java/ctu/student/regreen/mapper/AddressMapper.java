@@ -12,9 +12,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AddressMapper {
 
-    private final VillageMapper villageMapper;
-    private final CustomerMapper customerMapper;
-
     public AddressResponse toResponse(Address address) {
         return new AddressResponse(
                 address.getAddressId(),

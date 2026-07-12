@@ -8,9 +8,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.web.util.UriUtils;
-import java.nio.charset.StandardCharsets;
-
 import ctu.student.regreen.config.SupabaseProperties;
 import ctu.student.regreen.dto.response.UploadFileResponse;
 import ctu.student.regreen.service.interfaces.StorageService;

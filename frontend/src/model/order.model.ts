@@ -5,33 +5,45 @@ export type orderStatusResponse = {
   orderStatusName: string
 }
 
+export type paymentStatusResponse = {
+  paymentStatusId: number
+  paymentStatusName: string
+}
+
+export type paymentMethodResponse = {
+  paymentMethodId: number
+  paymentMethodName: string
+  online: boolean
+}
+
 // ================ ORDER ===============
 
 export interface orderResponse {
-  orderId: number
-  orderedAt: string
+  orderId: number;
+  orderedAt: string;
 
-  orderReceiver: string
-  orderRecieverPhone: string
+  orderReceiver: string;
+  orderReceiverPhone: string;
+  orderAddress: string;
 
-  customerId: number
-  customerName: string
+  customerId: number;
+  customerUsername: string;
 
-  paymentMethodId: number
-  paymentMethodName: string
+  paymentMethodId: number;
+  paymentMethodName: string;
 
-  paymentStatusId: number
-  paymentStatusName: string
+  paymentStatusId: number;
+  paymentStatusName: string;
 
-  voucherId: number | null
-  voucherCode: string | null
+  voucherId: number | null;
+  voucherCode: string | null;
 
-  orderStatusId: number
-  orderStatusName: string
+  orderStatusId: number;
+  orderStatusName: string;
 
-  totalAmount: number
+  totalAmount: number;
 
-  items: orderItemResponse[]
+  items: orderItemResponse[];
 }
 
 export type OrderRequest = {
@@ -51,4 +63,48 @@ export type orderItemResponse = {
   quantity: number
   purchasedPrice: number
   subTotal: number
+}
+
+
+export interface orderSummaryResponse {
+
+    orderId: number;
+
+    orderedAt: string;
+
+    totalAmount: number;
+
+    customerId: number;
+
+    customerUsername: string;
+
+    paymentMethodId: number;
+
+    paymentMethodName: string;
+
+    paymentStatusId: number;
+
+    paymentStatusName: string;
+
+    orderStatusId: number;
+
+    orderStatusName: string;
+
+}
+export interface PageResponse<T> {
+    content: T[];
+
+    totalElements: number;
+
+    totalPages: number;
+
+    size: number;
+
+    number: number;
+
+    first: boolean;
+
+    last: boolean;
+
+    empty: boolean;
 }

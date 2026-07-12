@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import ctu.student.regreen.dto.request.ProductRequest;
 import ctu.student.regreen.dto.response.ProductResponse;
 import ctu.student.regreen.model.Category;
-import ctu.student.regreen.model.File;
 import ctu.student.regreen.model.Product;
 
 import java.util.List;
@@ -34,6 +33,7 @@ public class ProductMapper {
         product.setStatusSale(request.getStatusSale());
         product.setExpiredAt(request.getExpiredAt());
         product.setWeight(request.getWeight());
+        product.setIsDeleted(request.getIsDelete() != null ? request.getIsDelete() : false);
 
         product.setCategory(category);
 
