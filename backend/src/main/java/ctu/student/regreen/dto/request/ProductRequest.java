@@ -53,4 +53,6 @@ public class ProductRequest {
 
     @JsonIgnore
     private List<MultipartFile> imagesFiles;
+
+    private Boolean isDelete = false;
 }
