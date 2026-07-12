@@ -1,4 +1,4 @@
-import type { OrderResponse } from './order.model'
+// import type { orderResponse } from './order.model'
 
 export interface CheckoutResponse {
   order: OrderResponse
@@ -7,7 +7,7 @@ export interface CheckoutResponse {
   expiredAt: string | null
 }
 
-export type orderResponse = {
+export type OrderResponse = {
   orderId: number
   orderedAt: string
   orderReceiver: string

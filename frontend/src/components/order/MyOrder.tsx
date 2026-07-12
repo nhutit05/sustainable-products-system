@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useCustomer } from '../../context/useCustomer'
-import type { orderResponse } from '../../model/checkout.model'
+import type { OrderResponse } from '../../model/checkout.model'
 import { OrderStatusColor, OrderStatusIcon, OrderStatusName } from '../../enum/OrderStatus.enum'
 import { ArrowRight, Download } from 'lucide-react'
 
@@ -9,7 +9,7 @@ export default function MyOrder() {
 
   const [loading, setLoading] = useState<boolean>(false)
 
-  const [orders, setOrders] = useState<orderResponse[]>([])
+  const [orders, setOrders] = useState<OrderResponse[]>([])
 
   const orderStatus = [
     { index: -1, id: 'ALL', name: 'Tất cả' },

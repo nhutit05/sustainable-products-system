@@ -25,7 +25,7 @@ export async function checkout(
     return response.json();
 }
 
-import type { OrderResponse } from "../model/order.model";
+import type { OrderResponse } from "../model/checkout.model";
 
 export async function getOrder(
     token: string,

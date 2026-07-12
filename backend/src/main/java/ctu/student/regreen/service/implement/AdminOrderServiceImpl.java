@@ -1,10 +1,15 @@
 package ctu.student.regreen.service.implement;
 
-import java.util.List;
+import java.time.LocalDate;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.dto.response.OrderSummaryResponse;
 import ctu.student.regreen.enums.OrderStatusName;
 import ctu.student.regreen.enums.PaymentStatusName;
 import ctu.student.regreen.mapper.OrderMapper;
@@ -15,6 +20,7 @@ import ctu.student.regreen.repository.OrderRepository;
 import ctu.student.regreen.repository.OrderStatusRepository;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.service.interfaces.AdminOrderService;
+import ctu.student.regreen.specification.OrderSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -38,14 +44,55 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                         "Payment status not found"));
     }
 
-    @Override
-    public List<OrderResponse> getAllOrders() {
+    // @Override
+    // public List<OrderResponse> getAllOrders() {
 
-        return orderRepository.findAll()
-                .stream()
-                .map(orderMapper::toResponse)
-                .toList();
-    }
+    // return orderRepository.findAll()
+    // .stream()
+    // .map(orderMapper::toResponse)
+    // .toList();
+    // }
+
+    // @Override
+    // public List<OrderSummaryResponse> getAllOrders() {
+
+    //     return orderRepository.findAll()
+    //             .stream()
+    //             .map(orderMapper::toSummary)
+    //             .toList();
+    // }
+
+//     @Override
+// public Page<OrderSummaryResponse> getOrders(
+//         Pageable pageable) {
+
+//     return orderRepository
+//             .findAll(pageable)
+//             .map(orderMapper::toSummary);
+// }
+
+@Override
+public Page<OrderSummaryResponse> getOrders(
+        String keyword,
+        Integer orderStatusId,
+        Integer paymentStatusId,
+        Integer paymentMethodId,
+LocalDate startDate,
+LocalDate endDate,
+        Pageable pageable) {
+
+    Specification<Order> specification =
+            OrderSpecification.filter(
+                    keyword,
+                    orderStatusId,
+                    paymentStatusId,
+                    paymentMethodId,
+                startDate, endDate);
+
+    return orderRepository
+            .findAll(specification, pageable)
+            .map(orderMapper::toSummary);
+}
 
     @Override
     public OrderResponse getOrderById(Integer orderId) {
@@ -76,7 +123,6 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
         Order order = getOrderEntity(orderId);
 
-    
         if (!order.getPaymentMethod().getOnline()) {
 
             order.setPaymentStatus(

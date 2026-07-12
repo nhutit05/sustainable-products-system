@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import ctu.student.regreen.dto.request.ProductMaterialRequest;
-import ctu.student.regreen.dto.response.MaterialResponse;
 import ctu.student.regreen.dto.response.ProductImageResponse;
 import ctu.student.regreen.dto.response.ProductMaterialResponse;
 import ctu.student.regreen.mapper.ProductMaterialMapper;
