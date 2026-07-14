@@ -177,7 +177,7 @@ public class OrderServiceImpl implements OrderService {
                 Voucher voucher = null;
 
                 if (request.getVoucherId() != null) {
-                        voucher = voucherRepository.findById(request.getVoucherId())
+                        voucher = voucherRepository.findByVoucherIdAndIsActiveTrue(request.getVoucherId())
                                         .orElseThrow(() -> new RuntimeException("Voucher not found"));
                 }
 

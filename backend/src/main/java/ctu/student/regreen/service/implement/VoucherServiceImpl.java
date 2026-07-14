@@ -53,7 +53,7 @@ public class VoucherServiceImpl
         @Override
         public List<VoucherResponse> getAll() {
 
-                return repository.findAll()
+                return repository.findAllByIsActiveTrue()
                                 .stream()
                                 .map(mapper::toResponse)
                                 .toList();
