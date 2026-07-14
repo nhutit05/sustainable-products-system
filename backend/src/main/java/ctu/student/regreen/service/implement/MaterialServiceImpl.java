@@ -14,13 +14,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class MaterialServiceImpl implements MaterialService {
 
     private final MaterialRepository repository;
     private final MaterialMapper mapper;
 
     @Override
+    @Transactional
     public MaterialResponse create(MaterialRequest request) {
 
         Material material = mapper.toEntity(request);
@@ -47,6 +48,7 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     @Override
+    @Transactional
     public MaterialResponse update(Integer id, MaterialRequest request) {
 
         Material material = repository.findById(id)
@@ -58,6 +60,7 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
 
         Material material = repository.findById(id)

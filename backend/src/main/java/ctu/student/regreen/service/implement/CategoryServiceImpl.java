@@ -2,6 +2,7 @@ package ctu.student.regreen.service.implement;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.CategoryRequest;
 import ctu.student.regreen.dto.response.CategoryResponse;
@@ -9,12 +10,12 @@ import ctu.student.regreen.mapper.CategoryMapper;
 import ctu.student.regreen.model.Category;
 import ctu.student.regreen.repository.CategoryRepository;
 import ctu.student.regreen.service.interfaces.CategoryService;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository repository;
@@ -38,6 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryResponse create(CategoryRequest request) {
 
         Category category = mapper.toEntity(request);
@@ -46,6 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public CategoryResponse update(Integer id, CategoryRequest request) {
 
         Category category = repository.findById(id)
@@ -58,6 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
 
         Category category = repository.findById(id)

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.CartItemRequest;
 import ctu.student.regreen.dto.response.CartItemResponse;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CartItemServiceImpl implements CartItemService {
 
     private final CartItemRepository repository;
@@ -41,6 +43,7 @@ public class CartItemServiceImpl implements CartItemService {
     //
 
     @Override
+    @Transactional
     public CartItemResponse add(CartItemRequest request) {
 
         Cart cart = getCurrentCart();
@@ -99,6 +102,7 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
+    @Transactional
     public CartItemResponse update(Integer productId, Integer quantity) {
 
         Cart cart = getCurrentCart();
@@ -114,6 +118,7 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer productId) {
 
         Cart cart = getCurrentCart();

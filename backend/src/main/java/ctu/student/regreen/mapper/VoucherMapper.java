@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import ctu.student.regreen.dto.request.VoucherRequest;
 import ctu.student.regreen.dto.response.VoucherResponse;
+import ctu.student.regreen.dto.response.VoucherSummaryResponse;
 import ctu.student.regreen.model.Voucher;
 
 @Component
@@ -34,6 +35,19 @@ public class VoucherMapper {
                 voucher.getStartedAt(),
                 voucher.getExpiredAt(),
                 voucher.getQuantity(),
+                voucher.getIsActive());
+    }
+
+    public VoucherSummaryResponse toSummary(
+            Voucher voucher) {
+
+        return new VoucherSummaryResponse(
+                voucher.getVoucherId(),
+                voucher.getCode(),
+                voucher.getDescription(),
+                voucher.getDiscountValue(),
+                voucher.getQuantity(),
+                voucher.getExpiredAt(),
                 voucher.getIsActive());
     }
 

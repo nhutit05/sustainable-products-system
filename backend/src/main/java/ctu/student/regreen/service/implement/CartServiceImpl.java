@@ -2,6 +2,7 @@ package ctu.student.regreen.service.implement;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.response.CartResponse;
 import ctu.student.regreen.mapper.CartMapper;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CartServiceImpl implements CartService {
 
     private final CartRepository repository;

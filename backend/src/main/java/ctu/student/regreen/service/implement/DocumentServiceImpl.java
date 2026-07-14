@@ -22,15 +22,15 @@ import ctu.student.regreen.enums.DocumentStatus;
 import ctu.student.regreen.mapper.DocumentMapper;
 import ctu.student.regreen.model.Document;
 import ctu.student.regreen.repository.DocumentChunkRepository;
-import ctu.student.regreen.repository.DocumentContentRepository;
 import ctu.student.regreen.repository.DocumentRepository;
 import ctu.student.regreen.service.interfaces.DocumentIngestionService;
 import ctu.student.regreen.service.interfaces.DocumentService;
 import ctu.student.regreen.service.interfaces.StorageService;
-// import jakarta.transaction.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DocumentServiceImpl
                 implements DocumentService {
 
@@ -45,6 +45,7 @@ public class DocumentServiceImpl
         private final DocumentMapper documentMapper;
 
         @Override
+        @Transactional
         public UploadDocumentResponse uploadDocument(
                         MultipartFile file) {
 
@@ -75,8 +76,6 @@ public class DocumentServiceImpl
         // }
 
         @Override
-        @Transactional(readOnly = true)
-
         public PageResponse<KnowledgeDocumentResponse> getDocuments(
                         int page,
                         int size,
@@ -130,7 +129,6 @@ keyword = keyword.trim();
         }
 
         @Override
-        @Transactional(readOnly = true)
         public KnowledgeStatisticsResponse getStatistics() {
 
                 return KnowledgeStatisticsResponse.builder()
@@ -147,7 +145,6 @@ keyword = keyword.trim();
         }
 
         @Override
-        @Transactional(readOnly = true)
         public KnowledgeDocumentDetailResponse getDocument(
                         UUID documentId) {
 

@@ -33,7 +33,7 @@ public class JwtService {
                 .expiration(
                         new Date(
                                 System.currentTimeMillis()
-                                        + 86400000))
+                                        + 10800000))
                 .signWith(
                         getKey())
                 .compact();

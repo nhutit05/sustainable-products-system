@@ -3,18 +3,19 @@ package ctu.student.regreen.service.implement;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.response.InvoiceResponse;
 import ctu.student.regreen.mapper.InvoiceMapper;
 import ctu.student.regreen.model.Invoice;
 import ctu.student.regreen.repository.InvoiceRepository;
 import ctu.student.regreen.service.interfaces.AdminInvoiceService;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly=true)
 public class AdminInvoiceServiceImpl
         implements AdminInvoiceService {
 

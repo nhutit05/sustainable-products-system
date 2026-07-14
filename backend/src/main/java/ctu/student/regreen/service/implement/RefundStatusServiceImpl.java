@@ -8,11 +8,13 @@ import ctu.student.regreen.repository.RefundStatusRepository;
 import ctu.student.regreen.service.interfaces.RefundStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RefundStatusServiceImpl
         implements RefundStatusService {
 
@@ -43,6 +45,7 @@ public class RefundStatusServiceImpl
     }
 
     @Override
+    @Transactional
     public RefundStatusResponse create(
             RefundStatusRequest request) {
 
@@ -54,6 +57,7 @@ public class RefundStatusServiceImpl
     }
 
     @Override
+    @Transactional
     public RefundStatusResponse update(
             Integer id,
             RefundStatusRequest request) {
@@ -73,6 +77,7 @@ public class RefundStatusServiceImpl
     }
 
     @Override
+    @Transactional
     public void delete(
             Integer id) {
 

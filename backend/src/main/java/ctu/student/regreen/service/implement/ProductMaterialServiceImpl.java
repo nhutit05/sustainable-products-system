@@ -10,14 +10,16 @@ import ctu.student.regreen.repository.MaterialRepository;
 import ctu.student.regreen.repository.ProductMaterialRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.service.interfaces.ProductMaterialService;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProductMaterialServiceImpl implements ProductMaterialService {
 
     private final ProductMaterialRepository repository;
@@ -62,6 +64,7 @@ public class ProductMaterialServiceImpl implements ProductMaterialService {
     }
 
     @Override
+    @Transactional
     public ProductMaterialResponse create(ProductMaterialRequest request) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -75,6 +78,7 @@ public class ProductMaterialServiceImpl implements ProductMaterialService {
     }
 
     @Override
+    @Transactional
     public ProductMaterialResponse update(Integer productId, Integer materialId, ProductMaterialRequest request) {
         ProductMaterial entity = repository.findByProductProductIdAndMaterialMaterialId(
                 productId,

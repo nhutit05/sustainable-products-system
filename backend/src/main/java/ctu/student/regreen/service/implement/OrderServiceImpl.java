@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.OrderRequest;
 import ctu.student.regreen.dto.response.CheckoutResponse;
@@ -39,12 +40,12 @@ import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.repository.VoucherRepository;
 import ctu.student.regreen.service.interfaces.OrderService;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
         private final OrderRepository orderRepository;
@@ -77,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
                 }
 
                 if (order.getVoucher() != null) {
-                        total = total - Math.round(total * order.getVoucher().getDiscountValue()/100.0);
+                        total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
                 }
 
                 return total;
@@ -162,6 +163,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         @Override
+        @Transactional
         public CheckoutResponse checkout(OrderRequest request) {
 
                 Customer customer = getCurrentCustomer();
@@ -239,11 +241,15 @@ public class OrderServiceImpl implements OrderService {
 
                 Integer accummulatedEcoPoints = 0;
 
-                for (OrderItem item: savedOrder.getOrderItems()) {
+                for (OrderItem item : savedOrder.getOrderItems()) {
                         accummulatedEcoPoints += item.getProduct().getBaseEcoPoints() * item.getQuantity();
                 }
 
                 customer.setAccumulatedEcoPoints(customer.getAccumulatedEcoPoints() + accummulatedEcoPoints);
+
+                if (voucher != null) {
+                        voucher.setQuantity(voucher.getQuantity() - 1);
+                }
 
                 PayOSCheckoutResult checkout = processOnlinePayment(savedOrder);
 
@@ -365,6 +371,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         @Override
+        @Transactional
         public OrderResponse cancel(Integer id) {
 
                 Customer customer = getCurrentCustomer();

@@ -10,16 +10,19 @@ import ctu.student.regreen.repository.CityRepository;
 import ctu.student.regreen.service.interfaces.CityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CityServiceImpl implements CityService {
 
     private final CityRepository repository;
     private final CityMapper CityMapper;
 
+    @Transactional
     public CityResponse create(CityRequest request) {
         City entity = CityMapper.toEntity(request);
         return CityMapper.toResponse(repository.save(entity));
@@ -39,6 +42,7 @@ public class CityServiceImpl implements CityService {
         return CityMapper.toResponse(entity);
     }
 
+    @Transactional
     public CityResponse updateCity(Integer id, CityRequest request) {
         City entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Not found exception"));
 
@@ -47,6 +51,7 @@ public class CityServiceImpl implements CityService {
         return CityMapper.toResponse(repository.save(entity));
     }
 
+    @Transactional
     public void deleteCity(Integer id) {
         repository.deleteById(id);
     }

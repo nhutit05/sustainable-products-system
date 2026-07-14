@@ -406,6 +406,8 @@ export default function AdminOrders() {
 
     selectedPaymentMethod,
 
+    dateRange,
+
     token
 
   ]);
@@ -460,11 +462,13 @@ export default function AdminOrders() {
 
       setDebouncedKeyword(keyword);
 
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timeout);
 
   }, [keyword]);
+
+ 
 
   return (
     <div className="flex flex-col gap-4 px-4">

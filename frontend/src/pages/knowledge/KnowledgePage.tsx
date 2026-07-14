@@ -55,30 +55,6 @@ const KnowledgePage = () => {
 
     const [total, setTotal] = useState(0);
 
-    // const filteredDocuments = documents.filter((document) => {
-
-    //     const matchKeyword =
-    //         document.fileName
-    //             .toLowerCase()
-    //             .includes(keyword.toLowerCase());
-
-    //     const matchStatus =
-    //         statusFilter === "ALL"
-    //             ? true
-    //             : document.status === statusFilter;
-
-    //     return matchKeyword && matchStatus;
-
-    // });
-
-    // const fetchDocuments = useCallback(async () => {
-
-    //     const data = await getDocuments(token);
-    //     console.log("Documents:", data);
-
-    //     setDocuments(data);
-
-    // }, [token]);
 
     const fetchStatistics = useCallback(async () => {
 
@@ -198,12 +174,26 @@ const KnowledgePage = () => {
         [token]
     );
 
+    // useEffect(() => {
+
+    //     refreshData();
+
+    // }, [refreshData]);
+
     useEffect(() => {
 
+    const timer = setTimeout(() => {
         refreshData();
+    }, 400);
 
-    }, [refreshData]);
+    return () => clearTimeout(timer);
 
+}, [
+    keyword,
+    statusFilter,
+    currentPage,
+    pageSize
+]);
 
 
 

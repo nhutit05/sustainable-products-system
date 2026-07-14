@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.response.InvoiceResponse;
 import ctu.student.regreen.mapper.InvoiceMapper;
@@ -13,12 +14,12 @@ import ctu.student.regreen.model.Order;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.InvoiceRepository;
 import ctu.student.regreen.service.interfaces.InvoiceService;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class InvoiceServiceImpl
         implements InvoiceService {
 

@@ -43,8 +43,8 @@ public class AdminProductController {
 
     @GetMapping
     public List<ProductResponse> getAll(
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "limit", required = false) Integer limit
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit
     ) {
         List<ProductResponse> allProducts = service.getAll();
 
