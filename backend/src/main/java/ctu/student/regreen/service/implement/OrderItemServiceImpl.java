@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.response.OrderItemResponse;
 import ctu.student.regreen.mapper.OrderItemMapper;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OrderItemServiceImpl implements OrderItemService {
 
     private final OrderItemRepository repository;

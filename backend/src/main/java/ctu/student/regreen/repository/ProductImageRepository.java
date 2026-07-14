@@ -1,6 +1,5 @@
 package ctu.student.regreen.repository;
 
-import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.ProductImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;

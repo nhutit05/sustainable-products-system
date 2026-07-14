@@ -15,13 +15,14 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderStatusServiceImpl implements OrderStatusService {
 
     private final OrderStatusRepository repository;
     private final OrderStatusMapper mapper;
 
     @Override
+    @Transactional
     public OrderStatusResponse create(OrderStatusRequest request) {
 
         if (repository.existsByOrderStatusName(request.getOrderStatusName())) {
@@ -52,6 +53,7 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     }
 
     @Override
+    @Transactional
     public OrderStatusResponse update(Integer id, OrderStatusRequest request) {
 
         OrderStatus orderStatus = repository.findById(id)
@@ -68,6 +70,7 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
 
         OrderStatus orderStatus = repository.findById(id)

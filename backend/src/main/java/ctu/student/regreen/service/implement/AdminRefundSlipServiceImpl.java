@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class AdminRefundSlipServiceImpl
                 implements AdminRefundSlipService {
 
@@ -52,6 +52,7 @@ public class AdminRefundSlipServiceImpl
         }
 
         @Override
+        @Transactional
         public RefundSlipResponse approveRefund(
                         Integer refundSlipId) {
 
@@ -61,6 +62,7 @@ public class AdminRefundSlipServiceImpl
         }
 
         @Override
+        @Transactional
         public RefundSlipResponse rejectRefund(
                         Integer refundSlipId) {
 
@@ -70,6 +72,7 @@ public class AdminRefundSlipServiceImpl
         }
 
         @Override
+        @Transactional
         public RefundSlipResponse markRefunded(
                         Integer refundSlipId) {
 
@@ -79,6 +82,7 @@ public class AdminRefundSlipServiceImpl
         }
 
         @Override
+        @Transactional
         public RefundSlipResponse transferRefund(Integer refundSlipId) {
 
                 RefundSlip refundSlip = refundSlipRepository.findById(refundSlipId)

@@ -22,20 +22,20 @@ public interface DocumentRepository
         long countByStatus(DocumentStatus status);
 
        @Query("""
-SELECT d
-FROM Document d
-WHERE
+    SELECT d
+    FROM Document d
+    WHERE
     (
-        :keyword = ''
-        OR LOWER(d.originalFileName)
-           LIKE CONCAT('%', LOWER(:keyword), '%')
+        :keyword IS NULL
+        OR TRIM(:keyword) = ''
+        OR LOWER(d.originalFileName) LIKE LOWER(CONCAT('%', TRIM(:keyword), '%'))
     )
-AND
+    AND
     (
         :status IS NULL
         OR d.status = :status
     )
-""")
+    """)
 Page<Document> searchDocuments(
         @Param("keyword") String keyword,
         @Param("status") DocumentStatus status,

@@ -2,6 +2,7 @@ package ctu.student.regreen.service.implement;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.PaymentStatusRequest;
 import ctu.student.regreen.dto.response.PaymentStatusResponse;
@@ -12,18 +13,19 @@ import ctu.student.regreen.mapper.PaymentStatusMapper;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.service.interfaces.PaymentStatusService;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class PaymentStatusServiceImpl implements PaymentStatusService {
 
     private final PaymentStatusRepository repository;
     private final PaymentStatusMapper mapper;
 
     @Override
+    @Transactional
     public PaymentStatusResponse create(PaymentStatusRequest request) {
 
         if (repository.existsByPaymentStatusName(request.getPaymentStatusName())) {
@@ -55,6 +57,7 @@ public class PaymentStatusServiceImpl implements PaymentStatusService {
     }
 
     @Override
+    @Transactional
     public PaymentStatusResponse update(Integer id, PaymentStatusRequest request) {
 
         PaymentStatus entity = repository.findById(id)
@@ -72,6 +75,7 @@ public class PaymentStatusServiceImpl implements PaymentStatusService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
 
         PaymentStatus entity = repository.findById(id)

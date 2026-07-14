@@ -10,18 +10,20 @@ import ctu.student.regreen.repository.VillageRepository;
 import ctu.student.regreen.service.interfaces.VillageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class VillageServiceImpl implements VillageService {
 
     private final VillageRepository repository;
 
     private final VillageMapper villageMapper;
 
-
+@Transactional
     public VillageResponse create(VillageRequest request) {
         Village entity = villageMapper.toEntity(request);
         return villageMapper.toResponse(repository.save(entity));
@@ -46,12 +48,14 @@ public class VillageServiceImpl implements VillageService {
         return villageMapper.toResponse(entity);
     }
 
+    @Transactional
     public VillageResponse updateVillage(Integer id, VillageRequest request) {
         Village entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Not found exception"));
         villageMapper.update(entity, request);
         return villageMapper.toResponse(repository.save(entity));
     }
 
+    @Transactional
     public boolean deleteVillage(Integer id) {
         if (repository.existsById(id)) {
             repository.deleteById(id);

@@ -3,11 +3,12 @@ package ctu.student.regreen.service.implement;
 import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.transaction.annotation.Transactional;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.dto.response.OrderSummaryResponse;
 import ctu.student.regreen.enums.OrderStatusName;
@@ -21,12 +22,12 @@ import ctu.student.regreen.repository.OrderStatusRepository;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.service.interfaces.AdminOrderService;
 import ctu.student.regreen.specification.OrderSpecification;
-import jakarta.transaction.Transactional;
+// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class AdminOrderServiceImpl implements AdminOrderService {
 
     private final OrderRepository orderRepository;
@@ -44,55 +45,35 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                         "Payment status not found"));
     }
 
-    // @Override
-    // public List<OrderResponse> getAllOrders() {
+    @Override
+    public Page<OrderSummaryResponse> getOrders(
+            String keyword,
+            Integer orderStatusId,
+            Integer paymentStatusId,
+            Integer paymentMethodId,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable) {
 
-    // return orderRepository.findAll()
-    // .stream()
-    // .map(orderMapper::toResponse)
-    // .toList();
-    // }
-
-    // @Override
-    // public List<OrderSummaryResponse> getAllOrders() {
-
-    //     return orderRepository.findAll()
-    //             .stream()
-    //             .map(orderMapper::toSummary)
-    //             .toList();
-    // }
-
-//     @Override
-// public Page<OrderSummaryResponse> getOrders(
-//         Pageable pageable) {
-
-//     return orderRepository
-//             .findAll(pageable)
-//             .map(orderMapper::toSummary);
-// }
-
-@Override
-public Page<OrderSummaryResponse> getOrders(
-        String keyword,
-        Integer orderStatusId,
-        Integer paymentStatusId,
-        Integer paymentMethodId,
-LocalDate startDate,
-LocalDate endDate,
-        Pageable pageable) {
-
-    Specification<Order> specification =
-            OrderSpecification.filter(
-                    keyword,
-                    orderStatusId,
-                    paymentStatusId,
-                    paymentMethodId,
+        Specification<Order> specification = OrderSpecification.filter(
+                keyword,
+                orderStatusId,
+                paymentStatusId,
+                paymentMethodId,
                 startDate, endDate);
+                
 
-    return orderRepository
-            .findAll(specification, pageable)
-            .map(orderMapper::toSummary);
-}
+        Pageable sortedPageable = pageable.getSort().isSorted()
+        ? pageable
+        : PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "orderedAt"));
+
+        return orderRepository
+                .findAll(specification, sortedPageable)
+                .map(orderMapper::toSummary);
+    }
 
     @Override
     public OrderResponse getOrderById(Integer orderId) {
@@ -101,11 +82,13 @@ LocalDate endDate,
     }
 
     @Override
+    @Transactional
     public OrderResponse confirmOrder(Integer orderId) {
         return updateStatus(orderId, OrderStatusName.CONFIRMED);
     }
 
     @Override
+    @Transactional
     public OrderResponse shippingOrder(Integer orderId) {
 
         Order order = getOrderEntity(orderId);
@@ -118,6 +101,7 @@ LocalDate endDate,
     }
 
     @Override
+    @Transactional
     public OrderResponse completeOrder(
             Integer orderId) {
 
@@ -136,6 +120,7 @@ LocalDate endDate,
     }
 
     @Override
+    @Transactional
     public OrderResponse rejectOrder(Integer orderId) {
         return updateStatus(orderId, OrderStatusName.CANCELLED);
     }

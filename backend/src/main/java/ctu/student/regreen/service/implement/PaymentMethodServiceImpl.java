@@ -3,6 +3,7 @@ package ctu.student.regreen.service.implement;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.request.PaymentMethodRequest;
 import ctu.student.regreen.dto.response.PaymentMethodResponse;
@@ -10,18 +11,18 @@ import ctu.student.regreen.mapper.PaymentMethodMapper;
 import ctu.student.regreen.model.PaymentMethod;
 import ctu.student.regreen.repository.PaymentMethodRepository;
 import ctu.student.regreen.service.interfaces.PaymentMethodService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly=true)
 public class PaymentMethodServiceImpl implements PaymentMethodService {
 
     private final PaymentMethodRepository repository;
     private final PaymentMethodMapper mapper;
 
     @Override
+    @Transactional
     public PaymentMethodResponse create(PaymentMethodRequest request) {
 
         if (repository.existsByPaymentMethodName(
@@ -57,6 +58,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
+    @Transactional
     public PaymentMethodResponse update(
             Integer id,
             PaymentMethodRequest request) {
@@ -80,6 +82,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
 
         PaymentMethod entity = repository.findById(id)

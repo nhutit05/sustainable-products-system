@@ -8,6 +8,21 @@ import { useNotification } from '../../context/useNotification'
 import type { Addressresponse } from '../../model/address.model'
 import AddNewAddress from '../admin/AddNewAddress'
 import PayOSEmbedded from './PayOSEmbedded'
+import {notification} from "antd";
+import {
+  Modal,
+  Card,
+  Row,
+  Col,
+  Typography,
+  Input,
+  Button,
+  Select,
+  Table,
+  Space,
+  Tag,
+  Divider
+} from "antd";
 
 interface OrderSummary {
   items: CartItemResponse[]
@@ -152,10 +167,14 @@ export default function Checkout({
       const result = await response.json()
 
       if (!response.ok) {
-        showNotification({
-          message: 'Đặt hàng thất bại. Vui lòng thử lại.',
-          type: 'ERROR',
-          duration: 3000,
+        // showNotification({
+        //   message: 'Đặt hàng thất bại. Vui lòng thử lại.',
+        //   type: 'ERROR',
+        //   duration: 3000,
+        // })
+        notification.error({
+         title: "Đặt hàng thất bại",
+         description: "Vui lòng thử lại"
         })
         return
       }
@@ -163,12 +182,15 @@ export default function Checkout({
       // COD
 
       if (!result.checkoutUrl) {
-        showNotification({
-          message: 'Đặt hàng thành công!',
-          type: 'SUCCESS',
-          duration: 3000,
-        })
+        // showNotification({
+        //   message: 'Đặt hàng thành công!',
+        //   type: 'SUCCESS',
+        //   duration: 3000,
+        // })
 
+        notification.success({
+         title: "Đặt hàng thành công",
+        })
         navigate('/')
 
         return
@@ -197,10 +219,14 @@ export default function Checkout({
     } catch (error) {
       console.error(error)
 
-      showNotification({
-        message: 'Có lỗi xảy ra khi đặt hàng.',
-        type: 'ERROR',
-        duration: 3000,
+      // showNotification({
+      //   message: 'Có lỗi xảy ra khi đặt hàng.',
+      //   type: 'ERROR',
+      //   duration: 3000,
+      // })
+
+      notification.error({
+        title: "Có lỗi khi đặt hàng."
       })
     }
   }
@@ -218,78 +244,134 @@ export default function Checkout({
     )
   }
 
+  const columns = [
+    {
+      title: "Sản phẩm",
+      dataIndex: "productName"
+    },
+    {
+      title: "Số lượng",
+      dataIndex: "quantity"
+    },
+    {
+      title: "Đơn giá",
+      render: (_: any, item: CartItemResponse) =>
+        Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND"
+        }).format(item.subtotal / item.quantity)
+    },
+    {
+      title: "Thành tiền",
+      render: (_: any, item: CartItemResponse) =>
+        Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND"
+        }).format(item.subtotal)
+    }
+  ]
+
   return (
-    <div className="fixed inset-0 z-52 flex items-center justify-center bg-black/30">
-      <div className="bg-white rounded-3xl shadow-xl w-[90vw] max-w-6xl max-h-[90vh] overflow-y-auto p-6 relative">
-        <X
-          size={24}
-          className="absolute right-5 top-5 cursor-pointer hover:text-red-500"
-          onClick={() => setOnClose(true)}
-        />
 
-        <h1 className="text-3xl font-bold text-center text-green-900 mb-6">
-          Xác nhận đơn đặt hàng
-        </h1>
-
-        <div className="grid grid-cols-3 gap-6">
-          <aside className="space-y-5">
-            <h2 className="text-xl font-bold text-green-900">Thông tin người nhận</h2>
+    <Modal
+      open
+      footer={null}
+      width={1200}
+      zIndex={99}
+      centered
+      onCancel={() => setOnClose(true)}
+    >
+      <Typography.Title
+        level={2}
+        style={{
+          textAlign: "center",
+          marginBottom: 30
+        }}
+      >
+        Xác nhận đơn đặt hàng
+      </Typography.Title>
+      <Row gutter={24}>
+        <Col span={8}>
+          <Card
+            title="Thông tin người nhận"
+            bordered={false}
+          >
+            {/* <h2 className="text-xl font-bold text-green-900">Thông tin người nhận</h2> */}
 
             <div>
               <label className="block font-semibold text-green-900 mb-2">Tên người nhận</label>
 
-              <input
+              <Input
                 value={orderReceiver}
                 onChange={(e) => setOrderReceiver(e.target.value)}
                 placeholder="Nhập tên người nhận"
-                className="w-full border border-slate-200 rounded-xl p-3"
+                size="large"
               />
             </div>
 
             <div>
               <label className="block font-semibold text-green-900 mb-2">Số điện thoại</label>
 
-              <input
+              <Input
                 value={orderReceiverPhone}
                 onChange={(e) => setOrderReceiverPhone(e.target.value)}
                 placeholder="Nhập số điện thoại"
-                className="w-full border border-slate-200 rounded-xl p-3"
+                size="large"
               />
             </div>
 
-            <h2 className="text-xl font-bold text-green-900">Địa chỉ giao hàng</h2>
+            <h3 className="text-xl font-bold text-green-900 mt-5">Địa chỉ giao hàng</h3>
 
             {addresses
               .filter((address) => address.isDefault)
               .map((address) => (
-                <button
-                  key={address.addressId}
-                  type="button"
-                  onClick={() => setSelectedAddress(address)}
-                  className={`w-full text-left border border-slate-200 rounded-2xl p-4 ${
-                    selectedAddress?.addressId === address.addressId
-                      ? 'bg-emerald-50 border-emerald-500'
-                      : ''
-                  }`}
+                <Card
+                  hoverable
+                  style={{
+                    marginTop: 12,
+                    marginBottom: 12,
+                    cursor: "pointer",
+                    border:
+                      selectedAddress?.addressId === address.addressId
+                        ? "2px solid #1677ff"
+                        : ""
+                  }}
+                  onClick={() => {
+                    setSelectedAddress(address)
+                  }}
                 >
-                  <p className="font-bold text-green-900">{address.addressName}</p>
+                  <Space>
+
+                    <Typography.Text strong>
+
+                      {address.addressName}
+
+                    </Typography.Text>
+
+                    {address.isDefault && (
+                      <Tag color="green">
+                        Mặc định
+                      </Tag>
+                    )}
+
+                  </Space>
 
                   <p className="text-sm text-gray-600">
                     {address.addressStreet}, {address.villageName}, {address.cityName}
                   </p>
-                </button>
+                </Card>
               ))}
 
-            <button
-              type="button"
-              className="text-sm font-bold text-gray-500 hover:underline"
+            <Button
+              type="link"
+              // className="text-sm font-bold text-gray-500 hover:underline"
               onClick={() => setShowAddressList(!showAddressList)}
             >
               -- Chọn địa chỉ khác --
-            </button>
+            </Button>
 
             {showAddressList && (
-              <div className="border border-slate-200 rounded-xl p-3 space-y-2">
+              <div className="border border-slate-200 rounded-xl p-3 space-y-2 mt-5">
                 {addresses.map((address) => (
                   <button
                     key={address.addressId}
@@ -308,15 +390,16 @@ export default function Checkout({
                   </button>
                 ))}
 
-                <button
-                  className="text-sm text-gray-500 hover:underline"
+                <Button
+                  type='dashed'
+                  // className="text-sm text-gray-500 hover:underline"
                   onClick={() => {
                     setShowAddressList(false)
                     setShowAddAddress(true)
                   }}
                 >
                   + Thêm địa chỉ mới
-                </button>
+                </Button>
               </div>
             )}
 
@@ -327,59 +410,34 @@ export default function Checkout({
                 onSuccess={() => refreshAddresses()}
               />
             )}
-          </aside>
+          </Card>
+        </Col>
 
-          <main className="col-span-2 space-y-5">
-            <h2 className="text-xl font-bold text-green-900">Thông tin đơn hàng</h2>
+        <Col span={16}>
+          <Card
+            title="Thông tin đơn hàng"
+          >
+            {/* <h2 className="text-xl font-bold text-green-900">Thông tin đơn hàng</h2> */}
 
             <div className="border border-slate-200 rounded-2xl overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-emerald-50">
-                  <tr>
-                    <th className="p-3 text-left">Sản phẩm</th>
-
-                    <th className="p-3 text-left">Số lượng</th>
-
-                    <th className="p-3 text-left">Đơn giá</th>
-
-                    <th className="p-3 text-left">Thành tiền</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {cartItems.map((item) => (
-                    <tr key={item.productId} className="border-t border border-slate-200">
-                      <td className="p-3">{item.productName}</td>
-                      <td className="p-3">{item.quantity}</td>
-
-                      <td className="p-3">
-                        {Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        }).format(item.subtotal / item.quantity)}
-                      </td>
-
-                      <td className="p-3 font-semibold">
-                        {Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        }).format(item.subtotal)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <Table
+                columns={columns}
+                dataSource={cartItems}
+                pagination={false}
+                rowKey="productId"
+              />
             </div>
 
-            <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
+            <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl mt-5">
               <label className="font-semibold text-green-900">Mã giảm giá</label>
 
-              <select
-                className="flex-1 border border-slate-300 rounded-xl p-3"
-
-                onChange={(e) => {
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Chọn voucher"
+                allowClear
+                onChange={(value) => {
                   const selected = vouchers.find(
-                    (voucher) => voucher.voucherId === Number(e.target.value)
+                    x => x.voucherId === value
                   )
 
                   setSelectedVoucher(selected ?? null)
@@ -387,12 +445,15 @@ export default function Checkout({
               >
                 <option value="">Chọn voucher</option>
 
-                {vouchers.map((voucher) => (
-                  <option key={voucher.voucherId} value={voucher.voucherId}>
-                    {voucher.code} - {voucher.discountValue}%
-                  </option>
+                {vouchers.map(v => (
+                  <Select.Option
+                    key={v.voucherId}
+                    value={v.voucherId}
+                  >
+                    {v.code} - {v.discountValue}%
+                  </Select.Option>
                 ))}
-              </select>
+              </Select>
 
               <span className="font-bold text-red-500">
                 -
@@ -403,42 +464,63 @@ export default function Checkout({
               </span>
             </div>
 
-            <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl">
+            <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl mt-5 mb-5">
               <span className="font-semibold text-green-900">Phương thức thanh toán</span>
 
               <span className="font-bold text-green-700">{paymentMethodName}</span>
             </div>
 
-            <div className="flex justify-between items-center border border-slate-200 rounded-2xl p-5">
-              <span className="text-xl font-bold text-green-900">Tổng thanh toán</span>
+            <Card
+              style={{
+                background: "#f6ffed",
+                border: "1px solid #b7eb8f",
+                marginTop: 10
+              }}
+            >
+              <Row justify="space-between">
 
-              <span className="text-2xl font-bold text-red-500">
-                {Intl.NumberFormat('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                }).format(totalPrice - valueSale)}
-              </span>
-            </div>
+                <Col>
 
-            <button
+                  <Typography.Title level={4}>
+                    Tổng thanh toán
+                  </Typography.Title>
+
+                </Col>
+
+                <Col>
+
+                  <Typography.Title
+                    level={3}
+                    style={{
+                      color: "#cf1322",
+                      marginBottom: 10
+                    }}
+                  >
+                    {Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                    }).format(totalPrice - valueSale)}
+                  </Typography.Title>
+                </Col>
+              </Row>
+            </Card>
+
+            <Button
+              type="primary"
+              size="large"
+              block
+              style={{
+                height: 52,
+                fontWeight: 700,
+                marginTop: 20
+              }}
               onClick={handleSubmitCheckout}
-              className="
-                w-full
-                bg-primary
-                text-white
-                font-bold
-                py-4
-                rounded-2xl
-                transition
-                hover:scale-[1.02]
-                active:scale-95
-              "
             >
               Xác nhận thanh toán
-            </button>
-          </main>
-        </div>
-      </div>
-    </div>
+            </Button>
+          </Card>
+        </Col>
+      </Row>
+    </Modal>
   )
 }

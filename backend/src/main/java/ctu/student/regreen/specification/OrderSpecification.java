@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
 import ctu.student.regreen.model.Order;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 
 public final class OrderSpecification {
