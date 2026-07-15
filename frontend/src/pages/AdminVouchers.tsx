@@ -1,891 +1,671 @@
-import { useEffect, useState } from "react";
-import dayjs from "dayjs";
-import { Button, Card, Col, Descriptions, Flex, Row, Space, Spin, Table, Tag, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { PlusOutlined } from "@ant-design/icons";
-
-import { message } from "antd";
-
-import { createVoucher, updateVoucher, deleteVoucher } from "../services/voucher.service";
+import { useEffect, useMemo, useState } from 'react'
+import dayjs from 'dayjs'
 import {
-    Modal,
-    Form,
-    InputNumber,
-    DatePicker,
-    Switch,
-} from "antd";
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  message,
+  Popconfirm,
+  Select,
+  Spin,
+  Switch,
+  Table,
+  Tooltip,
+} from 'antd'
+import type { ColumnsType } from 'antd/es/table'
 import {
-    DeleteOutlined,
-    EditOutlined,
-    EyeOutlined,
-} from "@ant-design/icons";
+  PlusOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  ReloadOutlined,
+  PercentageOutlined,
+  TagsOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons'
 
 import {
-    Popconfirm,
-    Tooltip,
-} from "antd";
+  createVoucher,
+  updateVoucher,
+  deleteVoucher,
+  getAllForAdmin,
+  getById,
+} from '../services/voucher.service'
+import type {
+  VoucherSummary,
+  VoucherQuery,
+  VoucherResponse,
+  VoucherPatchRequest,
+} from '../model/voucher.model'
+import type { PageResponse } from '../model/page.model'
 
-import { getAllForAdmin } from "../services/voucher.service";
-import type { VoucherSummary, VoucherQuery, VoucherResponse, VoucherPatchRequest } from "../model/voucher.model";
-import type { PageResponse } from "../model/page.model";
-import { getById } from "../services/voucher.service";
-
-import { Input } from "antd";
-import { Select } from "antd";
-
-const { Search } = Input;
-
-const { Title } = Typography;
+function VoucherForm({
+  formInstance,
+  onFinish,
+  isEdit,
+}: {
+  formInstance: ReturnType<typeof Form.useForm>[0]
+  onFinish: (values: Record<string, unknown>) => void
+  isEdit: boolean
+}) {
+  return (
+    <Form form={formInstance} layout="vertical" onFinish={onFinish}>
+      <Form.Item
+        label="Mã voucher"
+        name="code"
+        rules={[{ required: true, message: 'Vui lòng nhập mã voucher.' }]}
+      >
+        <Input placeholder="VD: SUMMER2025" />
+      </Form.Item>
+      <Form.Item
+        label="Mô tả"
+        name="description"
+        rules={[{ required: true, message: 'Vui lòng nhập mô tả.' }]}
+      >
+        <Input.TextArea rows={3} placeholder="Mô tả về voucher..." />
+      </Form.Item>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Form.Item
+          label="Giảm giá (%)"
+          name="discountValue"
+          rules={[{ required: true, message: 'Bắt buộc.' }]}
+        >
+          <InputNumber min={1} max={100} className="w-full" placeholder="1-100" />
+        </Form.Item>
+        <Form.Item
+          label="Số lượng"
+          name="quantity"
+          rules={[{ required: true, message: 'Bắt buộc.' }]}
+        >
+          <InputNumber min={1} className="w-full" placeholder="Số lượng phát hành" />
+        </Form.Item>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Form.Item
+          label="Ngày bắt đầu"
+          name="startedAt"
+          rules={[{ required: true, message: 'Bắt buộc.' }]}
+        >
+          <DatePicker className="w-full" format="DD/MM/YYYY" />
+        </Form.Item>
+        <Form.Item
+          label="Ngày hết hạn"
+          name="expiredAt"
+          rules={[{ required: true, message: 'Bắt buộc.' }]}
+        >
+          <DatePicker className="w-full" format="DD/MM/YYYY" />
+        </Form.Item>
+      </div>
+      <Form.Item label="Kích hoạt" name="isActive" valuePropName="checked" initialValue={!isEdit}>
+        <Switch />
+      </Form.Item>
+    </Form>
+  )
+}
 
 export default function AdminVouchers() {
+  const [loading, setLoading] = useState(false)
+  const [searchText, setSearchText] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [form] = Form.useForm()
+  const [viewOpen, setViewOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
-    const [loading, setLoading] = useState(false);
-    const [searchText, setSearchText] = useState("");
-    const [createOpen, setCreateOpen] = useState(false);
-    const [form] = Form.useForm();
-    const [viewOpen, setViewOpen] = useState(false);
-    const [editOpen, setEditOpen] = useState(false);
+  const [updating, setUpdating] = useState(false)
+  const [editingVoucherId, setEditingVoucherId] = useState<number>()
+  const [editingVoucher, setEditingVoucher] = useState<VoucherResponse | null>(null)
+  const [editForm] = Form.useForm()
 
-    const [editLoading, setEditLoading] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState<VoucherResponse | null>(null)
+  const [viewLoading, setViewLoading] = useState(false)
 
-    const [updating, setUpdating] = useState(false);
+  const [voucherPage, setVoucherPage] = useState<PageResponse<VoucherSummary>>()
 
-    const [editingVoucherId, setEditingVoucherId] =
-        useState<number>();
+  const [query, setQuery] = useState<VoucherQuery>({
+    page: 0,
+    size: 10,
+    sortBy: 'expiredAt',
+    direction: 'desc',
+  })
 
-    const [editingVoucher, setEditingVoucher] =
-        useState<VoucherResponse | null>(null);
-    const [editForm] = Form.useForm();
+  async function loadVouchers() {
+    setLoading(true)
+    try {
+      const data = await getAllForAdmin(query)
+      setVoucherPage(data)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const [selectedVoucher, setSelectedVoucher] =
-        useState<VoucherResponse | null>(null);
+  useEffect(() => {
+    let cancelled = false
+    async function fetchVouchers() {
+      setLoading(true)
+      try {
+        const data = await getAllForAdmin(query)
+        if (!cancelled) setVoucherPage(data)
+      } catch (error) {
+        console.error(error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    fetchVouchers()
+    return () => {
+      cancelled = true
+    }
+  }, [query])
 
-    const [viewLoading, setViewLoading] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery((prev) => {
+        const keyword = searchText.trim() || undefined
+        if (prev.keyword === keyword) return prev
+        return { ...prev, page: 0, keyword }
+      })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchText])
 
-    const [voucherPage, setVoucherPage] =
-        useState<PageResponse<VoucherSummary>>();
+  const stats = useMemo(() => {
+    const all = voucherPage?.totalElements ?? 0
+    return { total: all }
+  }, [voucherPage])
 
-    const [query, setQuery] = useState<VoucherQuery>({
-        page: 0,
-        size: 10,
-        sortBy: "expiredAt",
-        direction: "desc",
-    });
+  const columns: ColumnsType<VoucherSummary> = [
+    {
+      title: 'Code',
+      dataIndex: 'code',
+      sorter: true,
+      render: (value: string) => <span className="font-semibold text-emerald-700">{value}</span>,
+    },
+    {
+      title: 'Giảm giá',
+      dataIndex: 'discountValue',
+      align: 'center',
+      responsive: ['md'],
+      render: (value: number) => (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+          <PercentageOutlined className="text-[10px]" />
+          {value}%
+        </span>
+      ),
+    },
+    {
+      title: 'Số lượng',
+      dataIndex: 'quantity',
+      align: 'center',
+      responsive: ['lg'],
+      render: (value: number) => (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+          {value}
+        </span>
+      ),
+    },
+    {
+      title: 'Hết hạn',
+      dataIndex: 'expiredAt',
+      key: 'expiredAt',
+      align: 'center',
+      render: (value: string) => {
+        const isExpired = dayjs(value).isBefore(dayjs(), 'day')
+        return (
+          <span
+            className={`whitespace-nowrap text-sm ${isExpired ? 'text-red-500' : 'text-gray-600'}`}
+          >
+            {dayjs(value).format('DD/MM/YYYY')}
+          </span>
+        )
+      },
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'isActive',
+      align: 'center',
+      render: (isActive: boolean) => (
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+            isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
+        >
+          {isActive ? (
+            <CheckCircleOutlined className="text-[10px]" />
+          ) : (
+            <CloseCircleOutlined className="text-[10px]" />
+          )}
+          {isActive ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      align: 'center',
+      width: 120,
+      render: (_, record) => (
+        <div className="flex items-center justify-center gap-1">
+          <Tooltip title="Xem chi tiết">
+            <button
+              onClick={() => handleView(record.voucherId)}
+              className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-50 transition-colors cursor-pointer"
+            >
+              <EyeOutlined />
+            </button>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <button
+              onClick={() => handleEdit(record.voucherId)}
+              className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+            >
+              <EditOutlined />
+            </button>
+          </Tooltip>
+          <Popconfirm
+            title="Xoá voucher này?"
+            description="Hành động này không thể hoàn tác."
+            okText="Xoá"
+            cancelText="Huỷ"
+            onConfirm={() => handleDelete(record.voucherId)}
+          >
+            <Tooltip title="Xoá">
+              <button className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+                <DeleteOutlined />
+              </button>
+            </Tooltip>
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ]
 
-    async function loadVouchers() {
+  async function handleDelete(id: number) {
+    try {
+      await deleteVoucher(id)
+      message.success('Đã xoá voucher.')
+      loadVouchers()
+    } catch {
+      message.error('Xoá voucher thất bại.')
+    }
+  }
 
-        try {
+  async function handleUpdate(values: Record<string, unknown>) {
+    if (!editingVoucher || !editingVoucherId) return
 
-            setLoading(true);
+    const request: VoucherPatchRequest = {}
+    if (values.code !== editingVoucher.code) request.code = values.code
+    if (values.description !== editingVoucher.description) request.description = values.description
+    if (values.discountValue !== editingVoucher.discountValue)
+      request.discountValue = values.discountValue
+    if (values.quantity !== editingVoucher.quantity) request.quantity = values.quantity
 
-            const data = await getAllForAdmin(query);
+    const startedAt = values.startedAt?.format('YYYY-MM-DD')
+    if (startedAt !== editingVoucher.startedAt) request.startedAt = startedAt
 
-            setVoucherPage(data);
+    const expiredAt = values.expiredAt?.format('YYYY-MM-DD')
+    if (expiredAt !== editingVoucher.expiredAt) request.expiredAt = expiredAt
 
-        } catch (error) {
+    if (values.isActive !== editingVoucher.isActive) request.isActive = values.isActive
 
-            console.error(error);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
+    if (Object.keys(request).length === 0) {
+      message.info('Không có thay đổi nào.')
+      return
     }
 
-    useEffect(() => {
-
-        loadVouchers();
-
-    }, [query]);
-
-    useEffect(() => {
-
-        const timer = setTimeout(() => {
-
-            setQuery((prev) => {
-
-                const keyword = searchText.trim() || undefined;
-
-                if (prev.keyword === keyword) {
-                    return prev;
-                }
-
-                return {
-                    ...prev,
-                    page: 0,
-                    keyword,
-                };
-
-            });
-
-        }, 300);
-
-        return () => clearTimeout(timer);
-
-    }, [searchText]);
-
-    const columns: ColumnsType<VoucherSummary> = [
-
-        {
-            title: "Code",
-            dataIndex: "code",
-        },
-
-        // {
-        //     title: "Description",
-        //     dataIndex: "description",
-        // },
-
-        {
-            title: "Discount",
-            dataIndex: "discountValue",
-            align: "center",
-
-            render: (value: number) => `${value}%`,
-        },
-
-        {
-            title: "Quantity",
-            dataIndex: "quantity",
-            align: "center",
-        },
-
-        {
-            title: "Expired Date",
-            dataIndex: "expiredAt",
-            key: "expiredAt",
-            width: 140,
-            align: "center",
-
-            render: (value: string) =>
-                dayjs(value).format("DD/MM/YYYY"),
-        },
-        {
-            title: "Status",
-            dataIndex: "isActive",
-            align: "center",
-            width: 120,
-
-            render: (isActive: boolean) => (
-                <Tag color={isActive ? "green" : "red"}>
-                    {isActive ? "Active" : "Inactive"}
-                </Tag>
-            ),
-        },
-
-
-        {
-            title: "Actions",
-            key: "actions",
-            width: 140,
-            align: "center",
-
-            render: (_, record) => (
-
-                <Space size="small">
-
-                    <Tooltip title="View">
-
-                        <Button
-                            type="text"
-                            icon={<EyeOutlined />}
-                            onClick={() => {
-
-                                handleView(record.voucherId);
-
-                            }}
-                        />
-
-                    </Tooltip>
-
-                    <Tooltip title="Edit">
-
-                        <Button
-                            type="text"
-                            icon={<EditOutlined />}
-                            onClick={() => handleEdit(record.voucherId)}
-                        />
-
-                    </Tooltip>
-
-                    <Popconfirm
-                        title="Delete voucher?"
-                        description="This action cannot be undone."
-                        okText="Delete"
-                        cancelText="Cancel"
-                        onConfirm={() => handleDelete(record.voucherId)}
-                    >
-
-                        <Tooltip title="Delete">
-
-                            <Button
-                                danger
-                                type="text"
-                                icon={<DeleteOutlined />}
-                            />
-
-                        </Tooltip>
-
-                    </Popconfirm>
-
-                </Space>
-
-            ),
-        },
-
-    ];
-    async function handleDelete(id: number) {
-
-        try {
-
-            await deleteVoucher(id);
-
-            message.success("Voucher deleted.");
-
-            loadVouchers();
-
-        }
-
-        catch {
-
-            message.error("Failed to delete voucher.");
-
-        }
-
+    try {
+      setUpdating(true)
+      await updateVoucher(editingVoucherId, request)
+      message.success('Cập nhật voucher thành công.')
+      editForm.resetFields()
+      setEditingVoucher(null)
+      setEditOpen(false)
+      loadVouchers()
+    } catch (error) {
+      console.error(error)
+      message.error('Cập nhật voucher thất bại.')
+    } finally {
+      setUpdating(false)
     }
+  }
 
-    async function handleUpdate(values: any) {
-
-        if (!editingVoucher || !editingVoucherId) {
-            return;
-        }
-
-        const request: VoucherPatchRequest = {};
-
-        if (values.code !== editingVoucher.code) {
-            request.code = values.code;
-        }
-
-        if (values.description !== editingVoucher.description) {
-            request.description = values.description;
-        }
-
-        if (values.discountValue !== editingVoucher.discountValue) {
-            request.discountValue = values.discountValue;
-        }
-
-        if (values.quantity !== editingVoucher.quantity) {
-            request.quantity = values.quantity;
-        }
-
-        const startedAt = values.startedAt?.format("YYYY-MM-DD");
-        if (startedAt !== editingVoucher.startedAt) {
-            request.startedAt = startedAt;
-        }
-
-        const expiredAt = values.expiredAt?.format("YYYY-MM-DD");
-        if (expiredAt !== editingVoucher.expiredAt) {
-            request.expiredAt = expiredAt;
-        }
-
-        if (values.isActive !== editingVoucher.isActive) {
-            request.isActive = values.isActive;
-        }
-
-        if (Object.keys(request).length === 0) {
-
-            message.info("No changes detected.");
-
-            return;
-        }
-
-        try {
-
-            setUpdating(true);
-
-            await updateVoucher(
-                editingVoucherId,
-                request
-            );
-
-            message.success("Voucher updated successfully.");
-
-            editForm.resetFields();
-
-            setEditingVoucher(null);
-
-            setEditOpen(false);
-
-            loadVouchers();
-
-        } catch (error) {
-
-            console.error(error);
-
-            message.error("Failed to update voucher.");
-
-        } finally {
-
-            setUpdating(false);
-
-        }
-
+  async function handleEdit(id: number) {
+    try {
+      const voucher = await getById(id)
+      setEditingVoucher(voucher)
+      editForm.setFieldsValue({
+        code: voucher.code,
+        description: voucher.description,
+        discountValue: voucher.discountValue,
+        quantity: voucher.quantity,
+        startedAt: dayjs(voucher.startedAt),
+        expiredAt: dayjs(voucher.expiredAt),
+        isActive: voucher.isActive,
+      })
+      setEditingVoucherId(id)
+      setEditOpen(true)
+    } catch (error) {
+      console.error(error)
+      message.error('Không thể tải voucher.')
     }
+  }
 
-    async function handleEdit(id: number) {
-
-        try {
-
-            setEditLoading(true);
-
-            const voucher = await getById(id);
-
-            setEditingVoucher(voucher);
-
-            editForm.setFieldsValue({
-
-                code: voucher.code,
-                description: voucher.description,
-                discountValue: voucher.discountValue,
-                quantity: voucher.quantity,
-                startedAt: dayjs(voucher.startedAt),
-                expiredAt: dayjs(voucher.expiredAt),
-                isActive: voucher.isActive,
-
-            });
-
-            setEditingVoucherId(id);
-
-            setEditOpen(true);
-
-        } catch (error) {
-
-            console.error(error);
-
-            message.error("Failed to load voucher.");
-
-        } finally {
-
-            setEditLoading(false);
-
-        }
-
+  async function handleView(id: number) {
+    try {
+      setViewLoading(true)
+      const voucher = await getById(id)
+      setSelectedVoucher(voucher)
+      setViewOpen(true)
+    } catch (error) {
+      console.error(error)
+      message.error('Không thể tải voucher.')
+    } finally {
+      setViewLoading(false)
     }
+  }
 
-    async function handleView(id: number) {
-
-        try {
-
-            setViewLoading(true);
-
-            const voucher = await getById(id);
-
-            setSelectedVoucher(voucher);
-
-            setViewOpen(true);
-
-        } catch (error) {
-
-            console.error(error);
-
-            message.error("Failed to load voucher.");
-
-        } finally {
-
-            setViewLoading(false);
-
-        }
-
+  async function handleCreate(values: Record<string, unknown>) {
+    try {
+      const request = {
+        ...values,
+        startedAt: dayjs(values.startedAt).format('YYYY-MM-DD'),
+        expiredAt: dayjs(values.expiredAt).format('YYYY-MM-DD'),
+      }
+      await createVoucher(request)
+      message.success('Tạo voucher thành công.')
+      form.resetFields()
+      setCreateOpen(false)
+      loadVouchers()
+    } catch (error) {
+      console.error(error)
+      message.error('Tạo voucher thất bại.')
     }
+  }
 
-    async function handleCreate(values: any) {
+  return (
+    <div className="flex flex-col gap-4 px-4">
+      {/* ================= HEADER ================= */}
+      <header className="bg-white rounded-2xl shadow p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+          <div>
+            <h1 className="text-2xl font-semibold text-emerald-900">Quản lý Voucher</h1>
+            <p className="text-sm text-gray-400 mt-1">
+              Quản lý mã giảm giá và ưu đãi cho khách hàng
+            </p>
+          </div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            className="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
+            onClick={() => setCreateOpen(true)}
+          >
+            Thêm Voucher
+          </Button>
+        </div>
 
-        try {
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="flex items-center gap-3 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-4 border border-emerald-200/60">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500 text-white">
+              <TagsOutlined />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Tổng cộng</p>
+              <p className="text-lg font-bold text-emerald-800">{stats.total}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-4 border border-green-200/60">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white">
+              <CheckCircleOutlined />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Đang hoạt động</p>
+              <p className="text-lg font-bold text-green-800">-</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 bg-gradient-to-br from-red-50 to-red-100/50 rounded-xl p-4 border border-red-200/60">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-500 text-white">
+              <CloseCircleOutlined />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Ngừng hoạt động</p>
+              <p className="text-lg font-bold text-red-800">-</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-4 border border-orange-200/60">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500 text-white">
+              <PercentageOutlined />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Lượt sử dụng</p>
+              <p className="text-lg font-bold text-orange-800">-</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
-            const request = {
+      {/* ================= FILTERS ================= */}
+      <div className="bg-white rounded-2xl shadow p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <Input
+            placeholder="Tìm theo mã hoặc mô tả..."
+            prefix={<SearchOutlined className="text-gray-400" />}
+            allowClear
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="flex-1"
+          />
+          <Select
+            value={query.active}
+            placeholder="Trạng thái"
+            allowClear
+            className="w-full sm:w-[160px]"
+            onChange={(value) => {
+              setQuery((prev) => ({ ...prev, page: 0, active: value }))
+            }}
+            options={[
+              { label: 'Active', value: true },
+              { label: 'Inactive', value: false },
+            ]}
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              setSearchText('')
+              setQuery({
+                page: 0,
+                size: 10,
+                sortBy: 'expiredAt',
+                direction: 'desc',
+              })
+            }}
+          >
+            Làm mới
+          </Button>
+        </div>
+      </div>
 
-                ...values,
-
-                startedAt: dayjs(values.startedAt)
-                    .format("YYYY-MM-DD"),
-
-                expiredAt: dayjs(values.expiredAt)
-                    .format("YYYY-MM-DD"),
-
-            };
-
-            await createVoucher(request);
-
-            message.success("Voucher created successfully.");
-
-            form.resetFields();
-
-            setCreateOpen(false);
-
-            loadVouchers();
-
-        } catch (error) {
-
-            console.error(error);
-
-            message.error("Failed to create voucher.");
-
-        }
-
-    }
-    console.log(form === editForm);
-
-    return (
-
-        <Card>
-            <Flex justify="space-between" align="center" style={{ marginBottom: 16 }}>
-                <Space>
-                    <Search
-                        placeholder="Search code or description..."
-                        allowClear
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        style={{ width: 350 }}
-                    />
-
-                    <Select
-                        value={query.active}
-                        placeholder="Status"
-                        allowClear
-                        style={{ width: 150 }}
-                        onChange={(value) => {
-
-                            setQuery((prev) => ({
-
-                                ...prev,
-
-                                page: 0,
-
-                                active: value,
-
-                            }));
-
-                        }}
-                        options={[
-                            {
-                                label: "Active",
-                                value: true,
-                            },
-                            {
-                                label: "Inactive",
-                                value: false,
-                            },
-                        ]}
-                    />
-                </Space>
-
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => setCreateOpen(true)}
-                >
-                    Add Voucher
-                </Button>
-
-            </Flex>
+      {/* ================= TABLE ================= */}
+      <div className="bg-white rounded-2xl shadow p-5">
+        <Spin spinning={loading} size="medium">
+          <div className="overflow-x-auto">
             <Table
-
-                rowKey="voucherId"
-
-                loading={loading}
-
-                columns={columns}
-
-                dataSource={voucherPage?.content}
-
-                pagination={{
-                    current: query.page + 1,
-                    pageSize: query.size,
-                    total: voucherPage?.totalElements,
-                    showSizeChanger: true,
-                    showQuickJumper: true,
-                    showTotal: (total) => `Total ${total} vouchers`,
-
-                    onChange: (page, pageSize) => {
-
-                        setQuery((prev) => ({
-                            ...prev,
-                            page: page - 1,
-                            size: pageSize,
-                        }));
-
-                    },
-                }}
-
+              rowKey="voucherId"
+              columns={columns}
+              dataSource={voucherPage?.content}
+              pagination={{
+                current: query.page + 1,
+                pageSize: query.size,
+                total: voucherPage?.totalElements,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total) => (
+                  <span className="text-sm text-gray-500">
+                    Hiển thị <b>{voucherPage?.content?.length ?? 0}</b> / <b>{total}</b> voucher
+                  </span>
+                ),
+                onChange: (page, pageSize) => {
+                  setQuery((prev) => ({
+                    ...prev,
+                    page: page - 1,
+                    size: pageSize,
+                  }))
+                },
+              }}
             />
-            <Modal
-                title="Add Voucher"
-                open={createOpen}
-                onCancel={() => {
+          </div>
+        </Spin>
+      </div>
 
-                    form.resetFields();
+      {/* ================= CREATE MODAL ================= */}
+      <Modal
+        title="Thêm Voucher Mới"
+        open={createOpen}
+        onCancel={() => {
+          form.resetFields()
+          setCreateOpen(false)
+        }}
+        onOk={() => form.submit()}
+        okText="Tạo mới"
+        cancelText="Huỷ"
+        okButtonProps={{ className: '!bg-emerald-600 !border-emerald-600' }}
+        width={520}
+        styles={{
+          body: {
+            maxHeight: 'calc(100vh - 220px)',
+            overflowY: 'auto',
+            paddingRight: 8,
+          },
+        }}
+      >
+        <VoucherForm formInstance={form} onFinish={handleCreate} isEdit={false} />
+      </Modal>
 
-                    setCreateOpen(false);
+      {/* ================= EDIT MODAL ================= */}
+      <Modal
+        title="Chỉnh sửa Voucher"
+        open={editOpen}
+        forceRender
+        onCancel={() => {
+          editForm.resetFields()
+          setEditingVoucher(null)
+          setEditOpen(false)
+        }}
+        confirmLoading={updating}
+        onOk={() => editForm.submit()}
+        okText="Lưu"
+        cancelText="Huỷ"
+        okButtonProps={{ className: '!bg-emerald-600 !border-emerald-600' }}
+        width={520}
+        styles={{
+          body: {
+            maxHeight: 'calc(100vh - 220px)',
+            overflowY: 'auto',
+            paddingRight: 8,
+          },
+        }}
+      >
+        <VoucherForm formInstance={editForm} onFinish={handleUpdate} isEdit={true} />
+      </Modal>
 
-                }}
-                onOk={() => form.submit()}
-                okText="Create"
-            >
-                <div
-                    style={{
-                        maxHeight: "calc(100vh - 220px)",
-                        overflowY: "auto",
-                        paddingRight: 8,
-                    }}
-                >
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={handleCreate}
-                    >
-
-                        <Form.Item
-                            label="Code"
-                            name="code"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Please enter voucher code.",
-                                },
-                            ]}
-                        >
-
-                            <Input />
-
-                        </Form.Item>
-                        <Form.Item
-                            label="Description"
-                            name="description"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Please enter description.",
-                                },
-                            ]}
-                        >
-
-                            <Input.TextArea rows={3} />
-
-                        </Form.Item>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Discount (%)"
-                                    name="discountValue"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <InputNumber
-                                        min={1}
-                                        max={100}
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Quantity"
-                                    name="quantity"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <InputNumber
-                                        min={1}
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Start Date"
-                                    name="startedAt"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <DatePicker
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Expired Date"
-                                    name="expiredAt"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <DatePicker
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Form.Item
-                            label="Active"
-                            name="isActive"
-                            valuePropName="checked"
-                            initialValue={true}
-                        >
-
-                            <Switch />
-
-                        </Form.Item>
-
-                    </Form>
+      {/* ================= VIEW MODAL ================= */}
+      <Spin spinning={viewLoading}>
+        <Modal
+          title="Chi tiết Voucher"
+          open={viewOpen}
+          footer={null}
+          width={520}
+          onCancel={() => {
+            setViewOpen(false)
+            setSelectedVoucher(null)
+          }}
+        >
+          {selectedVoucher && (
+            <div className="space-y-4">
+              {/* Info Section */}
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-emerald-50 px-4 py-2.5 border-b border-emerald-100">
+                  <h3 className="text-sm font-semibold text-emerald-800">Thông tin voucher</h3>
                 </div>
-
-            </Modal>
-            <Modal
-                title="Edit Voucher"
-                open={editOpen}
-                forceRender
-                onCancel={() => {
-
-                    editForm.resetFields();
-                    setEditingVoucher(null);
-
-                    setEditOpen(false);
-
-                }}
-                confirmLoading={updating}
-                onOk={() => editForm.submit()}
-                okText="Save"
-            >
-                <div
-                    style={{
-                        maxHeight: "calc(100vh - 220px)",
-                        overflowY: "auto",
-                        paddingRight: 8,
-                    }}
-                >
-                    <Form
-                        form={editForm}
-                        layout="vertical"
-                        onFinish={handleUpdate}
-                    >
-
-                        <Form.Item
-                            label="Code"
-                            name="code"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Please enter voucher code.",
-                                },
-                            ]}
-                        >
-
-                            <Input />
-
-                        </Form.Item>
-                        <Form.Item
-                            label="Description"
-                            name="description"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: "Please enter description.",
-                                },
-                            ]}
-                        >
-
-                            <Input.TextArea rows={3} />
-
-                        </Form.Item>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Discount (%)"
-                                    name="discountValue"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <InputNumber
-                                        min={1}
-                                        max={100}
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Quantity"
-                                    name="quantity"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <InputNumber
-                                        min={1}
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Start Date"
-                                    name="startedAt"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <DatePicker
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Expired Date"
-                                    name="expiredAt"
-                                    rules={[
-                                        {
-                                            required: true,
-                                        },
-                                    ]}
-                                >
-
-                                    <DatePicker
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                    />
-
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Form.Item
-                            label="Active"
-                            name="isActive"
-                            valuePropName="checked"
-                        // initialValue={true}
-                        >
-
-                            <Switch />
-
-                        </Form.Item>
-
-                    </Form>
+                <div className="divide-y divide-gray-100">
+                  <div className="flex items-center px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Mã voucher</span>
+                    <span className="text-sm font-semibold text-emerald-700">
+                      {selectedVoucher.code}
+                    </span>
+                  </div>
+                  <div className="flex items-start px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Mô tả</span>
+                    <span className="text-sm text-gray-700">
+                      {selectedVoucher.description || '-'}
+                    </span>
+                  </div>
+                  <div className="flex items-center px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Giảm giá</span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                      <PercentageOutlined className="text-[10px]" />
+                      {selectedVoucher.discountValue}%
+                    </span>
+                  </div>
+                  <div className="flex items-center px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Số lượng</span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                      {selectedVoucher.quantity}
+                    </span>
+                  </div>
                 </div>
+              </div>
 
-            </Modal>
-            <Spin spinning={viewLoading}>
-                <Modal
-                    title="Voucher Details"
-                    open={viewOpen}
-                    footer={null}
-                    width={600}
-                    onCancel={() => {
-
-                        setViewOpen(false);
-
-                        setSelectedVoucher(null);
-
-                    }}
-                >
-                    <Descriptions
-                        bordered
-                        column={1}
-                        size="small"
+              {/* Date & Status Section */}
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200">
+                  <h3 className="text-sm font-semibold text-gray-700">Thời hạn & Trạng thái</h3>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  <div className="flex items-center px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Ngày bắt đầu</span>
+                    <span className="text-sm text-gray-700">
+                      {dayjs(selectedVoucher.startedAt).format('DD/MM/YYYY')}
+                    </span>
+                  </div>
+                  <div className="flex items-center px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Ngày hết hạn</span>
+                    <span
+                      className={`text-sm ${dayjs(selectedVoucher.expiredAt).isBefore(dayjs(), 'day') ? 'text-red-500 font-medium' : 'text-gray-700'}`}
                     >
-                        <Descriptions.Item label="Code">
-                            {selectedVoucher?.code}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Description">
-                            {selectedVoucher?.description}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Discount">
-                            {selectedVoucher?.discountValue}%
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Quantity">
-                            {selectedVoucher?.quantity}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Start Date">
-                            {dayjs(selectedVoucher?.startedAt).format("DD/MM/YYYY")}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Expired Date">
-                            {dayjs(selectedVoucher?.expiredAt).format("DD/MM/YYYY")}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Status">
-
-                            <Tag
-                                color={
-                                    selectedVoucher?.isActive
-                                        ? "green"
-                                        : "red"
-                                }
-                            >
-                                {selectedVoucher?.isActive
-                                    ? "Active"
-                                    : "Inactive"}
-                            </Tag>
-
-                        </Descriptions.Item>
-                    </Descriptions>
-                </Modal></Spin>
-
-        </Card>
-
-
-
-    );
-
+                      {dayjs(selectedVoucher.expiredAt).format('DD/MM/YYYY')}
+                    </span>
+                  </div>
+                  <div className="flex items-center px-4 py-3">
+                    <span className="w-32 text-sm text-gray-500 shrink-0">Trạng thái</span>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                        selectedVoucher.isActive
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {selectedVoucher.isActive ? (
+                        <CheckCircleOutlined className="text-[10px]" />
+                      ) : (
+                        <CloseCircleOutlined className="text-[10px]" />
+                      )}
+                      {selectedVoucher.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </Modal>
+      </Spin>
+    </div>
+  )
 }

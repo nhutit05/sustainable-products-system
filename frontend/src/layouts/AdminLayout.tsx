@@ -8,10 +8,11 @@ import {
   Ticket,
   Warehouse,
   CloudUpload,
+  Menu,
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AdminNavbar from '../components/admin/AdminNavbar'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import AdminDashboard from '../pages/AdminDashboard'
 import AdminSystemCategories from '../pages/AdminSystemCategories'
 import AdminOrders from '../pages/AdminOrders'
@@ -19,8 +20,14 @@ import AdminProducts from '../pages/AdminProducts'
 import KnowledgePage from '../pages/knowledge/KnowledgePage'
 import AdminVouchers from '../pages/AdminVouchers'
 import AdminRefundSlip from '../pages/AdminRefundSlip'
+
 export default function AdminLayout() {
-  // Set danh sach NAV_LINKS
+  const location = useLocation()
+  const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  const handleCloseMobile = useCallback(() => setMobileOpen(false), [])
+
   const NAV_LINKS = [
     {
       label: 'Hệ thống tổng quan',
@@ -29,13 +36,13 @@ export default function AdminLayout() {
           label: 'Trang tổng quan',
           title: 'Trang tổng quan hệ thống',
           to: '/admin/dashboard',
-          icon: <ChartColumnBig />,
+          icon: <ChartColumnBig size={18} />,
         },
         {
           label: 'Trung tâm báo cáo đa loại',
           title: 'Trung tâm báo cáo đa loại',
           to: '/admin/reports',
-          icon: <FileChartColumn />,
+          icon: <FileChartColumn size={18} />,
         },
       ],
     },
@@ -46,19 +53,19 @@ export default function AdminLayout() {
           label: 'Danh mục hệ thống',
           title: 'Cấu hình quản lý danh mục hệ thống',
           to: '/admin/categories',
-          icon: <FolderTree />,
+          icon: <FolderTree size={18} />,
         },
         {
           label: 'Danh mục sản phẩm',
           title: 'Danh mục sản phẩm',
           to: '/admin/products',
-          icon: <Box />,
+          icon: <Box size={18} />,
         },
         {
           label: 'Quản lý kho hàng',
           title: 'Quản lý kho hàng',
           to: '/admin/warehouses',
-          icon: <Warehouse />,
+          icon: <Warehouse size={18} />,
         },
       ],
     },
@@ -69,19 +76,19 @@ export default function AdminLayout() {
           label: 'Duyệt đơn hàng',
           title: 'Duyệt đơn hàng',
           to: '/admin/orders',
-          icon: <ShoppingCart />,
+          icon: <ShoppingCart size={18} />,
         },
         {
           label: 'Xử lý hoàn tiền',
           title: 'Xử lý hoàn tiền',
           to: '/admin/refunds',
-          icon: <RotateCcw />,
+          icon: <RotateCcw size={18} />,
         },
         {
           label: 'Quản lý voucher',
           title: 'Quản lý voucher',
           to: '/admin/vouchers',
-          icon: <Ticket />,
+          icon: <Ticket size={18} />,
         },
       ],
     },
@@ -92,53 +99,81 @@ export default function AdminLayout() {
           label: 'Quản lý tài liệu huấn luyện',
           title: 'Quản lý tài liệu huấn luyện',
           to: '/admin/knowledge',
-          icon: <CloudUpload />,
+          icon: <CloudUpload size={18} />,
         },
       ],
     },
   ]
 
-  // Cau hinh scroll to top khi chuyen trang
-  const location = window.location.pathname
-
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
-  }, [location])
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [location.pathname])
 
-  // Banner bg: bg-gradient-to-r from-[#0E1D2C] to-[#093E36]
+  const currentPageTitle =
+    NAV_LINKS.flatMap((link) => link.child_links).find(
+      (childLink) => childLink.to === location.pathname
+    )?.title || 'Trang tổng quan hệ thống'
 
   return (
-    <div className="page-admin w-full min-h-screen grid grid-cols-4 gap-4 ">
-      <header className="header-adm max-h-screen">
-        <AdminNavbar NAV_LINKS={NAV_LINKS} />
-      </header>
+    <div className="page-admin w-full min-h-screen flex bg-emerald-50/50">
+      {/* SIDEBAR */}
+      <AdminNavbar
+        NAV_LINKS={NAV_LINKS}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((p) => !p)}
+        mobileOpen={mobileOpen}
+        onCloseMobile={handleCloseMobile}
+      />
 
-      <main className=" main-adm text-left bg-emerald-50 rounded-2xl grid col-span-3 max-h-screen overflow-y-scroll scrollbar-thin scrollbar-thumb-emerald-300 scrollbar-track-emerald-100">
-        {/* DASHBOARD HEADER */}
-        <header className="adm_dashboard-header shadow-xs bg-white pl-4 mb-4 p-4 sticky top-0 left-0 right-0 z-10 max-h-fit border-b border-emerald-100">
-          <h2 className="text-3xl font-bold text-green-900 uppercase">
-            {NAV_LINKS.flatMap((link) => link.child_links).find(
-              (childLink) => childLink.to === location
-            )?.title || 'Trang tổng quan hệ thống'}
-          </h2>
+      {/* MAIN CONTENT */}
+      <main
+        className={`
+          flex-1 min-w-0 min-h-screen
+          transition-all duration-300 ease-in-out
+        `}
+      >
+        {/* MOBILE / TABLET HEADER */}
+        <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-gray-100 shadow-sm">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-2 -ml-1 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="bg-emerald-500 rounded-lg w-7 h-7 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">R</span>
+              </div>
+              <span className="font-['Bricolage_Grotesque',sans-serif] text-lg font-extrabold text-gray-800 tracking-tight">
+                Re<span className="text-emerald-600">Green</span>
+              </span>
+            </div>
+          </div>
         </header>
 
-        {/* LIST ROUTES */}
-        <Routes>
-          <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="reports" element={<h1>Reports</h1>} />
-          <Route path="categories" element={<AdminSystemCategories />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="warehouses" element={<h1>Warehouses</h1>} />
-          <Route path="refunds" element={<AdminRefundSlip />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="vouchers" element={<AdminVouchers/>} />
-          <Route path="knowledge" element={<KnowledgePage />} />
-        </Routes>
+        {/* DESKTOP HEADER */}
+        <header className="hidden lg:block sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+          <div className="px-6 py-4">
+            <h2 className="text-xl font-bold text-gray-800">{currentPageTitle}</h2>
+          </div>
+        </header>
+
+        {/* PAGE CONTENT */}
+        <div className="p-3 sm:p-4 lg:p-6">
+          <Routes>
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="reports" element={<h1>Reports</h1>} />
+            <Route path="categories" element={<AdminSystemCategories />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="warehouses" element={<h1>Warehouses</h1>} />
+            <Route path="refunds" element={<AdminRefundSlip />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="vouchers" element={<AdminVouchers />} />
+            <Route path="knowledge" element={<KnowledgePage />} />
+          </Routes>
+        </div>
       </main>
     </div>
   )
