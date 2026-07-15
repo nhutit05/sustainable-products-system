@@ -1,196 +1,333 @@
-﻿# 🌱 ReGreen - Sustainable E-Commerce Platform with AI Green Assistant
+# 🌱 ReGreen
 
-## 📖 Introduction
+> AI-powered sustainable e-commerce platform built with **Spring Boot**, **React**, and **Google Gemini**.
 
-ReGreen is a sustainable e-commerce platform that helps users discover environmentally friendly products while promoting green living through an AI-powered assistant.
+<p align="center">
 
-The system combines online shopping with environmental awareness by providing carbon footprint analysis, recycling guidance, and personalized green product recommendations.
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-green)
+![React](https://img.shields.io/badge/React-19-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+![License](https://img.shields.io/badge/License-MIT-green)
 
----
-
-## ✨ Features
-
-### 👤 Customer
-
-* Browse eco-friendly products
-* Search and filter products
-* Add products to cart
-* Place orders
-* Track order history
-* Earn Green Points
-
-### 🤖 AI Green Assistant
-
-* Compare sustainable products
-* Recommend green products
-* Guide waste classification and recycling
-* Calculate carbon footprint
-* Answer environmental questions using RAG
-
-### 👨‍💼 Administrator
-
-* Manage products
-* Manage inventory
-* Manage orders
-* Upload knowledge documents (.pdf, .docx)
-* Train chatbot knowledge base
+</p>
 
 ---
 
-## 🏗️ System Architecture
+## 📖 Overview
 
-```text
-Frontend (ReactJS)
-        │
-        ▼
-REST API (Spring Boot)
-        │
- ┌──────┴──────┐
- ▼             ▼
-PostgreSQL      AI Service
-               │
-               ▼
-       RAG + LLM API
-      (OpenAI/Gemini)
+ReGreen is a full-stack e-commerce platform promoting sustainable consumption through intelligent shopping experiences and AI-powered assistance.
+
+Unlike a traditional online shopping system, ReGreen combines modern e-commerce capabilities with Retrieval-Augmented Generation (RAG), allowing customers to receive reliable, citation-based answers about sustainable products and environmental topics.
+
+The project was developed as a university capstone by a two-member team, following modern software engineering practices and a layered architecture.
+
+---
+
+## ✨ Highlights
+
+- 🛒 Complete e-commerce workflow
+- 🤖 AI chatbot powered by Google Gemini
+- 📚 Retrieval-Augmented Generation (RAG)
+- 🔍 Semantic search using pgvector
+- 💳 PayOS QR payment integration
+- 🔐 JWT Authentication & Role-based Authorization
+- ☁️ Cloudinary image management
+- 📄 Knowledge management for chatbot
+- 📦 Dockerized backend services
+- 📱 Responsive user interface
+
+---
+
+# 🏗 System Architecture
+
+```
+                    React + TypeScript
+                             │
+                  React Router + Context API
+                             │
+──────────────────────────────────────────────────
+               Spring Boot REST API
+──────────────────────────────────────────────────
+ Authentication │ Orders │ Products │ AI │ Payment
+──────────────────────────────────────────────────
+ Spring Security │ JPA │ Hibernate │ Scheduler
+──────────────────────────────────────────────────
+ PostgreSQL │ Cloudinary │ Supabase │ pgvector
+──────────────────────────────────────────────────
+        Google Gemini 2.5 Flash
 ```
 
 ---
 
-## 🚀 Technology Stack
+# 🚀 Core Features
 
-### Frontend
+## User Features
 
-* ReactJS
-* TailwindCSS
-* Axios
-* React Router
+- Browse sustainable products
+- Product search and filtering
+- Shopping cart
+- Voucher support
+- Checkout
+- Online payment
+- Order history
+- AI chatbot assistance
+
+---
+
+## Administration
+
+- Product management
+
+- Category management
+
+- Voucher management
+
+- Refund processing
+
+- User management
+
+- Report dashboard
+
+- Payout management
+
+- AI knowledge management
+
+---
+
+# 🤖 AI Chatbot
+
+One of the key features of ReGreen is an intelligent chatbot built using **Retrieval-Augmented Generation (RAG)**.
+
+Instead of relying solely on an LLM, uploaded knowledge documents are transformed into searchable vector embeddings, allowing the chatbot to answer user questions using verified project knowledge.
+
+Pipeline:
+
+```
+PDF / DOCX
+
+↓
+
+Text Extraction
+
+↓
+
+Chunking
+
+↓
+
+Embedding Generation
+
+↓
+
+pgvector Storage
+
+↓
+
+Semantic Search
+
+↓
+
+Context Retrieval
+
+↓
+
+Google Gemini 2.5 Flash
+
+↓
+
+Citation-based Response
+```
+
+Key capabilities
+
+- Semantic search
+- Citation support
+- Short-term conversation memory
+- Knowledge management dashboard
+
+---
+
+# 💳 Payment Workflow
+
+ReGreen integrates **PayOS** for online payment.
+
+```
+Checkout
+
+↓
+
+Generate QR Code
+
+↓
+
+Customer Payment
+
+↓
+
+PayOS Webhook
+
+↓
+
+Payment Verification
+
+↓
+
+Order Updated
+
+↓
+
+Scheduler handles timeout
+```
+
+The payment workflow automatically synchronizes payment status and cancels expired unpaid orders through scheduled background jobs.
+
+---
+
+# 🛠 Technology Stack
+
+## Backend
+
+- Java 21
+- Spring Boot
+- Spring Security
+- Spring Data JPA
+- Hibernate
+- JWT
+
+## Frontend
+
+- React
+- TypeScript
+- Ant Design
+- Context API
+
+## Database
+
+- PostgreSQL
+- pgvector
+
+## AI
+
+- Spring AI
+- Google Gemini 2.5 Flash
+
+## Storage
+
+- Cloudinary
+- Supabase Storage
+
+## DevOps
+
+- Docker
+- Git
+- Maven
+
+---
+
+# 📊 Project Scale
+
+- 👥 Team size: **2**
+- 💻 Backend contribution: **65%**
+- 🎨 Frontend contribution: **45%**
+- 🔗 **50+ REST APIs**
+- 🗄️ Approximately **40 database tables**
+
+---
+
+# 📂 Project Structure
+
+```
+backend/
+
+ controller/
+
+ service/
+
+ repository/
+
+ entity/
+
+ dto/
+
+ security/
+
+ integration/
+
+frontend/
+
+ pages/
+
+ components/
+
+ services/
+
+ hooks/
+
+ context/
+
+ layouts/
+```
+
+---
+
+# 🚀 Getting Started
 
 ### Backend
 
-* Java Spring Boot
-* Spring Security
-* Spring Data JPA
-* RESTful API
-
-### Database
-
-* PostgreSQL
-
-### AI Integration
-
-* OpenAI API / Gemini API
-* Retrieval-Augmented Generation (RAG)
-
----
-
-## 📂 Project Structure
-
-```text
-regreen/
-│
-├── frontend/
-│
-├── backend/
-│
-├── ai-service/
-│
-├── LICENSE
-│
-├── docs/
-│
-└── README.md
-
-```
-
----
-
-## ⚙️ Installation
-
-### Clone Repository
-
 ```bash
-git clone https://github.com/your-username/regreen.git
-cd regreen
-```
-
-### Backend
-
-```bash
-cd backend
-
-mvn clean install
 mvn spring-boot:run
 ```
 
 ### Frontend
 
 ```bash
-cd frontend
-
 npm install
+
 npm run dev
 ```
 
-### Database
+---
 
-```sql
-CREATE DATABASE regreen;
-```
+# 📸 Screenshots
 
-Update application.properties:
+> Add screenshots of:
 
-```properties
-# Cau hinh PostgreSQL
-spring.datasource.url=jdbc:postgresql://localhost:5432/database_regreen
-spring.datasource.username=postgres
-spring.datasource.password=regreen123
-```
+- Home page
+- Product page
+- Checkout
+- Admin Dashboard
+- AI Chatbot
+- Knowledge Management
+- Reports
 
 ---
 
-## 🌍 Carbon Footprint Formula
+# 📌 Roadmap
 
-```text
-Total Carbon Emission = Carbon Index × Quantity
-```
-
-Example:
-
-* Carbon Index = 2 kg CO₂
-* Quantity = 3
-
-Result:
-
-```text
-2 × 3 = 6 kg CO₂
-```
+- [x] Authentication
+- [x] Product Management
+- [x] Order Management
+- [x] Voucher
+- [x] Refund
+- [x] Reports
+- [x] PayOS
+- [x] AI Chatbot
+- [x] RAG
+- [ ] Deployment
 
 ---
 
-## 🎯 Future Development
+# 👨‍💻 Team
 
-* Online payment integration
-* Mobile application
-* Carbon reduction dashboard
-* Community green challenges
-* Product lifecycle assessment (LCA)
-
----
-
-## 👥 Contributors
-
-### Team Leader
-
-**Trần Thị Thuý Hiền**
-Software Engineering Student
-
-### Team Member
-
-**Võ Minh Nhựt (@nhutit05)**
-Software Engineering Student
+| Member | Responsibility |
+|---------|----------------|
+| Vo Minh Nhut | Backend, Frontend, AI Chatbot, Payment Integration |
+| Tran Thi Thuy Hien | Frontend & Backend |
 
 ---
 
-## 📄 License
+# 📄 License
 
-This project is licensed under the MIT License.
+This project was developed for educational purposes.
