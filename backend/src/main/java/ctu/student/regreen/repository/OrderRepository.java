@@ -1,6 +1,5 @@
 package ctu.student.regreen.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +14,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, JpaSpeci
 
     List<Order> findByPaymentStatusPaymentStatusNameAndOrderedAtBefore(
         String paymentStatusName,
-        LocalDateTime orderedAt);
-    List<Order> findByPaymentStatusPaymentStatusNameAndOrderedAtAfter(String name, LocalDateTime expiredTime);
+        java.time.LocalDateTime orderedAt);
+    List<Order> findByPaymentStatusPaymentStatusNameAndOrderedAtAfter(String name, java.time.LocalDateTime expiredTime);
 }

@@ -17,6 +17,8 @@
     "moduleDetection": "force",
     // "noEmit": true,
     "emitDeclarationOnly": true,
+    "rootDir": "./src",
+    "outDir": "./dist/types",
     "jsx": "react-jsx",
 
 

@@ -1,4 +1,4 @@
-import { Leaf, LogOut, UserCircle } from 'lucide-react'
+import { Leaf, LogOut, UserCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
@@ -12,13 +12,22 @@ interface AdminNavbarProps {
       icon: React.ReactNode
     }[]
   }[]
+  collapsed: boolean
+  onToggleCollapse: () => void
+  mobileOpen: boolean
+  onCloseMobile: () => void
 }
 
-export default function AdminNavbar({ NAV_LINKS }: AdminNavbarProps) {
+export default function AdminNavbar({
+  NAV_LINKS,
+  collapsed,
+  onToggleCollapse,
+  mobileOpen,
+  onCloseMobile,
+}: AdminNavbarProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const [token, setToken] = useState(localStorage.getItem('token'))
-  const [adminInfo, setAdminInfo] = useState(null)
 
   const handleLogout = () => {
     setToken('')
@@ -28,94 +37,196 @@ export default function AdminNavbar({ NAV_LINKS }: AdminNavbarProps) {
 
   useEffect(() => {
     const fetchAdmin = async () => {
-      const res = await fetch('http://localhost:8080/api/auth/me', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await res.json()
+      try {
+        await fetch('http://localhost:8080/api/auth/me', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      } catch {
+        // ignore
+      }
     }
-
     fetchAdmin()
   }, [token])
 
-  return (
-    <nav className="admin-navbar bg-[#111A31] text-white p-4 flex flex-col h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-emerald-300 scrollbar-track-emerald-100">
-      {/* ADMIN NAVBAR LOGO REGREEN */}
-      <header className="adm-navbar-header">
-        <div className="flex items-center gap-2 border-b border-gray-800 py-3">
-          <div className="bg-primary rounded-2xl w-10 h-10 flex items-center justify-center">
+  useEffect(() => {
+    onCloseMobile()
+  }, [location.pathname, onCloseMobile])
+
+  const sidebarWidth = collapsed ? 'w-[72px]' : 'w-[260px]'
+
+  const sidebarContent = (
+    <nav
+      className={`
+        admin-navbar text-white flex flex-col h-full
+        bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+        overflow-y-auto overflow-x-hidden
+        scrollbar-thin scrollbar-thumb-emerald-400/20 scrollbar-track-transparent
+        transition-all duration-300 ease-in-out
+        ${sidebarWidth}
+      `}
+    >
+      {/* LOGO */}
+      <header className="flex-shrink-0">
+        <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-5">
+          <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl w-10 h-10 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/25">
             <Leaf className="text-white" size={20} />
           </div>
-          <div className="flex flex-col">
-            <span className="font-['Bricolage_Grotesque',sans-serif] text-2xl font-extrabold text-green-800 tracking-tight">
-              Re<span className="text-emerald-500">Green</span>
-            </span>
-            <span className="text-xs text-white font-semibold tracking-tight">
-              Admin Panel v1.0
-            </span>
-          </div>
+          {!collapsed && (
+            <div className="flex flex-col min-w-0 overflow-hidden">
+              <span className="font-['Bricolage_Grotesque',sans-serif] text-xl font-extrabold tracking-tight leading-none">
+                <span className="text-white">Re</span>
+                <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                  Green
+                </span>
+              </span>
+              <span className="text-[10px] text-gray-500 font-medium tracking-wider mt-0.5">
+                Admin Panel v1.0
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* NAVBAR CATEGORIES */}
-      <main className="adm-nav-main flex-1">
+      {/* NAV LINKS */}
+      <main className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {NAV_LINKS.map((navItem, index) => (
-          <div className="navItem_cate text-left" key={index}>
-            {/* NAVBAR CATEGORY LABEL */}
-            <span className="font-semibold text-md uppercase text-gray-400 py-2 my-2 block border-b border-gray-800">
-              {navItem.label}
-            </span>
-
-            {/* NAVBAR CHILD LINKS */}
-            <ul className="ml-4 space-y-2">
-              {/* CHILD LINKS */}
-              {navItem.child_links.map((child, childIndex) => (
-                // NAVBAR CHILD LINK ITEM */}
-                <li
-                  key={childIndex}
-                  className={`rounded-lg hover:bg-gray-600/70 transition-colors hover:cursor-pointer ${
-                    location.pathname === child.to
-                      ? 'bg-gray-600/70 border-l-4 border-emerald-400'
-                      : ''
-                  }`}
-                >
-                  <NavLink
-  to={child.to}
-  className="flex items-center p-3 gap-2 text-sm text-gray-300 hover:text-white transition-colors"
->
-  {child.icon}
-  {child.label}
-</NavLink>
-                </li>
-              ))}
+          <div key={index} className="mb-4">
+            {!collapsed && (
+              <span className="font-semibold text-[10px] uppercase tracking-widest text-gray-500/80 px-3 mb-2 block">
+                {navItem.label}
+              </span>
+            )}
+            {collapsed && (
+              <div className="mx-auto w-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-2" />
+            )}
+            <ul className="space-y-1">
+              {navItem.child_links.map((child, childIndex) => {
+                const isActive = location.pathname === child.to
+                return (
+                  <li key={childIndex}>
+                    <NavLink
+                      to={child.to}
+                      title={collapsed ? child.label : undefined}
+                      className={`
+                        flex items-center gap-3 rounded-xl text-sm transition-all duration-200 relative
+                        ${collapsed ? 'justify-center px-2 py-2.5 mx-1' : 'px-3 py-2.5 mx-1'}
+                        ${
+                          isActive
+                            ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/15 text-white shadow-sm shadow-emerald-500/10'
+                            : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-200'
+                        }
+                      `}
+                    >
+                      {isActive && !collapsed && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-emerald-400 to-teal-400" />
+                      )}
+                      <span
+                        className={`flex-shrink-0 transition-colors duration-200 ${
+                          isActive ? 'text-emerald-400' : ''
+                        }`}
+                      >
+                        {child.icon}
+                      </span>
+                      {!collapsed && (
+                        <span className="truncate font-medium">{child.label}</span>
+                      )}
+                    </NavLink>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         ))}
       </main>
 
-      {/* ADMIN ACCOUNT INFO & LOGOUT */}
-      <footer className="adm-navbar-footer mt-auto border-t border-gray-800 pt-4">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-800/50">
-          <div className="w-10 h-10 rounded-full bg-emerald-600/30 flex items-center justify-center flex-shrink-0">
-            <UserCircle className="text-emerald-400" size={24} />
+      {/* COLLAPSE TOGGLE (tablet+) */}
+      <div className="hidden lg:flex flex-shrink-0 justify-center border-t border-white/[0.06] py-2">
+        <button
+          onClick={onToggleCollapse}
+          className="p-2 rounded-xl text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 transition-all duration-200 cursor-pointer"
+          title={collapsed ? 'Mở rộng' : 'Thu gọn'}
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+      </div>
+
+      {/* ACCOUNT + LOGOUT */}
+      <footer className="flex-shrink-0 border-t border-white/[0.06] p-3">
+        <div
+          className={`flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5 ${
+            collapsed ? 'justify-center' : ''
+          }`}
+        >
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400/25 to-teal-400/25 flex items-center justify-center flex-shrink-0 ring-1 ring-emerald-400/15">
+            <UserCircle className="text-emerald-400" size={20} />
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-semibold text-white truncate">Admin</span>
-            <span className="text-xs text-emerald-400 font-medium">Quản trị viên</span>
-          </div>
+          {!collapsed && (
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold text-white truncate">Admin</span>
+              <span className="text-[10px] font-medium bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                Quản trị viên
+              </span>
+            </div>
+          )}
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="w-full mt-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors rounded-lg flex items-center gap-2 cursor-pointer"
-        >
-          <LogOut size={18} />
-          Đăng xuất
-        </button>
+        {!collapsed && (
+          <button
+            onClick={handleLogout}
+            className="w-full mt-2 px-3 py-2.5 text-sm text-gray-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-200 rounded-xl flex items-center gap-2 cursor-pointer"
+          >
+            <LogOut size={16} />
+            <span>Đăng xuất</span>
+          </button>
+        )}
+        {collapsed && (
+          <button
+            onClick={handleLogout}
+            className="w-full mt-2 flex justify-center py-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all duration-200 cursor-pointer"
+            title="Đăng xuất"
+          >
+            <LogOut size={16} />
+          </button>
+        )}
       </footer>
     </nav>
+  )
+
+  return (
+    <>
+      {/* Desktop & Tablet sidebar */}
+      <aside
+        className={`
+          hidden lg:block flex-shrink-0 h-screen sticky top-0
+          transition-all duration-300 ease-in-out
+          ${sidebarWidth}
+        `}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-md transition-opacity"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <aside
+        className={`
+          lg:hidden fixed inset-y-0 left-0 z-50
+          transform transition-transform duration-300 ease-in-out
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }
