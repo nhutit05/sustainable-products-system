@@ -161,6 +161,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 .orElseThrow(() -> new RuntimeException("Order status not found: " + statusName));
     }
 
+    
+
     private void validateTransition(
             OrderStatusName current,
             OrderStatusName next) {

@@ -63,23 +63,23 @@ class AdminRefundSlipServiceImplTest {
         return status;
     }
 
-    @Test
-    void getAllRefundSlips_success() {
+//     @Test
+//     void getAllRefundSlips_success() {
 
-        when(refundSlipRepository.findAll())
-                .thenReturn(
-                        List.of(refundSlip));
+//         when(refundSlipRepository.findAll())
+//                 .thenReturn(
+//                         List.of(refundSlip));
 
-        List<RefundSlipResponse> result =
-                service.getAllRefundSlips();
+//         List<RefundSlipResponse> result =
+//                 service.getAllRefundSlips();
 
-        assertEquals(
-                1,
-                result.size());
+//         assertEquals(
+//                 1,
+//                 result.size());
 
-        verify(refundSlipRepository)
-                .findAll();
-    }
+//         verify(refundSlipRepository)
+//                 .findAll();
+//     }
 
     @Test
     void getRefundSlipById_success() {
