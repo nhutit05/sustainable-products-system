@@ -61,25 +61,29 @@ export default function AdminNavbar({
   const sidebarContent = (
     <nav
       className={`
-        admin-navbar bg-[#111A31] text-white flex flex-col h-full
+        admin-navbar text-white flex flex-col h-full
+        bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
         overflow-y-auto overflow-x-hidden
-        scrollbar-thin scrollbar-thumb-emerald-300/30 scrollbar-track-transparent
+        scrollbar-thin scrollbar-thumb-emerald-400/20 scrollbar-track-transparent
         transition-all duration-300 ease-in-out
         ${sidebarWidth}
       `}
     >
       {/* LOGO */}
       <header className="flex-shrink-0">
-        <div className="flex items-center gap-2.5 border-b border-white/10 px-4 py-4">
-          <div className="bg-emerald-500 rounded-xl w-9 h-9 flex items-center justify-center flex-shrink-0">
-            <Leaf className="text-white" size={18} />
+        <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-5">
+          <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl w-10 h-10 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/25">
+            <Leaf className="text-white" size={20} />
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0 overflow-hidden">
-              <span className="font-['Bricolage_Grotesque',sans-serif] text-xl font-extrabold text-white tracking-tight leading-none">
-                Re<span className="text-emerald-400">Green</span>
+              <span className="font-['Bricolage_Grotesque',sans-serif] text-xl font-extrabold tracking-tight leading-none">
+                <span className="text-white">Re</span>
+                <span className="bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                  Green
+                </span>
               </span>
-              <span className="text-[10px] text-gray-400 font-medium tracking-wide mt-0.5">
+              <span className="text-[10px] text-gray-500 font-medium tracking-wider mt-0.5">
                 Admin Panel v1.0
               </span>
             </div>
@@ -88,16 +92,18 @@ export default function AdminNavbar({
       </header>
 
       {/* NAV LINKS */}
-      <main className="flex-1 py-3 px-2 space-y-1 overflow-y-auto">
+      <main className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {NAV_LINKS.map((navItem, index) => (
-          <div key={index} className="mb-3">
+          <div key={index} className="mb-4">
             {!collapsed && (
-              <span className="font-semibold text-[10px] uppercase tracking-wider text-gray-500 px-3 mb-1.5 block">
+              <span className="font-semibold text-[10px] uppercase tracking-widest text-gray-500/80 px-3 mb-2 block">
                 {navItem.label}
               </span>
             )}
-            {collapsed && <div className="mx-auto w-5 h-px bg-gray-700 mb-2" />}
-            <ul className="space-y-0.5">
+            {collapsed && (
+              <div className="mx-auto w-5 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-2" />
+            )}
+            <ul className="space-y-1">
               {navItem.child_links.map((child, childIndex) => {
                 const isActive = location.pathname === child.to
                 return (
@@ -106,19 +112,28 @@ export default function AdminNavbar({
                       to={child.to}
                       title={collapsed ? child.label : undefined}
                       className={`
-                        flex items-center gap-3 rounded-lg text-sm transition-all duration-150
+                        flex items-center gap-3 rounded-xl text-sm transition-all duration-200 relative
                         ${collapsed ? 'justify-center px-2 py-2.5 mx-1' : 'px-3 py-2.5 mx-1'}
                         ${
                           isActive
-                            ? 'bg-emerald-500/15 text-emerald-400'
-                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/15 text-white shadow-sm shadow-emerald-500/10'
+                            : 'text-gray-400 hover:bg-white/[0.05] hover:text-gray-200'
                         }
                       `}
                     >
-                      <span className={`flex-shrink-0 ${isActive ? 'text-emerald-400' : ''}`}>
+                      {isActive && !collapsed && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-emerald-400 to-teal-400" />
+                      )}
+                      <span
+                        className={`flex-shrink-0 transition-colors duration-200 ${
+                          isActive ? 'text-emerald-400' : ''
+                        }`}
+                      >
                         {child.icon}
                       </span>
-                      {!collapsed && <span className="truncate font-medium">{child.label}</span>}
+                      {!collapsed && (
+                        <span className="truncate font-medium">{child.label}</span>
+                      )}
                     </NavLink>
                   </li>
                 )
@@ -129,10 +144,10 @@ export default function AdminNavbar({
       </main>
 
       {/* COLLAPSE TOGGLE (tablet+) */}
-      <div className="hidden lg:flex flex-shrink-0 justify-center border-t border-white/10 py-2">
+      <div className="hidden lg:flex flex-shrink-0 justify-center border-t border-white/[0.06] py-2">
         <button
           onClick={onToggleCollapse}
-          className="p-2 rounded-lg text-gray-500 hover:bg-white/5 hover:text-gray-300 transition-colors cursor-pointer"
+          className="p-2 rounded-xl text-gray-500 hover:bg-white/[0.05] hover:text-gray-300 transition-all duration-200 cursor-pointer"
           title={collapsed ? 'Mở rộng' : 'Thu gọn'}
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -140,19 +155,21 @@ export default function AdminNavbar({
       </div>
 
       {/* ACCOUNT + LOGOUT */}
-      <footer className="flex-shrink-0 border-t border-white/10 p-3">
+      <footer className="flex-shrink-0 border-t border-white/[0.06] p-3">
         <div
-          className={`flex items-center gap-3 rounded-xl bg-white/5 p-2.5 ${
+          className={`flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] p-2.5 ${
             collapsed ? 'justify-center' : ''
           }`}
         >
-          <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400/25 to-teal-400/25 flex items-center justify-center flex-shrink-0 ring-1 ring-emerald-400/15">
             <UserCircle className="text-emerald-400" size={20} />
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-semibold text-white truncate">Admin</span>
-              <span className="text-[10px] text-emerald-400 font-medium">Quản trị viên</span>
+              <span className="text-[10px] font-medium bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                Quản trị viên
+              </span>
             </div>
           )}
         </div>
@@ -160,7 +177,7 @@ export default function AdminNavbar({
         {!collapsed && (
           <button
             onClick={handleLogout}
-            className="w-full mt-2 px-3 py-2.5 text-sm text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors rounded-lg flex items-center gap-2 cursor-pointer"
+            className="w-full mt-2 px-3 py-2.5 text-sm text-gray-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-200 rounded-xl flex items-center gap-2 cursor-pointer"
           >
             <LogOut size={16} />
             <span>Đăng xuất</span>
@@ -169,7 +186,7 @@ export default function AdminNavbar({
         {collapsed && (
           <button
             onClick={handleLogout}
-            className="w-full mt-2 flex justify-center py-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+            className="w-full mt-2 flex justify-center py-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all duration-200 cursor-pointer"
             title="Đăng xuất"
           >
             <LogOut size={16} />
@@ -195,7 +212,7 @@ export default function AdminNavbar({
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity"
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-md transition-opacity"
           onClick={onCloseMobile}
         />
       )}
