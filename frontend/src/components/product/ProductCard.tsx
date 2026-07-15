@@ -15,7 +15,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div
-      className="product_card bg-[#F8FFF4] group rounded-3xl overflow-hidden hover:scale-102 hover:shadow-md hover:shadow-emerald-100/60 transition-all duration-200 cursor-pointer"
+      className="product_card bg-[#F8FFF4] group rounded-3xl shadow-sm shadow-emerald-100/40 overflow-hidden hover:scale-102 hover:shadow-md hover:shadow-emerald-100/80 transition-all duration-200 cursor-pointer"
       key={product.productId}
     >
       <div className="product_card--image h-52 overflow-hidden bg-green-100 relative">
