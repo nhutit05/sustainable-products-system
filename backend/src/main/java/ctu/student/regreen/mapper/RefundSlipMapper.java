@@ -27,7 +27,10 @@ public class RefundSlipMapper {
 
                 refundSlip.getRefundStatus().getRefundStatusId(),
 
-                refundSlip.getRefundStatus().getRefundStatusName()
+                refundSlip.getRefundStatus().getRefundStatusName(),
+                
+                refundSlip.getCreatedAt(),
+                refundSlip.getUpdatedAt()
         );
     }
 }

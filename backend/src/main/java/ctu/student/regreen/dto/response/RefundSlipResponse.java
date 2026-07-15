@@ -1,5 +1,7 @@
 package ctu.student.regreen.dto.response;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -24,4 +26,8 @@ public class RefundSlipResponse {
     private Integer refundStatusId;
 
     private String refundStatusName;
+
+    private LocalDateTime createdAt;
+
+private LocalDateTime updatedAt;
 }

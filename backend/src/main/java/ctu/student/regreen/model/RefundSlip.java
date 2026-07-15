@@ -1,5 +1,10 @@
 package ctu.student.regreen.model;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -50,4 +55,11 @@ public class RefundSlip {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "refund_status_id", nullable = false)
     private RefundStatus refundStatus;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

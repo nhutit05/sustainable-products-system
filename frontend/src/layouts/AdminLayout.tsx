@@ -18,6 +18,7 @@ import AdminOrders from '../pages/AdminOrders'
 import AdminProducts from '../pages/AdminProducts'
 import KnowledgePage from '../pages/knowledge/KnowledgePage'
 import AdminVouchers from '../pages/AdminVouchers'
+import AdminRefundSlip from '../pages/AdminRefundSlip'
 export default function AdminLayout() {
   // Set danh sach NAV_LINKS
   const NAV_LINKS = [
@@ -133,8 +134,8 @@ export default function AdminLayout() {
           <Route path="categories" element={<AdminSystemCategories />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="warehouses" element={<h1>Warehouses</h1>} />
+          <Route path="refunds" element={<AdminRefundSlip />} />
           <Route path="orders" element={<AdminOrders />} />
-          <Route path="refunds" element={<h1>Refunds</h1>} />
           <Route path="vouchers" element={<AdminVouchers/>} />
           <Route path="knowledge" element={<KnowledgePage />} />
         </Routes>

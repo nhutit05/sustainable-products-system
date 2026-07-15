@@ -9,7 +9,12 @@ import ctu.student.regreen.model.RefundStatus;
 import ctu.student.regreen.repository.RefundSlipRepository;
 import ctu.student.regreen.repository.RefundStatusRepository;
 import ctu.student.regreen.service.interfaces.AdminRefundSlipService;
+import ctu.student.regreen.specification.RefundSlipSpecification;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +34,26 @@ public class AdminRefundSlipServiceImpl
 
         private final PayOSPayoutService payOSPayoutService;
 
-        @Override
-        public List<RefundSlipResponse> getAllRefundSlips() {
+        // @Override
+        // public List<RefundSlipResponse> getAllRefundSlips() {
 
-                return refundSlipRepository.findAll()
-                                .stream()
-                                .map(refundSlipMapper::toResponse)
-                                .toList();
+        // return refundSlipRepository.findAll()
+        // .stream()
+        // .map(refundSlipMapper::toResponse)
+        // .toList();
+        // }
+
+        @Override
+        public Page<RefundSlipResponse> getRefundSlips(
+                        String search,
+                        String status,
+                        Pageable pageable) {
+
+                Specification<RefundSlip> specification = RefundSlipSpecification.filter(search, status);
+
+                return refundSlipRepository
+                                .findAll(specification, pageable)
+                                .map(refundSlipMapper::toResponse);
         }
 
         @Override
