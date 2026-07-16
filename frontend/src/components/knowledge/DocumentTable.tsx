@@ -16,20 +16,20 @@ import {
 } from "@ant-design/icons";
 
 import type { KnowledgeDocument } from "../../types/knowledge";
-import { deleteDocument } from "../../services/knowledge.service";
 
 const { Text } = Typography;
-
 interface DocumentTableProps {
 
     documents: KnowledgeDocument[];
 
     loading: boolean;
 
-    refreshData: () => Promise<void>;
+    onDelete: (documentId: string) => Promise<void>;
 
     onView: (
+
         documentId: string
+
     ) => void;
 
     currentPage: number;
@@ -47,14 +47,13 @@ interface DocumentTableProps {
     ) => void;
 
 }
-
 export default function DocumentTable({
 
     documents,
 
     loading,
 
-    refreshData,
+    onDelete,
 
     onView,
 
@@ -76,16 +75,11 @@ export default function DocumentTable({
 
         try {
 
-            await deleteDocument(
-                token,
-                documentId
-            );
+            await onDelete(documentId);
 
             message.success(
                 "Xóa tài liệu thành công"
             );
-
-            await refreshData();
 
         } catch (error) {
 

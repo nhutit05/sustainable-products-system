@@ -1,180 +1,177 @@
-import { Leaf, X } from 'lucide-react'
-import type { Material, ProductRequest, ProductResponse } from '../../model/product.model'
+import { Descriptions, Modal, Tag, Image, Spin } from 'antd'
+import type { ProductResponse } from '../../model/product.model'
 import { useEffect, useState } from 'react'
-import { useNotification } from '../../context/useNotification'
-import Loading from '../Loading'
 import { useCustomer } from '../../context/useCustomer'
+import { Leaf } from 'lucide-react'
+import {
+  TagOutlined,
+  ShopOutlined,
+  GlobalOutlined,
+  CalendarOutlined,
+  BulbOutlined,
+} from '@ant-design/icons'
 
 interface ProductDetailProps {
-  product: ProductResponse
-  setIsModalOpen: (value: boolean) => void
-  setShowProduct: (value: boolean) => void
+  product: ProductResponse | null
+  open: boolean
+  onClose: () => void
 }
 
-export default function AdmProductDetail({
-  product,
-  setIsModalOpen,
-  setShowProduct,
-}: ProductDetailProps) {
+export default function AdmProductDetail({ product, open, onClose }: ProductDetailProps) {
   const [loading, setLoading] = useState(false)
-
   const { token } = useCustomer()
 
-  const { showNotification } = useNotification()
-
-  const [materials, setMaterials] = useState<Material[]>([])
-
-  const CloseShowProduct = () => {
-    setIsModalOpen(false)
-    setShowProduct(false)
-  }
-
-  console.log('product', product)
-
   useEffect(() => {
-    const fetchMaterials = async () => {
+    if (!open || !token) return
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
       try {
-        const response = await fetch('http://localhost:8080/api/materials', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+        await fetch('http://localhost:8080/api/admin/materials', {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        const data = await response.json()
-        setMaterials(data)
-      } catch (error) {
-        console.error('Error fetching materials:', error)
+      } catch (e) {
+        console.error('Error fetching materials:', e)
+      } finally {
+        if (!cancelled) setLoading(false)
       }
+    })()
+    return () => {
+      cancelled = true
     }
+  }, [open, token])
 
-    if (token) {
-      fetchMaterials()
-    }
-  }, [token])
+  const formatCurrency = (v: number) =>
+    Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v)
 
   return (
-    <div className=" bg-white p-6 rounded-2xl shadow-lg max-h-150 overflow-y-scroll">
-      <X
-        className="absolute text-gray-400 hover:cursor-pointer hover:text-green-900 transition-colors top-4 right-4 cursor-pointer"
-        size={24}
-        onClick={CloseShowProduct}
-      />
-      <h2 className="text-xl font-semibold mb-4 uppercase text-green-900 text-center">
-        Chi tiết sản phẩm
-      </h2>
-
-      <main className="mt grid grid-cols-2 gap-2">
-        <h2 className="text-green-900 text-lg font-bold py-2 border-b border-gray-200 col-span-2">
-          Hình ảnh sản phẩm
-        </h2>
-        <div className="flex justify-evenly items-center col-span-2">
-          {product.imageUrls && product.imageUrls.length > 0 ? (
-            product.imageUrls.map((imageUrl, index) => (
-              <img
-                key={index}
-                src={imageUrl}
-                alt={`Hình ảnh sản phẩm ${index + 1}`}
-                className="w-48 h-32 object-cover rounded-lg mr-2 shadow-md hover:scale-105 transition-transform"
-              />
-            ))
-          ) : (
-            <p className="text-gray-500">Không có hình ảnh sản phẩm</p>
-          )}
-        </div>
-        <h2 className="text-green-900 text-lg font-bold py-2 border-b border-gray-200 col-span-2">
-          Thông tin sản phẩm
-        </h2>
-        <div className="">
-          {/* TEN SAN PHAM */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Tên sản phẩm:
-            <span className="text-md text-gray-600 font-medium ml-3">{product.productName}</span>
-          </label>
-          {/* GIA SAN PHAM */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Giá sản phẩm:
-            <span className="text-md text-gray-600 font-medium ml-3">
-              {product.productPrice} VND
-            </span>
-          </label>
-          {/* NGUYEN LIEU */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Nguyên liệu:
-            <span className="block text-md text-gray-600 font-medium ml-3">
-              {product.materials.length === 0 ? 'Không có nguyên liệu' : ''}
-              {product.materials.map((material, index) => (
-                <p key={material.materialId}>
-                  {index + 1}. {material.materialName} - {material.percentage}%
+    <Modal
+      title={
+        <span className="flex items-center gap-2 text-lg font-semibold">
+          <ShopOutlined className="text-emerald-500" />
+          Chi tiết sản phẩm
+        </span>
+      }
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={720}
+      centered
+      destroyOnHidden
+    >
+      <Spin spinning={loading}>
+        {!product ? null : (
+          <>
+            {/* Images */}
+            {product.imageUrls && product.imageUrls.length > 0 && (
+              <div className="mb-5">
+                <p className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">
+                  Hình ảnh sản phẩm
                 </p>
-              ))}
-            </span>
-          </label>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {product.imageUrls.map((url, i) => (
+                    <Image
+                      key={i}
+                      src={url}
+                      alt={`Ảnh ${i + 1}`}
+                      width={140}
+                      height={100}
+                      className="rounded-xl object-cover flex-shrink-0 ring-1 ring-gray-100"
+                      preview={{ mask: 'Xem' }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* NGUON GOC */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Nguồn gốc:
-            <span className="text-md text-gray-600 font-medium ml-3">
-              {product.original ? product.original : 'Không có nguồn gốc'}
-            </span>
-          </label>
+            {/* Info */}
+            <Descriptions
+              bordered
+              column={{ xs: 1, sm: 2 }}
+              size="small"
+              className="product-detail-descriptions"
+            >
+              <Descriptions.Item label="Tên sản phẩm" span={2}>
+                <span className="font-medium">{product.productName}</span>
+              </Descriptions.Item>
 
-          {/* HET HAN */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Ngày hết hạn:
-            <span className="text-md text-gray-600 font-medium ml-3">
-              {product.expiredAt ? product.expiredAt : 'Không có ngày hết hạn'}
-            </span>
-          </label>
-        </div>
-        <div>
-          {/* LOAI SAN PHAM */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Loại sản phẩm:
-            <span className="text-md text-gray-600 font-medium ml-3">
-              {product.categoryName ? product.categoryName : 'Không có loại sản phẩm'}
-            </span>
-          </label>
+              <Descriptions.Item label="Giá bán">
+                <span className="font-semibold text-emerald-600">
+                  {formatCurrency(product.productPrice)}
+                </span>
+              </Descriptions.Item>
 
-          {/* CHI SO CARBON */}
+              <Descriptions.Item label="Trạng thái">
+                {product.statusSale ? (
+                  <Tag color="success">Đang bán</Tag>
+                ) : (
+                  <Tag color="default">Ngừng bán</Tag>
+                )}
+              </Descriptions.Item>
 
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Chỉ số carbon:
-            <span className="text-md text-gray-600 font-medium mx-3">
-              {product.productCarbonIndex ? product.productCarbonIndex : 'Không có chỉ số carbon'}
-            </span>
-            kg CO2e
-          </label>
+              <Descriptions.Item label="Loại sản phẩm">
+                <span className="flex items-center gap-1.5">
+                  <TagOutlined className="text-gray-400" />
+                  {product.categoryName}
+                </span>
+              </Descriptions.Item>
 
-          {/* DIEM CARBON BAN DAU */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Điểm carbon ban đầu:
-            <span className="text-md text-gray-600 font-medium ml-3">
-              {product.baseEcoPoints ? product.baseEcoPoints : 'Không có điểm carbon ban đầu'}
-              <Leaf className="inline-block ml-1 text-emerald-400" size={16} />
-            </span>
-          </label>
+              <Descriptions.Item label="Tồn kho">
+                <span className={product.inventory <= 10 ? 'font-semibold text-red-500' : ''}>
+                  {product.inventory}
+                </span>
+              </Descriptions.Item>
 
-          {/* KHOI LUONG */}
-          <label className="block text-lg font-semibold text-green-900 py-2">
-            Khối lượng:
-            <span className="text-md text-gray-600 font-medium ml-3">
-              {product.weight ? product.weight : 'Không có khối lượng'}
-            </span>
-            kg
-          </label>
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            className="bg-white text-red-500 px-4 py-2 hover:cursor-pointer rounded-xl border border-red-500 hover:bg-red-500 hover:text-white transition-colors mr-2"
-            onClick={() => CloseShowProduct()}
-          >
-            Đóng
-          </button>
-        </div>
-      </main>
+              <Descriptions.Item label="Chỉ số Carbon">
+                <span className="flex items-center gap-1">
+                  <BulbOutlined className="text-emerald-500" />
+                  {product.productCarbonIndex} kg CO₂e
+                </span>
+              </Descriptions.Item>
 
-      {loading && <Loading message="Đang thêm sản phẩm. Vui lòng chờ trong giây lát !" />}
-    </div>
+              <Descriptions.Item label="Điểm Eco">
+                <span className="flex items-center gap-1">
+                  {product.baseEcoPoints}
+                  <Leaf className="text-emerald-400" size={14} />
+                </span>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Khối lượng">
+                <span>{product.weight} kg</span>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Nguồn gốc">
+                <span className="flex items-center gap-1">
+                  <GlobalOutlined className="text-gray-400" />
+                  {product.original || 'Không có'}
+                </span>
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Hạn sử dụng" span={2}>
+                <span className="flex items-center gap-1">
+                  <CalendarOutlined className="text-gray-400" />
+                  {product.expiredAt || 'Không có'}
+                </span>
+              </Descriptions.Item>
+
+              {/* Materials */}
+              <Descriptions.Item label="Nguyên liệu" span={2}>
+                {product.materials.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.materials.map((m) => (
+                      <Tag key={m.materialId} color="blue">
+                        {m.materialName} — {m.percentage}%
+                      </Tag>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-gray-400">Không có nguyên liệu</span>
+                )}
+              </Descriptions.Item>
+            </Descriptions>
+          </>
+        )}
+      </Spin>
+    </Modal>
   )
 }
