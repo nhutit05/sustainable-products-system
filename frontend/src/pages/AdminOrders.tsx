@@ -227,23 +227,34 @@ export default function AdminOrders() {
       if (!token || !selectedOrder) return;
       setActionLoading(true);
       try {
+        let updated: orderResponse;
         switch (action) {
-          case "confirm": await confirmOrder(token, selectedOrder.orderId); break;
-          case "shipping": await shippingOrder(token, selectedOrder.orderId); break;
-          case "complete": await completeOrder(token, selectedOrder.orderId); break;
-          case "reject": await rejectOrder(token, selectedOrder.orderId); break;
+          case "confirm": updated = await confirmOrder(token, selectedOrder.orderId); break;
+          case "shipping": updated = await shippingOrder(token, selectedOrder.orderId); break;
+          case "complete": updated = await completeOrder(token, selectedOrder.orderId); break;
+          case "reject": updated = await rejectOrder(token, selectedOrder.orderId); break;
         }
         message.success("Cập nhật trạng thái thành công.");
         setDrawerOpen(false);
         setSelectedOrder(null);
-        fetchOrders();
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.orderId === updated!.orderId
+              ? {
+                  ...o,
+                  orderStatusId: updated!.orderStatusId,
+                  orderStatusName: updated!.orderStatusName,
+                }
+              : o
+          )
+        );
       } catch (error: any) {
         message.error(error?.response?.data?.message ?? "Không thể cập nhật trạng thái.");
       } finally {
         setActionLoading(false);
       }
     },
-    [token, selectedOrder, fetchOrders]
+    [token, selectedOrder]
   );
 
   const handleCloseDrawer = useCallback(() => {

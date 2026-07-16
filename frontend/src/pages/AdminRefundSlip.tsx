@@ -178,8 +178,18 @@ export default function AdminRefundSlip() {
           type: 'SUCCESS',
           duration: 3000,
         })
-        fetchRefundSlips()
-        if (selectedRefundSlip?.refundSlipId === refundSlipId) fetchRefundSlipDetail(refundSlipId)
+        setRefundSlips((prev) =>
+          prev.map((r) =>
+            r.refundSlipId === refundSlipId
+              ? { ...r, refundStatusName: 'APPROVED', updatedAt: new Date().toISOString() }
+              : r
+          )
+        )
+        if (selectedRefundSlip?.refundSlipId === refundSlipId) {
+          setSelectedRefundSlip((prev) =>
+            prev ? { ...prev, refundStatusName: 'APPROVED', updatedAt: new Date().toISOString() } : prev
+          )
+        }
       } else {
         const err = await response.json()
         message.error(err.message || 'Không thể duyệt yêu cầu hoàn tiền.')
@@ -205,8 +215,18 @@ export default function AdminRefundSlip() {
           type: 'SUCCESS',
           duration: 3000,
         })
-        fetchRefundSlips()
-        if (selectedRefundSlip?.refundSlipId === refundSlipId) fetchRefundSlipDetail(refundSlipId)
+        setRefundSlips((prev) =>
+          prev.map((r) =>
+            r.refundSlipId === refundSlipId
+              ? { ...r, refundStatusName: 'REJECTED', updatedAt: new Date().toISOString() }
+              : r
+          )
+        )
+        if (selectedRefundSlip?.refundSlipId === refundSlipId) {
+          setSelectedRefundSlip((prev) =>
+            prev ? { ...prev, refundStatusName: 'REJECTED', updatedAt: new Date().toISOString() } : prev
+          )
+        }
       } else {
         const err = await response.json()
         message.error(err.message || 'Không thể từ chối yêu cầu hoàn tiền.')
@@ -232,8 +252,18 @@ export default function AdminRefundSlip() {
           type: 'SUCCESS',
           duration: 3000,
         })
-        fetchRefundSlips()
-        if (selectedRefundSlip?.refundSlipId === refundSlipId) fetchRefundSlipDetail(refundSlipId)
+        setRefundSlips((prev) =>
+          prev.map((r) =>
+            r.refundSlipId === refundSlipId
+              ? { ...r, refundStatusName: 'REFUNDED', updatedAt: new Date().toISOString() }
+              : r
+          )
+        )
+        if (selectedRefundSlip?.refundSlipId === refundSlipId) {
+          setSelectedRefundSlip((prev) =>
+            prev ? { ...prev, refundStatusName: 'REFUNDED', updatedAt: new Date().toISOString() } : prev
+          )
+        }
       } else {
         const err = await response.json()
         message.error(err.message || 'Không thể thực hiện hoàn tiền.')

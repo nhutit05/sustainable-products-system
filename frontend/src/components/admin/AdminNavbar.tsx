@@ -2,6 +2,7 @@ import { Leaf, LogOut, UserCircle, ChevronLeft, ChevronRight } from 'lucide-reac
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
+import { Popconfirm } from 'antd'
 
 interface AdminNavbarProps {
   NAV_LINKS: {
@@ -175,22 +176,40 @@ export default function AdminNavbar({
         </div>
 
         {!collapsed && (
-          <button
-            onClick={handleLogout}
-            className="w-full mt-2 px-3 py-2.5 text-sm text-gray-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-200 rounded-xl flex items-center gap-2 cursor-pointer"
+          <Popconfirm
+            title="Đăng xuất"
+            description="Bạn có chắc chắn muốn đăng xuất?"
+            onConfirm={handleLogout}
+            okText="Đăng xuất"
+            cancelText="Huỷ"
+            okType="danger"
+            placement="topRight"
           >
-            <LogOut size={16} />
-            <span>Đăng xuất</span>
-          </button>
+            <button
+              className="w-full mt-2 px-3 py-2.5 text-sm text-gray-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-200 rounded-xl flex items-center gap-2 cursor-pointer"
+            >
+              <LogOut size={16} />
+              <span>Đăng xuất</span>
+            </button>
+          </Popconfirm>
         )}
         {collapsed && (
-          <button
-            onClick={handleLogout}
-            className="w-full mt-2 flex justify-center py-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all duration-200 cursor-pointer"
+          <Popconfirm
             title="Đăng xuất"
+            description="Bạn có chắc chắn muốn đăng xuất?"
+            onConfirm={handleLogout}
+            okText="Đăng xuất"
+            cancelText="Huỷ"
+            okType="danger"
+            placement="rightTop"
           >
-            <LogOut size={16} />
-          </button>
+            <button
+              className="w-full mt-2 flex justify-center py-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all duration-200 cursor-pointer"
+              title="Đăng xuất"
+            >
+              <LogOut size={16} />
+            </button>
+          </Popconfirm>
         )}
       </footer>
     </nav>

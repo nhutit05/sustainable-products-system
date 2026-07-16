@@ -1,6 +1,7 @@
 package ctu.student.regreen.service.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
 import ctu.student.regreen.dto.request.ProductRequest;
 import ctu.student.regreen.dto.response.ProductResponse;
@@ -16,6 +17,8 @@ public interface ProductService {
     ProductResponse getById(Integer id);
 
     List<ProductResponse> getAll();
+
+    Map<String, Object> getAllFiltered(String keyword, Integer categoryId, Boolean statusSale, Integer page, Integer limit);
 
     Boolean delete(Integer id);
 

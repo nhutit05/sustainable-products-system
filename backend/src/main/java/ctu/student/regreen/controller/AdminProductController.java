@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/products")
@@ -42,29 +43,14 @@ public class AdminProductController {
     }
 
     @GetMapping
-    public List<ProductResponse> getAll(
+    public Map<String, Object> getAll(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "categoryId", required = false) Integer categoryId,
+            @RequestParam(value = "statusSale", required = false) Boolean statusSale,
             @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
             @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit
     ) {
-        List<ProductResponse> allProducts = service.getAll();
-
-        // Nếu Admin không truyền page hoặc limit -> Trả về toàn bộ danh sách luôn
-        if (page == null || limit == null || limit <= 0 || page < 1) {
-            return allProducts;
-        }
-
-        // Logic tính toán phân trang trên List (Sublist)
-        int totalItems = allProducts.size();
-        int fromIndex = (page - 1) * limit;
-        int toIndex = Math.min(fromIndex + limit, totalItems);
-
-        // Trường hợp vị trí bắt đầu vượt quá tổng số sản phẩm
-        if (fromIndex > totalItems) {
-            return Collections.emptyList();
-        }
-
-        return allProducts.subList(fromIndex, toIndex);
-
+        return service.getAllFiltered(keyword, categoryId, statusSale, page, limit);
     }
 
     @GetMapping("/{id}")

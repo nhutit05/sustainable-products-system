@@ -1,510 +1,282 @@
-import { CloudUpload, X } from 'lucide-react'
-import type { CategoryResponse, Material, ProductRequest } from '../../model/product.model'
+import { CloudUploadOutlined, PlusOutlined } from '@ant-design/icons'
+import type { CategoryResponse, Material, ProductRequest, ProductResponse } from '../../model/product.model'
 import { useEffect, useState } from 'react'
-import AddProductReviewImage from './AddProductReviewImage'
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  DatePicker,
+  Upload,
+  Tag,
+  Spin,
+  Divider,
+  type UploadFile,
+} from 'antd'
 import { useNotification } from '../../context/useNotification'
-import Loading from '../Loading'
 
 interface AddProductProps {
-  setIsModalOpen: (value: boolean) => void
-  setShowAddProduct: (value: boolean) => void
+  open: boolean
+  onClose: () => void
+  onSaved: (product: ProductResponse) => void
   categories: CategoryResponse[]
 }
 
-export default function AdmAddProduct({
-  setIsModalOpen,
-  setShowAddProduct,
-  categories,
-}: AddProductProps) {
-  const [productRequest, setProductRequest] = useState<ProductRequest>({
-    baseEcoPoints: '',
-    materialIds: [],
-    original: '',
-    productCarbonIndex: '',
-    percentageMaterialIds: [],
-    expiredAt: '2026-09-07',
-    weight: '',
-    categoryId: '',
-    statusSale: false,
-    productName: '',
-    productPrice: '',
-    inventory: '',
-  })
-
+export default function AdmAddProduct({ open, onClose, onSaved, categories }: AddProductProps) {
+  const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
-
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
+  const [percentages, setPercentages] = useState<Record<number, number>>({})
+  const [fileList, setFileList] = useState<UploadFile[]>([])
   const { showNotification } = useNotification()
 
-  const [materials, setMaterials] = useState<Material[]>([])
-
-  const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
-  const [percentages, setPercentages] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) // Assuming a maximum of 10 materials for simplicity
-  const [imageFiles, setImageFiles] = useState<File[]>([])
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
-
   useEffect(() => {
-    return () => {
-      imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
-    }
-  }, [imagePreviewUrls])
-
-  // Fetch materials
-  useEffect(() => {
-    const fetchMaterials = async () => {
+    if (!open) return
+    let cancelled = false
+    ;(async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/admin/materials', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+        const res = await fetch('http://localhost:8080/api/admin/materials', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
-        if (response.ok) {
-          setMaterials(await response.json())
-        }
-      } catch (error) {
-        console.error('Error fetching materials:', error)
+        if (res.ok && !cancelled) setMaterials(await res.json())
+      } catch (e) {
+        console.error('Error fetching materials:', e)
       }
+    })()
+    return () => {
+      cancelled = true
     }
+  }, [open])
 
-    fetchMaterials()
-  }, [])
-
-  const CloseAddProduct = () => {
-    setIsModalOpen(false)
-    setShowAddProduct(false)
+  const handleClose = () => {
+    form.resetFields()
+    setSelectedMaterials([])
+    setPercentages({})
+    setFileList([])
+    onClose()
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    const dataSubmit: ProductRequest = {
-      ...productRequest,
-      materialIds: selectedMaterials.map((material) => material.materialId),
-      percentageMaterialIds: percentages.slice(0, selectedMaterials.length),
+  const handleAddMaterial = (materialId: number) => {
+    const material = materials.find((m) => m.materialId === materialId)
+    if (material && !selectedMaterials.find((m) => m.materialId === materialId)) {
+      setSelectedMaterials((prev) => [...prev, material])
+      setPercentages((prev) => ({ ...prev, [materialId]: 0 }))
     }
+  }
 
-    const formData = new FormData()
-
-    formData.append('request', new Blob([JSON.stringify(dataSubmit)], { type: 'application/json' }))
-
-    imageFiles.forEach((file) => {
-      formData.append('images', file)
+  const handleRemoveMaterial = (materialId: number) => {
+    setSelectedMaterials((prev) => prev.filter((m) => m.materialId !== materialId))
+    setPercentages((prev) => {
+      const next = { ...prev }
+      delete next[materialId]
+      return next
     })
+  }
 
-    setLoading(true)
-
+  const handleSubmit = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/admin/products', {
+      const values = await form.validateFields()
+      const dataSubmit: ProductRequest = {
+        productName: values.productName,
+        productPrice: values.productPrice,
+        productCarbonIndex: values.productCarbonIndex,
+        baseEcoPoints: values.baseEcoPoints,
+        inventory: values.inventory,
+        weight: values.weight,
+        original: values.original || '',
+        expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : '',
+        categoryId: values.categoryId,
+        statusSale: values.statusSale ?? false,
+        materialIds: selectedMaterials.map((m) => m.materialId),
+        percentageMaterialIds: selectedMaterials.map((m) => percentages[m.materialId] || 0),
+      }
+
+      const formData = new FormData()
+      formData.append(
+        'request',
+        new Blob([JSON.stringify(dataSubmit)], { type: 'application/json' })
+      )
+      fileList.forEach((file) => {
+        if (file.originFileObj) formData.append('images', file.originFileObj as Blob)
+      })
+
+      setLoading(true)
+      const res = await fetch('http://localhost:8080/api/admin/products', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData,
       })
 
-      if (response.ok) {
-        showNotification({
-          message: 'Thêm sản phẩm thành công!',
-          type: 'SUCCESS',
-          duration: 3000,
-        })
-        CloseAddProduct()
+      if (res.ok) {
+        const newProduct: ProductResponse = await res.json()
+        showNotification({ message: 'Thêm sản phẩm thành công!', type: 'SUCCESS', duration: 3000 })
+        onSaved(newProduct)
+      } else {
+        showNotification({ message: 'Thêm sản phẩm thất bại!', type: 'ERROR', duration: 3000 })
       }
-    } catch (error) {
-      showNotification({
-        message: 'Thêm sản phẩm thất bại!',
-        type: 'ERROR',
-        duration: 3000,
-      })
-      console.error('Error submitting form:', error)
+    } catch {
+      // validation errors
     } finally {
       setLoading(false)
     }
   }
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? [])
-
-    setImageFiles(files)
-
-    setImagePreviewUrls((previousUrls) => {
-      previousUrls.forEach((url) => URL.revokeObjectURL(url))
-      return files.map((file) => URL.createObjectURL(file))
-    })
-  }
-
   return (
-    <div className=" bg-white p-6 rounded-2xl shadow-lg max-h-150 overflow-y-scroll">
-      <X
-        className="absolute text-gray-400 hover:cursor-pointer hover:text-gray-700 transition-colors top-4 right-4 cursor-pointer"
-        size={24}
-        onClick={CloseAddProduct}
-      />
-      <h2 className="text-xl font-semibold mb-4 uppercase text-green-900 text-center">
-        Thêm sản phẩm mới
-      </h2>
-      <form id="add-product-form" className="mb-4" onSubmit={handleSubmit}>
-        <div className="grid grid-cols-4 gap-4">
-          {/* TEN SAN PHAM */}
-          <div className="form-group col-span-2">
-            <label htmlFor="productName" className="block font-semibold mb-1 text-green-900">
-              Tên sản phẩm
-            </label>
-            <input
-              type="text"
-              id="productName"
+    <Modal
+      title={
+        <span className="flex items-center gap-2 text-lg font-semibold">
+          <PlusOutlined className="text-emerald-500" />
+          Thêm sản phẩm mới
+        </span>
+      }
+      open={open}
+      onCancel={handleClose}
+      onOk={handleSubmit}
+      okText="Thêm sản phẩm"
+      cancelText="Huỷ"
+      width={800}
+      centered
+      destroyOnClose
+      confirmLoading={loading}
+    >
+      <Spin spinning={loading}>
+        <Form form={form} layout="vertical" initialValues={{ statusSale: false }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <Form.Item
               name="productName"
-              value={productRequest?.productName}
-              placeholder="Nhập tên sản phẩm"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  productName: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          {/* LOẠI SẢN PHẨM */}
-          <div className="form-group col-span-2">
-            <label htmlFor="productCategory" className="block font-semibold mb-1 text-green-900">
-              Loại sản phẩm
-            </label>
-            <select
-              id="productCategory"
-              name="productCategory"
-              value={productRequest?.categoryId}
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  categoryId: Number(e.target.value),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              label="Tên sản phẩm"
+              rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm' }]}
             >
-              <option value="">Chọn loại sản phẩm</option>
-              {categories.map((category) => (
-                <option key={category.categoryId} value={category.categoryId}>
-                  {category.categoryName}
-                </option>
-              ))}
-            </select>
-          </div>
-          {/* GIA SAN PHAM */}
-          <div className="form-group">
-            <label htmlFor="productPrice" className="block font-semibold mb-1 text-green-900">
-              Giá sản phẩm
-            </label>
-            <input
-              type="number"
-              id="productPrice"
+              <Input placeholder="Nhập tên sản phẩm" />
+            </Form.Item>
+
+            <Form.Item
+              name="categoryId"
+              label="Loại sản phẩm"
+              rules={[{ required: true, message: 'Vui lòng chọn loại sản phẩm' }]}
+            >
+              <Select placeholder="Chọn loại sản phẩm">
+                {categories.map((c) => (
+                  <Select.Option key={c.categoryId} value={c.categoryId}>
+                    {c.categoryName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
               name="productPrice"
-              value={productRequest?.productPrice}
-              placeholder="vd: 1000.00 VND"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  productPrice: e.target.value === '' ? 0 : Number(e.target.value),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          {/* CHI SO CARBON */}
-          <div className="form-group">
-            <label htmlFor="productCarbonIndex" className="block font-semibold mb-1 text-green-900">
-              Chỉ số Carbon sản phẩm
-            </label>
-            <input
-              type="number"
-              id="productCarbonIndex"
-              name="productCarbonIndex"
-              value={productRequest?.productCarbonIndex}
-              placeholder="vd: 50 carbon index"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  productCarbonIndex: e.target.value === '' ? 0 : Number(e.target.value),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* TRANG THÁI BÁN */}
-          <div className="form-group">
-            <label htmlFor="statusSale" className="block font-semibold mb-1">
-              Trạng thái bán
-            </label>
-            <select
-              id="statusSale"
-              name="statusSale"
-              value={productRequest?.statusSale ? 'true' : 'false'}
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  statusSale: e.target.value === 'true',
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              label="Giá bán (VND)"
+              rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
             >
-              <option value="">Chọn trạng thái</option>
-              <option value="true">Đang bán</option>
-              <option value="false">Ngừng bán</option>
-            </select>
-          </div>
+              <InputNumber
+                className="w-full"
+                min={0}
+                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                placeholder="VD: 150,000"
+              />
+            </Form.Item>
 
-          {/* SỐ LƯỢNG SẢN PHẨM */}
-          <div className="form-group">
-            <label htmlFor="productInventory" className="block font-semibold mb-1 text-green-900">
-              Số lượng sản phẩm
-            </label>
-            <input
-              type="number"
-              id="productInventory"
-              name="productInventory"
-              value={productRequest?.inventory}
-              placeholder="vd: 100"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  inventory: e.target.value === '' ? 0 : Number(e.target.value),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* KHỐI LƯỢNG */}
-          <div className="form-group">
-            <label htmlFor="weight" className="block font-semibold mb-1 text-green-900">
-              Khối lượng sản phẩm (kg)
-            </label>
-            <input
-              type="number"
-              id="weight"
-              name="weight"
-              value={productRequest?.weight}
-              placeholder="vd: 1.5kg"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  weight: e.target.value === '' ? 0 : Number(e.target.value),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* NGUỒN GỐC */}
-          <div className="form-group">
-            <label htmlFor="original" className="block font-semibold mb-1 text-green-900">
-              Nguồn gốc sản phẩm
-            </label>
-            <input
-              type="text"
-              id="original"
-              name="original"
-              value={productRequest?.original}
-              placeholder="Ví dụ: Việt Nam"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  original: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* CHỈ SỐ ECO */}
-          <div className="form-group">
-            <label htmlFor="baseEcoPoints" className="block font-semibold mb-1 text-green-900">
-              Chỉ số Eco sản phẩm
-            </label>
-            <input
-              type="number"
-              id="baseEcoPoints"
-              name="baseEcoPoints"
-              value={productRequest?.baseEcoPoints}
-              placeholder="vd: 100 eco points"
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  baseEcoPoints: e.target.value === '' ? 0 : Number(e.target.value),
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* NGAY HET HAN */}
-          <div className="form-group">
-            <label htmlFor="expiryDate" className="block font-semibold mb-1 text-green-900">
-              Ngày hết hạn
-            </label>
-            <input
-              type="date"
-              id="expiryDate"
-              name="expiryDate"
-              value={productRequest?.expiredAt}
-              onChange={(e) =>
-                setProductRequest((prev) => ({
-                  ...prev,
-                  expiredAt: e.target.value,
-                }))
-              }
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* NGUYEN LIEU */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="form-group">
-            <label className="block font-semibold mb-1 text-green-900">Nguyên liệu sản phẩm</label>
-            <select
-              name="materials"
-              id="materials"
-              onChange={(e) => {
-                const materialId = Number(e.target.value)
-                const material = materials.find((m) => m.materialId === materialId)
-                if (material) {
-                  setSelectedMaterials((prev) => [...prev, material])
-                }
-              }}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <Form.Item
+              name="inventory"
+              label="Số lượng tồn kho"
+              rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
             >
-              <option value="">Chọn nguyên liệu</option>
-              {materials.map((material) => (
-                <option key={material.materialId} value={material.materialId}>
-                  {material.materialName}
-                </option>
+              <InputNumber className="w-full" min={0} placeholder="VD: 100" />
+            </Form.Item>
+
+            <Form.Item name="productCarbonIndex" label="Chỉ số Carbon (kg CO₂e)">
+              <InputNumber className="w-full" min={0} step={0.1} placeholder="VD: 2.5" />
+            </Form.Item>
+
+            <Form.Item name="baseEcoPoints" label="Điểm Eco">
+              <InputNumber className="w-full" min={0} placeholder="VD: 50" />
+            </Form.Item>
+
+            <Form.Item name="weight" label="Khối lượng (kg)">
+              <InputNumber className="w-full" min={0} step={0.1} placeholder="VD: 1.5" />
+            </Form.Item>
+
+            <Form.Item name="statusSale" label="Trạng thái bán">
+              <Select>
+                <Select.Option value={true}>Đang bán</Select.Option>
+                <Select.Option value={false}>Ngừng bán</Select.Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="original" label="Nguồn gốc" className="sm:col-span-2">
+              <Input placeholder="VD: Việt Nam" />
+            </Form.Item>
+
+            <Form.Item name="expiredAt" label="Ngày hết hạn" className="sm:col-span-2">
+              <DatePicker className="w-full" format="YYYY-MM-DD" />
+            </Form.Item>
+          </div>
+
+          {/* Materials */}
+          <Divider titlePlacement="left" orientationMargin={0} className="!text-sm !font-semibold">
+            Nguyên liệu
+          </Divider>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {selectedMaterials.map((m) => (
+              <Tag
+                key={m.materialId}
+                closable
+                onClose={() => handleRemoveMaterial(m.materialId)}
+                color="blue"
+                className="flex items-center gap-1 py-1 px-2"
+              >
+                <span>{m.materialName}</span>
+                <InputNumber
+                  size="small"
+                  min={0}
+                  max={100}
+                  value={percentages[m.materialId] || 0}
+                  onChange={(v) => setPercentages((prev) => ({ ...prev, [m.materialId]: v || 0 }))}
+                  className="!w-16"
+                  addonAfter="%"
+                />
+              </Tag>
+            ))}
+          </div>
+          <Select
+            placeholder="Thêm nguyên liệu..."
+            className="w-full sm:w-64"
+            onChange={handleAddMaterial}
+            value={undefined}
+          >
+            {materials
+              .filter((m) => !selectedMaterials.find((s) => s.materialId === m.materialId))
+              .map((m) => (
+                <Select.Option key={m.materialId} value={m.materialId}>
+                  {m.materialName}
+                </Select.Option>
               ))}
-            </select>
-          </div>
+          </Select>
 
-          {/* HIEN THI NGUYEN LIEU DA CHON */}
-          <div className="selected_materials">
-            <label className="block font-semibold mb-1 text-green-900">Nguyên liệu đã chọn</label>
-            <div className="selected_materials_list flex flex-wrap gap-2">
-              {selectedMaterials.map((selected, index) => {
-                const material = materials.find((m) => m.materialId === selected.materialId)
-                if (!material) return null
-                return (
-                  <div className="grid grid-cols-3 gap-2">
-                    <div
-                      key={selected.materialId}
-                      className="selected_material flex items-center justify-between gap-2 bg-gray-200 px-3 py-1 rounded-xl col-span-2"
-                    >
-                      <span>{material.materialName}</span>
-                      <span></span>
-                      <X
-                        className="hover:cursor-pointer text-red-500"
-                        size={16}
-                        onClick={() =>
-                          setSelectedMaterials((prev) =>
-                            prev.filter((m) => m.materialId !== selected.materialId)
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="relative col-span-1">
-                      <input
-                        type="text"
-                        placeholder="....  "
-                        value={percentages[index] || ''}
-                        onChange={(e) => {
-                          const percentage = Number(e.target.value)
-                          const newPercentages = [...percentages]
-                          newPercentages[index] = percentage
-                          setPercentages(newPercentages)
-                        }}
-                        className="w-full py-2 p-3 rounded-xl border border-gray-300 
-                        focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        %
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* HINH ANH SAN PHAM */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="form-group">
-            <label className="block font-semibold mb-1 text-green-900">Hình ảnh sản phẩm</label>
-            <div
-              onClick={() =>
-                document.querySelector<HTMLInputElement>('#addProductImageUpload')?.click()
-              }
-              className="upload_area flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-colors"
-            >
-              <CloudUpload className="mx-auto text-gray-400" size={48} />
-              <p className="text-center text-gray-500 mt-2">Chọn hình ảnh</p>
-            </div>
-            <input
-              type="file"
-              className="hidden"
-              id="addProductImageUpload"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-            />
-          </div>
-          {/* XEM TRUOC ANH */}
-          {/* <div className="uploadImage_review">
-            <div className="image_preview w-full h-48 border border-gray-300 rounded-xl overflow-y-auto bg-gray-50 p-2">
-              {imagePreviewUrls.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {imagePreviewUrls.map((previewUrl, index) => (
-                    <div
-                      key={`${previewUrl}-${index}`}
-                      className="relative h-40 overflow-hidden rounded-xl border border-gray-200 bg-white"
-                    >
-                      <img
-                        src={previewUrl}
-                        alt={`Ảnh xem trước ${index + 1}`}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-400">
-                  Chưa có hình ảnh xem trước
-                </div>
-              )}
-            </div>
-            {imageFiles.length > 0 && (
-              <p className="mt-2 text-sm text-gray-500">Đã chọn {imageFiles.length} file ảnh</p>
+          {/* Images */}
+          <Divider titlePlacement="left" orientationMargin={0} className="!text-sm !font-semibold">
+            Hình ảnh sản phẩm
+          </Divider>
+          <Upload
+            listType="picture-card"
+            fileList={fileList}
+            onChange={({ fileList: newList }) => setFileList(newList)}
+            beforeUpload={() => false}
+            multiple
+            accept="image/*"
+          >
+            {fileList.length >= 8 ? null : (
+              <div>
+                <CloudUploadOutlined />
+                <div className="mt-1 text-xs">Tải ảnh lên</div>
+              </div>
             )}
-          </div> */}
-          <AddProductReviewImage imageFiles={imageFiles} imagePreviewUrls={imagePreviewUrls} />
-        </div>
-      </form>
-
-      <div className="mt-4 flex justify-end">
-        <button
-          className="bg-white text-red-500 px-4 py-2 hover:cursor-pointer rounded-xl border border-red-500 hover:bg-red-500 hover:text-white transition-colors mr-2"
-          onClick={() => CloseAddProduct()}
-        >
-          Đóng
-        </button>
-
-        <button
-          className="bg-blue-500 text-white px-4 py-2 hover:cursor-pointer rounded-xl hover:bg-blue-600 hover:active:scale-98 transition-all"
-          type="submit"
-          form="add-product-form"
-        >
-          Lưu sản phẩm
-        </button>
-      </div>
-
-      {loading && <Loading message="Đang thêm sản phẩm. Vui lòng chờ trong giây lát !" />}
-    </div>
+          </Upload>
+        </Form>
+      </Spin>
+    </Modal>
   )
 }

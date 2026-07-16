@@ -8,7 +8,7 @@ import KnowledgeToolbar from '../../components/knowledge/KnowledgeToolbar'
 import DocumentTable from '../../components/knowledge/DocumentTable'
 import KnowledgeDetailDrawer from '../../components/knowledge/KnowledgeDetailDrawer'
 
-import { getDocument, getDocuments, getStatistics } from '../../services/knowledge.service'
+import { getDocument, getDocuments, getStatistics, deleteDocument } from '../../services/knowledge.service'
 
 import type {
   KnowledgeDocument,
@@ -80,6 +80,15 @@ const KnowledgePage = () => {
       } catch (error) {
         console.error(error)
       }
+    },
+    [token]
+  )
+
+  const handleDelete = useCallback(
+    async (documentId: string) => {
+      await deleteDocument(token, documentId)
+      setDocuments((prev) => prev.filter((d) => d.documentId !== documentId))
+      setTotal((prev) => prev - 1)
     },
     [token]
   )
@@ -177,7 +186,7 @@ const KnowledgePage = () => {
             <DocumentTable
               documents={documents}
               loading={loading}
-              refreshData={refreshData}
+              onDelete={handleDelete}
               onView={handleView}
               currentPage={currentPage}
               pageSize={pageSize}

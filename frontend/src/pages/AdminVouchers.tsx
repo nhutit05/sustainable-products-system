@@ -133,18 +133,6 @@ export default function AdminVouchers() {
     direction: 'desc',
   })
 
-  async function loadVouchers() {
-    setLoading(true)
-    try {
-      const data = await getAllForAdmin(query)
-      setVoucherPage(data)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     let cancelled = false
     async function fetchVouchers() {
@@ -290,7 +278,14 @@ export default function AdminVouchers() {
     try {
       await deleteVoucher(id)
       message.success('Đã xoá voucher.')
-      loadVouchers()
+      setVoucherPage((prev) => {
+        if (!prev) return prev
+        const next = prev.content.filter((v) => v.voucherId !== id)
+        if (next.length === 0 && prev.number > 0) {
+          setQuery((q) => ({ ...q, page: q.page - 1 }))
+        }
+        return { ...prev, content: next, totalElements: prev.totalElements - 1 }
+      })
     } catch {
       message.error('Xoá voucher thất bại.')
     }
@@ -321,12 +316,27 @@ export default function AdminVouchers() {
 
     try {
       setUpdating(true)
-      await updateVoucher(editingVoucherId, request)
+      const updated = await updateVoucher(editingVoucherId, request)
       message.success('Cập nhật voucher thành công.')
       editForm.resetFields()
       setEditingVoucher(null)
       setEditOpen(false)
-      loadVouchers()
+      const summary: VoucherSummary = {
+        voucherId: updated.voucherId,
+        code: updated.code,
+        description: updated.description,
+        discountValue: updated.discountValue,
+        quantity: updated.quantity,
+        expiredAt: updated.expiredAt,
+        isActive: updated.isActive,
+      }
+      setVoucherPage((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          content: prev.content.map((v) => (v.voucherId === summary.voucherId ? summary : v)),
+        }
+      })
     } catch (error) {
       console.error(error)
       message.error('Cập nhật voucher thất bại.')
@@ -377,11 +387,27 @@ export default function AdminVouchers() {
         startedAt: dayjs(values.startedAt).format('YYYY-MM-DD'),
         expiredAt: dayjs(values.expiredAt).format('YYYY-MM-DD'),
       }
-      await createVoucher(request)
+      const created = await createVoucher(request)
       message.success('Tạo voucher thành công.')
       form.resetFields()
       setCreateOpen(false)
-      loadVouchers()
+      const summary: VoucherSummary = {
+        voucherId: created.voucherId,
+        code: created.code,
+        description: created.description,
+        discountValue: created.discountValue,
+        quantity: created.quantity,
+        expiredAt: created.expiredAt,
+        isActive: created.isActive,
+      }
+      setVoucherPage((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          content: [summary, ...prev.content],
+          totalElements: prev.totalElements + 1,
+        }
+      })
     } catch (error) {
       console.error(error)
       message.error('Tạo voucher thất bại.')
