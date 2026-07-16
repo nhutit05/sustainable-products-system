@@ -36,6 +36,7 @@ import {
   completeOrder,
   rejectOrder,
 } from "../services/admin-order.service";
+import type dayjs from "dayjs";
 
 const { RangePicker } = DatePicker;
 
@@ -157,8 +158,8 @@ export default function AdminOrders() {
         orderStatusId: selectedOrderStatus,
         paymentStatusId: selectedPaymentStatus,
         paymentMethodId: selectedPaymentMethod,
-        startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
-        endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
+        startDate: dateRange?.[0]?.toDate(),
+        endDate: dateRange?.[1]?.toDate(),
       });
       if (!controller.signal.aborted) {
         setOrders(response.content);

@@ -55,12 +55,14 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             LocalDate endDate,
             Pageable pageable) {
 
-        Specification<Order> specification = OrderSpecification.filter(
-                keyword,
-                orderStatusId,
-                paymentStatusId,
-                paymentMethodId,
-                startDate, endDate);
+        Specification<Order> specification = Specification
+                .where(OrderSpecification.withFetchJoins())
+                .and(OrderSpecification.filter(
+                        keyword,
+                        orderStatusId,
+                        paymentStatusId,
+                        paymentMethodId,
+                        startDate, endDate));
                 
 
         Pageable sortedPageable = pageable.getSort().isSorted()
@@ -84,7 +86,10 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     @Override
     @Transactional
     public OrderResponse confirmOrder(Integer orderId) {
-        return updateStatus(orderId, OrderStatusName.CONFIRMED);
+
+        Order order = getOrderEntity(orderId);
+
+        return updateStatus(order, OrderStatusName.CONFIRMED);
     }
 
     @Override
@@ -95,9 +100,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
         validateCanShip(order);
 
-        return updateStatus(
-                orderId,
-                OrderStatusName.SHIPPING);
+        return updateStatus(order, OrderStatusName.SHIPPING);
     }
 
     @Override
@@ -114,22 +117,21 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                             PaymentStatusName.PAID));
         }
 
-        return updateStatus(
-                orderId,
-                OrderStatusName.COMPLETED);
+        return updateStatus(order, OrderStatusName.COMPLETED);
     }
 
     @Override
     @Transactional
     public OrderResponse rejectOrder(Integer orderId) {
-        return updateStatus(orderId, OrderStatusName.CANCELLED);
+
+        Order order = getOrderEntity(orderId);
+
+        return updateStatus(order, OrderStatusName.CANCELLED);
     }
 
     private OrderResponse updateStatus(
-            Integer orderId,
+            Order order,
             OrderStatusName newStatus) {
-
-        Order order = getOrderEntity(orderId);
 
         OrderStatusName currentStatus = OrderStatusName.valueOf(
                 order.getOrderStatus()
@@ -147,7 +149,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     }
 
     private Order getOrderEntity(Integer orderId) {
-        return orderRepository.findById(orderId)
+        return orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
     }
 

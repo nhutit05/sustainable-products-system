@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { CartItemResponse } from '../../model/cart.model'
-import { X } from 'lucide-react'
 import type { voucherResponse } from '../../model/voucher.model'
 import { PaymentMethodName } from '../../enum/PaymentMethod.enum'
 import { useNavigate } from 'react-router-dom'
@@ -8,21 +7,29 @@ import { useNotification } from '../../context/useNotification'
 import type { Addressresponse } from '../../model/address.model'
 import AddNewAddress from '../admin/AddNewAddress'
 import PayOSEmbedded from './PayOSEmbedded'
-import {notification} from "antd";
 import {
   Modal,
-  Card,
-  Row,
-  Col,
   Typography,
   Input,
   Button,
   Select,
-  Table,
-  Space,
   Tag,
-  Divider
-} from "antd";
+  Divider,
+  Radio,
+} from 'antd'
+import {
+  UserOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  ShopOutlined,
+  TagOutlined,
+  CreditCardOutlined,
+  CheckCircleOutlined,
+  PlusOutlined,
+  GiftOutlined,
+} from '@ant-design/icons'
+
+const { Text, Title } = Typography
 
 interface OrderSummary {
   items: CartItemResponse[]
@@ -167,41 +174,28 @@ export default function Checkout({
       const result = await response.json()
 
       if (!response.ok) {
-        // showNotification({
-        //   message: 'Đặt hàng thất bại. Vui lòng thử lại.',
-        //   type: 'ERROR',
-        //   duration: 3000,
-        // })
-        notification.error({
-         title: "Đặt hàng thất bại",
-         description: "Vui lòng thử lại"
+        showNotification({
+          message: 'Đặt hàng thất bại. Vui lòng thử lại.',
+          type: 'ERROR',
+          duration: 3000,
         })
         return
       }
 
       // COD
-
       if (!result.checkoutUrl) {
-        // showNotification({
-        //   message: 'Đặt hàng thành công!',
-        //   type: 'SUCCESS',
-        //   duration: 3000,
-        // })
-
-        notification.success({
-         title: "Đặt hàng thành công",
+        showNotification({
+          message: 'Đặt hàng thành công!',
+          type: 'SUCCESS',
+          duration: 3000,
         })
         navigate('/')
-
         return
       }
 
       // PAYOS
-
       setOrderId(result.order.orderId)
-
       setCheckoutUrl(result.checkoutUrl)
-
       setExpiredAt(result.expiredAt)
       setQrCode(result.qrCode)
 
@@ -218,15 +212,10 @@ export default function Checkout({
       })
     } catch (error) {
       console.error(error)
-
-      // showNotification({
-      //   message: 'Có lỗi xảy ra khi đặt hàng.',
-      //   type: 'ERROR',
-      //   duration: 3000,
-      // })
-
-      notification.error({
-        title: "Có lỗi khi đặt hàng."
+      showNotification({
+        message: 'Có lỗi xảy ra khi đặt hàng.',
+        type: 'ERROR',
+        duration: 3000,
       })
     }
   }
@@ -244,283 +233,326 @@ export default function Checkout({
     )
   }
 
-  const columns = [
-    {
-      title: "Sản phẩm",
-      dataIndex: "productName"
-    },
-    {
-      title: "Số lượng",
-      dataIndex: "quantity"
-    },
-    {
-      title: "Đơn giá",
-      render: (_: any, item: CartItemResponse) =>
-        Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND"
-        }).format(item.subtotal / item.quantity)
-    },
-    {
-      title: "Thành tiền",
-      render: (_: any, item: CartItemResponse) =>
-        Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND"
-        }).format(item.subtotal)
-    }
-  ]
+  const formatCurrency = (value: number) =>
+    Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
 
   return (
-
     <Modal
       open
       footer={null}
-      width={1200}
+      width={1100}
       zIndex={99}
       centered
       onCancel={() => setOnClose(true)}
+      className="checkout-modal"
+      styles={{ body: { padding: 0, borderRadius: 16, overflow: 'hidden' } }}
     >
-      <Typography.Title
-        level={2}
-        style={{
-          textAlign: "center",
-          marginBottom: 30
-        }}
+      {/* Header */}
+      <div
+        className="px-5 py-4 sm:px-6 sm:py-5"
+        style={{ background: 'linear-gradient(135deg, #16a34a, #059669)' }}
       >
-        Xác nhận đơn đặt hàng
-      </Typography.Title>
-      <Row gutter={24}>
-        <Col span={8}>
-          <Card
-            title="Thông tin người nhận"
-            bordered={false}
-          >
-            {/* <h2 className="text-xl font-bold text-green-900">Thông tin người nhận</h2> */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Title level={4} style={{ color: '#fff', margin: 0 }}>
+              Xác nhận đơn hàng
+            </Title>
+            <Text style={{ color: '#d1fae5', fontSize: 13 }}>
+              Kiểm tra thông tin trước khi đặt hàng
+            </Text>
+          </div>
+          <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
+            <ShopOutlined style={{ color: '#fff' }} />
+            <Text style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>
+              {cartItems.length} sản phẩm
+            </Text>
+          </div>
+        </div>
+      </div>
 
-            <div>
-              <label className="block font-semibold text-green-900 mb-2">Tên người nhận</label>
-
-              <Input
-                value={orderReceiver}
-                onChange={(e) => setOrderReceiver(e.target.value)}
-                placeholder="Nhập tên người nhận"
-                size="large"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-green-900 mb-2">Số điện thoại</label>
-
-              <Input
-                value={orderReceiverPhone}
-                onChange={(e) => setOrderReceiverPhone(e.target.value)}
-                placeholder="Nhập số điện thoại"
-                size="large"
-              />
-            </div>
-
-            <h3 className="text-xl font-bold text-green-900 mt-5">Địa chỉ giao hàng</h3>
-
-            {addresses
-              .filter((address) => address.isDefault)
-              .map((address) => (
-                <Card
-                  hoverable
-                  style={{
-                    marginTop: 12,
-                    marginBottom: 12,
-                    cursor: "pointer",
-                    border:
-                      selectedAddress?.addressId === address.addressId
-                        ? "2px solid #1677ff"
-                        : ""
-                  }}
-                  onClick={() => {
-                    setSelectedAddress(address)
-                  }}
-                >
-                  <Space>
-
-                    <Typography.Text strong>
-
-                      {address.addressName}
-
-                    </Typography.Text>
-
-                    {address.isDefault && (
-                      <Tag color="green">
-                        Mặc định
-                      </Tag>
-                    )}
-
-                  </Space>
-
-                  <p className="text-sm text-gray-600">
-                    {address.addressStreet}, {address.villageName}, {address.cityName}
-                  </p>
-                </Card>
-              ))}
-
-            <Button
-              type="link"
-              // className="text-sm font-bold text-gray-500 hover:underline"
-              onClick={() => setShowAddressList(!showAddressList)}
-            >
-              -- Chọn địa chỉ khác --
-            </Button>
-
-            {showAddressList && (
-              <div className="border border-slate-200 rounded-xl p-3 space-y-2 mt-5">
-                {addresses.map((address) => (
-                  <button
-                    key={address.addressId}
-                    type="button"
-                    className="block w-full text-left p-3 rounded-xl hover:bg-emerald-50"
-                    onClick={() => {
-                      setSelectedAddress(address)
-                      setShowAddressList(false)
-                    }}
-                  >
-                    <p className="font-semibold">{address.addressName}</p>
-
-                    <p className="text-sm">
-                      {address.addressStreet}, {address.villageName}, {address.cityName}
-                    </p>
-                  </button>
-                ))}
-
-                <Button
-                  type='dashed'
-                  // className="text-sm text-gray-500 hover:underline"
-                  onClick={() => {
-                    setShowAddressList(false)
-                    setShowAddAddress(true)
-                  }}
-                >
-                  + Thêm địa chỉ mới
-                </Button>
+      {/* Content */}
+      <div className="max-h-[75vh] overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-5">
+          {/* Left - Receiver Info */}
+          <div className="lg:col-span-2 p-4 sm:p-5 lg:border-r border-gray-100 bg-gray-50/50">
+            <div className="space-y-4">
+              {/* Receiver */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <UserOutlined className="text-emerald-600 text-sm" />
+                  </div>
+                  <Text strong className="text-sm">
+                    Thông tin người nhận
+                  </Text>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <Text className="text-xs text-gray-500 mb-1 block">Họ và tên</Text>
+                    <Input
+                      value={orderReceiver}
+                      onChange={(e) => setOrderReceiver(e.target.value)}
+                      placeholder="Nguyễn Văn A"
+                      prefix={<UserOutlined className="text-gray-400" />}
+                      size="large"
+                      style={{ borderRadius: 10 }}
+                    />
+                  </div>
+                  <div>
+                    <Text className="text-xs text-gray-500 mb-1 block">Số điện thoại</Text>
+                    <Input
+                      value={orderReceiverPhone}
+                      onChange={(e) => setOrderReceiverPhone(e.target.value)}
+                      placeholder="0912 345 678"
+                      prefix={<PhoneOutlined className="text-gray-400" />}
+                      size="large"
+                      style={{ borderRadius: 10 }}
+                    />
+                  </div>
+                </div>
               </div>
-            )}
 
-            {showAddAddress && (
-              <AddNewAddress
-                setShowAddAddress={setShowAddAddress}
-                redirectToProfile={false}
-                onSuccess={() => refreshAddresses()}
-              />
-            )}
-          </Card>
-        </Col>
+              <Divider style={{ margin: '12px 0' }} />
 
-        <Col span={16}>
-          <Card
-            title="Thông tin đơn hàng"
-          >
-            {/* <h2 className="text-xl font-bold text-green-900">Thông tin đơn hàng</h2> */}
-
-            <div className="border border-slate-200 rounded-2xl overflow-hidden">
-              <Table
-                columns={columns}
-                dataSource={cartItems}
-                pagination={false}
-                rowKey="productId"
-              />
-            </div>
-
-            <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl mt-5">
-              <label className="font-semibold text-green-900">Mã giảm giá</label>
-
-              <Select
-                style={{ width: "100%" }}
-                placeholder="Chọn voucher"
-                allowClear
-                onChange={(value) => {
-                  const selected = vouchers.find(
-                    x => x.voucherId === value
-                  )
-
-                  setSelectedVoucher(selected ?? null)
-                }}
-              >
-                <option value="">Chọn voucher</option>
-
-                {vouchers.map(v => (
-                  <Select.Option
-                    key={v.voucherId}
-                    value={v.voucherId}
+              {/* Address */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <EnvironmentOutlined className="text-emerald-600 text-sm" />
+                    </div>
+                    <Text strong className="text-sm">
+                      Địa chỉ giao hàng
+                    </Text>
+                  </div>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<PlusOutlined />}
+                    onClick={() => setShowAddAddress(true)}
+                    className="!text-emerald-600 !text-xs"
                   >
-                    {v.code} - {v.discountValue}%
-                  </Select.Option>
-                ))}
-              </Select>
+                    Thêm mới
+                  </Button>
+                </div>
 
-              <span className="font-bold text-red-500">
-                -
-                {Intl.NumberFormat('vi-VN', {
-                  style: 'currency',
-                  currency: 'VND',
-                }).format(valueSale)}
-              </span>
+                {/* Default Address */}
+                <div className="space-y-2">
+                  {addresses
+                    .filter((address) => address.isDefault)
+                    .map((address) => (
+                      <div
+                        key={address.addressId}
+                        onClick={() => setSelectedAddress(address)}
+                        className={`p-3 rounded-xl cursor-pointer transition-all ${
+                          selectedAddress?.addressId === address.addressId
+                            ? 'bg-emerald-50 border-2 border-emerald-500'
+                            : 'bg-white border border-gray-200 hover:border-emerald-300'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Text strong className="text-sm">
+                                {address.addressName}
+                              </Text>
+                              <Tag color="green" style={{ fontSize: 11, padding: '0 6px', lineHeight: '18px' }}>
+                                Mặc định
+                              </Tag>
+                            </div>
+                            <Text className="text-xs text-gray-500 block truncate">
+                              {address.addressStreet}, {address.villageName}, {address.cityName}
+                            </Text>
+                          </div>
+                          {selectedAddress?.addressId === address.addressId && (
+                            <CheckCircleOutlined className="text-emerald-500 mt-1" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Other addresses */}
+                {showAddressList && (
+                  <div className="mt-3 space-y-2 border border-gray-200 rounded-xl p-3">
+                    {addresses
+                      .filter((address) => !address.isDefault)
+                      .map((address) => (
+                        <div
+                          key={address.addressId}
+                          onClick={() => {
+                            setSelectedAddress(address)
+                            setShowAddressList(false)
+                          }}
+                          className={`p-3 rounded-lg cursor-pointer transition-all ${
+                            selectedAddress?.addressId === address.addressId
+                              ? 'bg-emerald-50 border border-emerald-300'
+                              : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
+                          }`}
+                        >
+                          <Text strong className="text-sm block">
+                            {address.addressName}
+                          </Text>
+                          <Text className="text-xs text-gray-500">
+                            {address.addressStreet}, {address.villageName}, {address.cityName}
+                          </Text>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                {!showAddressList && addresses.filter((a) => !a.isDefault).length > 0 && (
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => setShowAddressList(true)}
+                    className="!text-gray-500 !text-xs mt-2"
+                  >
+                    Chọn địa chỉ khác ({addresses.filter((a) => !a.isDefault).length})
+                  </Button>
+                )}
+              </div>
+
+              {showAddAddress && (
+                <AddNewAddress
+                  setShowAddAddress={setShowAddAddress}
+                  redirectToProfile={false}
+                  onSuccess={() => refreshAddresses()}
+                />
+              )}
             </div>
+          </div>
 
-            <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl mt-5 mb-5">
-              <span className="font-semibold text-green-900">Phương thức thanh toán</span>
+          {/* Right - Order Summary */}
+          <div className="lg:col-span-3 p-4 sm:p-5">
+            <div className="space-y-4">
+              {/* Products */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <ShopOutlined className="text-emerald-600 text-sm" />
+                  </div>
+                  <Text strong className="text-sm">
+                    Sản phẩm ({cartItems.length})
+                  </Text>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.productId}
+                      className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <Text strong className="text-sm block truncate">
+                          {item.productName}
+                        </Text>
+                        <Text className="text-xs text-gray-400">
+                          {formatCurrency(item.subtotal / item.quantity)} x {item.quantity}
+                        </Text>
+                      </div>
+                      <Text strong className="text-sm whitespace-nowrap text-emerald-700">
+                        {formatCurrency(item.subtotal)}
+                      </Text>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-              <span className="font-bold text-green-700">{paymentMethodName}</span>
-            </div>
+              <Divider style={{ margin: '8px 0' }} />
 
-            <Card
-              style={{
-                background: "#f6ffed",
-                border: "1px solid #b7eb8f",
-                marginTop: 10
-              }}
-            >
-              <Row justify="space-between">
-
-                <Col>
-
-                  <Typography.Title level={4}>
-                    Tổng thanh toán
-                  </Typography.Title>
-
-                </Col>
-
-                <Col>
-
-                  <Typography.Title
-                    level={3}
-                    style={{
-                      color: "#cf1322",
-                      marginBottom: 10
+              {/* Voucher */}
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <GiftOutlined className="text-orange-500" />
+                  <Text strong className="text-sm">
+                    Mã giảm giá
+                  </Text>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Select
+                    placeholder="Chọn voucher"
+                    allowClear
+                    className="flex-1"
+                    size="large"
+                    onChange={(value) => {
+                      const selected = vouchers.find((x) => x.voucherId === value)
+                      setSelectedVoucher(selected ?? null)
                     }}
                   >
-                    {Intl.NumberFormat('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND',
-                    }).format(totalPrice - valueSale)}
-                  </Typography.Title>
-                </Col>
-              </Row>
-            </Card>
+                    {vouchers.map((v) => (
+                      <Select.Option key={v.voucherId} value={v.voucherId}>
+                        {v.code} - Giảm {v.discountValue}%
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  {valueSale > 0 && (
+                    <Tag color="red" style={{ fontSize: 14, padding: '4px 12px', borderRadius: 8 }}>
+                      -{formatCurrency(valueSale)}
+                    </Tag>
+                  )}
+                </div>
+              </div>
 
-            <Button
-              type="primary"
-              size="large"
-              block
-              style={{
-                height: 52,
-                fontWeight: 700,
-                marginTop: 20
-              }}
-              onClick={handleSubmitCheckout}
-            >
-              Xác nhận thanh toán
-            </Button>
-          </Card>
-        </Col>
-      </Row>
+              {/* Payment Method */}
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CreditCardOutlined className="text-blue-500" />
+                    <Text strong className="text-sm">
+                      Phương thức thanh toán
+                    </Text>
+                  </div>
+                  <Tag
+                    color="blue"
+                    style={{ fontSize: 13, padding: '4px 12px', borderRadius: 8, margin: 0 }}
+                  >
+                    {paymentMethodName}
+                  </Tag>
+                </div>
+              </div>
+
+              <Divider style={{ margin: '8px 0' }} />
+
+              {/* Total */}
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-100">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <Text className="text-gray-600">Tạm tính</Text>
+                    <Text>{formatCurrency(totalPrice)}</Text>
+                  </div>
+                  {valueSale > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <Text className="text-gray-600">Giảm giá</Text>
+                      <Text type="danger">-{formatCurrency(valueSale)}</Text>
+                    </div>
+                  )}
+                  <Divider style={{ margin: '8px 0' }} />
+                  <div className="flex justify-between items-center">
+                    <Text strong className="text-base">
+                      Tổng thanh toán
+                    </Text>
+                    <Text strong className="text-xl" style={{ color: '#dc2626' }}>
+                      {formatCurrency(totalPrice - valueSale)}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="primary"
+                size="large"
+                block
+                onClick={handleSubmitCheckout}
+                className="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700 !h-12 !text-base !font-semibold"
+                style={{ borderRadius: 12 }}
+              >
+                Xác nhận đặt hàng
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     </Modal>
   )
 }

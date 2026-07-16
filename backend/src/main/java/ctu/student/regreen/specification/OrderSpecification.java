@@ -5,11 +5,33 @@ import java.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
 
 import ctu.student.regreen.model.Order;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 
 public final class OrderSpecification {
 
     private OrderSpecification() {
+    }
+
+    public static Specification<Order> withFetchJoins() {
+
+        return (root, query, cb) -> {
+
+            Class<?> resultType = query.getResultType();
+            if (resultType != null
+                    && (Long.class.equals(resultType)
+                            || long.class.equals(resultType))) {
+                return cb.conjunction();
+            }
+
+            root.fetch("customer", JoinType.LEFT);
+            root.fetch("paymentMethod", JoinType.LEFT);
+            root.fetch("orderStatus", JoinType.LEFT);
+            root.fetch("paymentStatus", JoinType.LEFT);
+            root.fetch("voucher", JoinType.LEFT);
+
+            return cb.conjunction();
+        };
     }
 
     public static Specification<Order> filter(
@@ -28,7 +50,7 @@ public final class OrderSpecification {
                  .and(hasStartDate(startDate))
             .and(hasEndDate(endDate));
 
-                
+                 
     }
 
  private static Specification<Order> hasKeyword(String keyword) {

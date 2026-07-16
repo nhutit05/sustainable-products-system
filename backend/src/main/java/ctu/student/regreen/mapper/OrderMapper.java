@@ -29,7 +29,7 @@ public class OrderMapper {
                 .reduce(0f, Float::sum);
 
         if (order.getVoucher() != null) {
-            total -= order.getVoucher().getDiscountValue();
+            total -= total*order.getVoucher().getDiscountValue();
             if (total < 0)
                 total = 0f;
         }

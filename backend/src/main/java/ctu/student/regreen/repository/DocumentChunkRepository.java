@@ -33,4 +33,7 @@ public interface DocumentChunkRepository
 
     int countByDocument_Id(UUID documentId);
 
+    @Query("SELECT dc.document.id, COUNT(dc) FROM DocumentChunk dc WHERE dc.document.id IN :documentIds GROUP BY dc.document.id")
+    List<Object[]> countByDocumentIdIn(@Param("documentIds") List<UUID> documentIds);
+
 }

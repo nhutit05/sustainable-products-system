@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import org.hibernate.annotations.BatchSize;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -65,6 +67,7 @@ public class Order {
     @JoinColumn(name = "payment_status_id")
     private PaymentStatus paymentStatus;
 
+    @BatchSize(size = 20)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 

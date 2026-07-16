@@ -26,5 +26,10 @@ public interface DashboardRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.paymentStatus.paymentStatusName = :statusName")
     long countByPaymentStatus(@Param("statusName") String statusName);
 
-    List<Order> findTop10ByOrderByOrderedAtDesc();
+    @Query("SELECT o FROM Order o " +
+           "LEFT JOIN FETCH o.customer " +
+           "LEFT JOIN FETCH o.orderStatus " +
+           "LEFT JOIN FETCH o.paymentStatus " +
+           "ORDER BY o.orderedAt DESC")
+    List<Order> findRecentOrdersWithDetails();
 }

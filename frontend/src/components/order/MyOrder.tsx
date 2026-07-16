@@ -121,7 +121,7 @@ export default function MyOrder() {
                         <span
                           className={
                             OrderStatusColor[
-                              order.orderStatusName as keyof typeof OrderStatusColor
+                            order.orderStatusName as keyof typeof OrderStatusColor
                             ] +
                             ' border px-2 py-1 rounded-xl text-xs font-semibold flex items-center'
                           }

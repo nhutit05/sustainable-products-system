@@ -67,22 +67,26 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductMaterialResponse> materials = new ArrayList<ProductMaterialResponse>();
 
+        // Batch load tat ca material
+        Map<Integer, Material> materialMap = materialRepository.findAllById(request.getMaterialIds())
+                .stream()
+                .collect(Collectors.toMap(Material::getMaterialId, m -> m));
+
         // Tao phan tram nguyen lieu cung cap vao
         for (int i = 0; i < request.getMaterialIds().size(); i++) {
             Integer materialId = request.getMaterialIds().get(i);
             Float percentage = request.getPercentageMaterialIds().get(i);
+
+            Material material = materialMap.get(materialId);
+            if (material == null) {
+                throw new RuntimeException("Material not found: " + materialId);
+            }
 
             // Luu vao bang product_material
             ProductMaterialRequest productMaterialRequest = new ProductMaterialRequest();
             productMaterialRequest.setProductId(product.getProductId());
             productMaterialRequest.setMaterialId(materialId);
             productMaterialRequest.setPercentage(percentage);
-
-            Material material = materialRepository.findById(materialId)
-                    .orElseThrow(() ->
-                            new RuntimeException("Material not found"));
-
-            System.out.println(material);
 
             ProductMaterial productMaterial = productMaterialMapper.toEntity(productMaterialRequest, product, material);
 
@@ -147,9 +151,17 @@ public class ProductServiceImpl implements ProductService {
         // Cap nhat lai danh sach nguyen lieu
         List<ProductMaterialResponse> productMaterials = new ArrayList<ProductMaterialResponse>();
 
+        // Batch load tat ca material
+        Map<Integer, Material> materialMap = materialRepository.findAllById(request.getMaterialIds())
+                .stream()
+                .collect(Collectors.toMap(Material::getMaterialId, m -> m));
+
         for(int i=0; i<request.getMaterialIds().size(); i++) {
-            Material material = materialRepository.findById(request.getMaterialIds().get(i))
-                    .orElseThrow(() -> new RuntimeException("update: Material not found"));
+            Integer materialId = request.getMaterialIds().get(i);
+            Material material = materialMap.get(materialId);
+            if (material == null) {
+                throw new RuntimeException("update: Material not found: " + materialId);
+            }
 
             ProductMaterialId embeddedId = new ProductMaterialId(product.getProductId(), material.getMaterialId());
 
@@ -239,7 +251,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponse> getAll() {
         // 1. Lấy toàn bộ sản phẩm
-        List<Product> products = repository.findAll()
+        List<Product> products = repository.findAllWithCategory()
                 .stream()
                 .filter(product -> product.getIsDeleted() == null || !product.getIsDeleted()) // Lọc ra những sản phẩm không bị xóa
                 .toList();
@@ -303,7 +315,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Map<String, Object> getAllFiltered(String keyword, Integer categoryId, Boolean statusSale, Integer page, Integer limit) {
         // 1. Lay tat ca san pham chua xoa
-        List<Product> products = repository.findAll()
+        List<Product> products = repository.findAllWithCategory()
                 .stream()
                 .filter(p -> p.getIsDeleted() == null || !p.getIsDeleted())
                 .toList();

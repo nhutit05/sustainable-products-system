@@ -1,6 +1,7 @@
 package ctu.student.regreen.specification;
 
 import ctu.student.regreen.model.RefundSlip;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
@@ -9,6 +10,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RefundSlipSpecification {
+
+    public static Specification<RefundSlip> withFetchJoins() {
+
+        return (root, query, cb) -> {
+
+            Class<?> resultType = query.getResultType();
+            if (resultType != null
+                    && (Long.class.equals(resultType)
+                            || long.class.equals(resultType))) {
+                return cb.conjunction();
+            }
+
+            root.fetch("order", JoinType.LEFT);
+            root.fetch("bank", JoinType.LEFT);
+            root.fetch("refundStatus", JoinType.LEFT);
+
+            return cb.conjunction();
+        };
+    }
 
     public static Specification<RefundSlip> filter(
             String search,

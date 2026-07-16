@@ -27,6 +27,11 @@ import {
   TagsOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  CalendarOutlined,
+  FileTextOutlined,
+  GiftOutlined,
+  ShoppingOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons'
 
 import {
@@ -41,6 +46,7 @@ import type {
   VoucherQuery,
   VoucherResponse,
   VoucherPatchRequest,
+  VoucherRequest,
 } from '../model/voucher.model'
 import type { PageResponse } from '../model/page.model'
 
@@ -49,7 +55,7 @@ function VoucherForm({
   onFinish,
   isEdit,
 }: {
-  formInstance: ReturnType<typeof Form.useForm>[0]
+  formInstance: ReturnType<typeof Form.useForm<Record<string, unknown>>>[0]
   onFinish: (values: Record<string, unknown>) => void
   isEdit: boolean
 }) {
@@ -60,14 +66,23 @@ function VoucherForm({
         name="code"
         rules={[{ required: true, message: 'Vui lòng nhập mã voucher.' }]}
       >
-        <Input placeholder="VD: SUMMER2025" />
+        <Input
+          placeholder="VD: SUMMER2025"
+          prefix={<GiftOutlined className="text-emerald-400" />}
+          size="large"
+          className="!rounded-xl"
+        />
       </Form.Item>
       <Form.Item
         label="Mô tả"
         name="description"
         rules={[{ required: true, message: 'Vui lòng nhập mô tả.' }]}
       >
-        <Input.TextArea rows={3} placeholder="Mô tả về voucher..." />
+        <Input.TextArea
+          rows={3}
+          placeholder="Mô tả về voucher..."
+          className="!rounded-xl"
+        />
       </Form.Item>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Form.Item
@@ -75,14 +90,27 @@ function VoucherForm({
           name="discountValue"
           rules={[{ required: true, message: 'Bắt buộc.' }]}
         >
-          <InputNumber min={1} max={100} className="w-full" placeholder="1-100" />
+          <InputNumber
+            min={1}
+            max={100}
+            className="!w-full"
+            placeholder="1-100"
+            size="large"
+            prefix={<PercentageOutlined className="text-emerald-400" />}
+          />
         </Form.Item>
         <Form.Item
           label="Số lượng"
           name="quantity"
           rules={[{ required: true, message: 'Bắt buộc.' }]}
         >
-          <InputNumber min={1} className="w-full" placeholder="Số lượng phát hành" />
+          <InputNumber
+            min={1}
+            className="!w-full"
+            placeholder="Số lượng phát hành"
+            size="large"
+            prefix={<ShoppingOutlined className="text-emerald-400" />}
+          />
         </Form.Item>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -91,14 +119,24 @@ function VoucherForm({
           name="startedAt"
           rules={[{ required: true, message: 'Bắt buộc.' }]}
         >
-          <DatePicker className="w-full" format="DD/MM/YYYY" />
+          <DatePicker
+            className="!w-full"
+            format="DD/MM/YYYY"
+            size="large"
+            placeholder="Chọn ngày"
+          />
         </Form.Item>
         <Form.Item
           label="Ngày hết hạn"
           name="expiredAt"
           rules={[{ required: true, message: 'Bắt buộc.' }]}
         >
-          <DatePicker className="w-full" format="DD/MM/YYYY" />
+          <DatePicker
+            className="!w-full"
+            format="DD/MM/YYYY"
+            size="large"
+            placeholder="Chọn ngày"
+          />
         </Form.Item>
       </div>
       <Form.Item label="Kích hoạt" name="isActive" valuePropName="checked" initialValue={!isEdit}>
@@ -173,7 +211,14 @@ export default function AdminVouchers() {
       title: 'Code',
       dataIndex: 'code',
       sorter: true,
-      render: (value: string) => <span className="font-semibold text-emerald-700">{value}</span>,
+      render: (value: string) => (
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shrink-0">
+            <TagsOutlined className="text-white text-xs" />
+          </div>
+          <span className="font-semibold text-emerald-700">{value}</span>
+        </div>
+      ),
     },
     {
       title: 'Giảm giá',
@@ -181,7 +226,7 @@ export default function AdminVouchers() {
       align: 'center',
       responsive: ['md'],
       render: (value: number) => (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
           <PercentageOutlined className="text-[10px]" />
           {value}%
         </span>
@@ -193,7 +238,7 @@ export default function AdminVouchers() {
       align: 'center',
       responsive: ['lg'],
       render: (value: number) => (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
           {value}
         </span>
       ),
@@ -206,9 +251,7 @@ export default function AdminVouchers() {
       render: (value: string) => {
         const isExpired = dayjs(value).isBefore(dayjs(), 'day')
         return (
-          <span
-            className={`whitespace-nowrap text-sm ${isExpired ? 'text-red-500' : 'text-gray-600'}`}
-          >
+          <span className={`whitespace-nowrap text-sm font-medium ${isExpired ? 'text-red-500' : 'text-gray-600'}`}>
             {dayjs(value).format('DD/MM/YYYY')}
           </span>
         )
@@ -220,15 +263,13 @@ export default function AdminVouchers() {
       align: 'center',
       render: (isActive: boolean) => (
         <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-            isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
+            isActive
+              ? 'bg-green-50 text-green-700 border border-green-200'
+              : 'bg-gray-100 text-gray-600 border border-gray-200'
           }`}
         >
-          {isActive ? (
-            <CheckCircleOutlined className="text-[10px]" />
-          ) : (
-            <CloseCircleOutlined className="text-[10px]" />
-          )}
+          {isActive ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
           {isActive ? 'Active' : 'Inactive'}
         </span>
       ),
@@ -237,13 +278,13 @@ export default function AdminVouchers() {
       title: 'Thao tác',
       key: 'actions',
       align: 'center',
-      width: 120,
+      width: 130,
       render: (_, record) => (
         <div className="flex items-center justify-center gap-1">
           <Tooltip title="Xem chi tiết">
             <button
               onClick={() => handleView(record.voucherId)}
-              className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-50 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-amber-500 hover:bg-amber-50 hover:text-amber-600 transition-all cursor-pointer"
             >
               <EyeOutlined />
             </button>
@@ -251,7 +292,7 @@ export default function AdminVouchers() {
           <Tooltip title="Chỉnh sửa">
             <button
               onClick={() => handleEdit(record.voucherId)}
-              className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all cursor-pointer"
             >
               <EditOutlined />
             </button>
@@ -264,7 +305,7 @@ export default function AdminVouchers() {
             onConfirm={() => handleDelete(record.voucherId)}
           >
             <Tooltip title="Xoá">
-              <button className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors cursor-pointer">
+              <button className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer">
                 <DeleteOutlined />
               </button>
             </Tooltip>
@@ -295,19 +336,19 @@ export default function AdminVouchers() {
     if (!editingVoucher || !editingVoucherId) return
 
     const request: VoucherPatchRequest = {}
-    if (values.code !== editingVoucher.code) request.code = values.code
-    if (values.description !== editingVoucher.description) request.description = values.description
+    if (values.code !== editingVoucher.code) request.code = values.code as string
+    if (values.description !== editingVoucher.description) request.description = values.description as string
     if (values.discountValue !== editingVoucher.discountValue)
-      request.discountValue = values.discountValue
-    if (values.quantity !== editingVoucher.quantity) request.quantity = values.quantity
+      request.discountValue = values.discountValue as number
+    if (values.quantity !== editingVoucher.quantity) request.quantity = values.quantity as number
 
-    const startedAt = values.startedAt?.format('YYYY-MM-DD')
+    const startedAt = (values.startedAt as dayjs.Dayjs)?.format('YYYY-MM-DD')
     if (startedAt !== editingVoucher.startedAt) request.startedAt = startedAt
 
-    const expiredAt = values.expiredAt?.format('YYYY-MM-DD')
+    const expiredAt = (values.expiredAt as dayjs.Dayjs)?.format('YYYY-MM-DD')
     if (expiredAt !== editingVoucher.expiredAt) request.expiredAt = expiredAt
 
-    if (values.isActive !== editingVoucher.isActive) request.isActive = values.isActive
+    if (values.isActive !== editingVoucher.isActive) request.isActive = values.isActive as boolean
 
     if (Object.keys(request).length === 0) {
       message.info('Không có thay đổi nào.')
@@ -383,11 +424,15 @@ export default function AdminVouchers() {
   async function handleCreate(values: Record<string, unknown>) {
     try {
       const request = {
-        ...values,
-        startedAt: dayjs(values.startedAt).format('YYYY-MM-DD'),
-        expiredAt: dayjs(values.expiredAt).format('YYYY-MM-DD'),
+        code: values.code as string,
+        description: values.description as string,
+        discountValue: values.discountValue as number,
+        quantity: values.quantity as number,
+        isActive: values.isActive as boolean,
+        startedAt: dayjs(values.startedAt as string).format('YYYY-MM-DD'),
+        expiredAt: dayjs(values.expiredAt as string).format('YYYY-MM-DD'),
       }
-      const created = await createVoucher(request)
+      const created = await createVoucher(request as VoucherRequest)
       message.success('Tạo voucher thành công.')
       form.resetFields()
       setCreateOpen(false)
@@ -417,11 +462,18 @@ export default function AdminVouchers() {
   return (
     <div className="flex flex-col gap-4 px-4">
       {/* ================= HEADER ================= */}
-      <header className="bg-white rounded-2xl shadow p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+      <header className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl shadow-lg p-5 sm:p-6 text-white relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
           <div>
-            <h1 className="text-2xl font-semibold text-emerald-900">Quản lý Voucher</h1>
-            <p className="text-sm text-gray-400 mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold m-0 flex items-center gap-2">
+              <GiftOutlined />
+              Quản lý Voucher
+            </h1>
+            <p className="text-sm text-white/70 mt-1">
               Quản lý mã giảm giá và ưu đãi cho khách hàng
             </p>
           </div>
@@ -429,70 +481,80 @@ export default function AdminVouchers() {
             type="primary"
             icon={<PlusOutlined />}
             size="large"
-            className="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700"
             onClick={() => setCreateOpen(true)}
+            className="!bg-white !border-white !text-emerald-600 hover:!bg-white/90 !font-semibold !shadow-lg !rounded-xl"
           >
             Thêm Voucher
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="flex items-center gap-3 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-4 border border-emerald-200/60">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500 text-white">
-              <TagsOutlined />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Tổng cộng</p>
-              <p className="text-lg font-bold text-emerald-800">{stats.total}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-4 border border-green-200/60">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-500 text-white">
-              <CheckCircleOutlined />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Đang hoạt động</p>
-              <p className="text-lg font-bold text-green-800">-</p>
+        <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 hover:bg-white/20 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <TagsOutlined className="text-white text-lg" />
+              </div>
+              <div>
+                <p className="text-xs text-white/60 m-0">Tổng cộng</p>
+                <p className="text-xl font-bold text-white m-0">{stats.total}</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-gradient-to-br from-red-50 to-red-100/50 rounded-xl p-4 border border-red-200/60">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-500 text-white">
-              <CloseCircleOutlined />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Ngừng hoạt động</p>
-              <p className="text-lg font-bold text-red-800">-</p>
+          <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 hover:bg-white/20 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-400/30 flex items-center justify-center shrink-0">
+                <CheckCircleOutlined className="text-green-200 text-lg" />
+              </div>
+              <div>
+                <p className="text-xs text-white/60 m-0">Đang hoạt động</p>
+                <p className="text-xl font-bold text-green-200 m-0">-</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-4 border border-orange-200/60">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500 text-white">
-              <PercentageOutlined />
+          <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 hover:bg-white/20 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-400/30 flex items-center justify-center shrink-0">
+                <CloseCircleOutlined className="text-red-200 text-lg" />
+              </div>
+              <div>
+                <p className="text-xs text-white/60 m-0">Ngừng hoạt động</p>
+                <p className="text-xl font-bold text-red-200 m-0">-</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">Lượt sử dụng</p>
-              <p className="text-lg font-bold text-orange-800">-</p>
+          </div>
+          <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 hover:bg-white/20 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-400/30 flex items-center justify-center shrink-0">
+                <PercentageOutlined className="text-orange-200 text-lg" />
+              </div>
+              <div>
+                <p className="text-xs text-white/60 m-0">Lượt sử dụng</p>
+                <p className="text-xl font-bold text-orange-200 m-0">-</p>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* ================= FILTERS ================= */}
-      <div className="bg-white rounded-2xl shadow p-5">
+      <div className="bg-white rounded-2xl shadow p-4 sm:p-5 border border-gray-100">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <Input
             placeholder="Tìm theo mã hoặc mô tả..."
-            prefix={<SearchOutlined className="text-gray-400" />}
+            prefix={<SearchOutlined className="text-emerald-400" />}
             allowClear
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="flex-1"
+            size="large"
+            className="!rounded-xl flex-1"
           />
           <Select
             value={query.active}
             placeholder="Trạng thái"
             allowClear
-            className="w-full sm:w-[160px]"
+            size="large"
+            className="!rounded-xl w-full sm:w-[160px]"
             onChange={(value) => {
               setQuery((prev) => ({ ...prev, page: 0, active: value }))
             }}
@@ -503,6 +565,7 @@ export default function AdminVouchers() {
           />
           <Button
             icon={<ReloadOutlined />}
+            size="large"
             onClick={() => {
               setSearchText('')
               setQuery({
@@ -512,6 +575,7 @@ export default function AdminVouchers() {
                 direction: 'desc',
               })
             }}
+            className="!rounded-xl"
           >
             Làm mới
           </Button>
@@ -519,7 +583,7 @@ export default function AdminVouchers() {
       </div>
 
       {/* ================= TABLE ================= */}
-      <div className="bg-white rounded-2xl shadow p-5">
+      <div className="bg-white rounded-2xl shadow p-4 sm:p-5 border border-gray-100">
         <Spin spinning={loading} size="medium">
           <div className="overflow-x-auto">
             <Table
@@ -552,7 +616,14 @@ export default function AdminVouchers() {
 
       {/* ================= CREATE MODAL ================= */}
       <Modal
-        title="Thêm Voucher Mới"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+              <PlusOutlined className="text-emerald-600" />
+            </div>
+            <span>Thêm Voucher Mới</span>
+          </div>
+        }
         open={createOpen}
         onCancel={() => {
           form.resetFields()
@@ -561,7 +632,8 @@ export default function AdminVouchers() {
         onOk={() => form.submit()}
         okText="Tạo mới"
         cancelText="Huỷ"
-        okButtonProps={{ className: '!bg-emerald-600 !border-emerald-600' }}
+        okButtonProps={{ className: '!bg-emerald-600 !border-emerald-600 !rounded-xl' }}
+        className="!top-[10vh]"
         width={520}
         styles={{
           body: {
@@ -576,7 +648,14 @@ export default function AdminVouchers() {
 
       {/* ================= EDIT MODAL ================= */}
       <Modal
-        title="Chỉnh sửa Voucher"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <EditOutlined className="text-blue-600" />
+            </div>
+            <span>Chỉnh sửa Voucher</span>
+          </div>
+        }
         open={editOpen}
         forceRender
         onCancel={() => {
@@ -588,7 +667,8 @@ export default function AdminVouchers() {
         onOk={() => editForm.submit()}
         okText="Lưu"
         cancelText="Huỷ"
-        okButtonProps={{ className: '!bg-emerald-600 !border-emerald-600' }}
+        okButtonProps={{ className: '!bg-emerald-600 !border-emerald-600 !rounded-xl' }}
+        className="!top-[10vh]"
         width={520}
         styles={{
           body: {
@@ -604,9 +684,17 @@ export default function AdminVouchers() {
       {/* ================= VIEW MODAL ================= */}
       <Spin spinning={viewLoading}>
         <Modal
-          title="Chi tiết Voucher"
+          title={
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                <EyeOutlined className="text-amber-600" />
+              </div>
+              <span>Chi tiết Voucher</span>
+            </div>
+          }
           open={viewOpen}
           footer={null}
+          className="!top-[10vh]"
           width={520}
           onCancel={() => {
             setViewOpen(false)
@@ -615,34 +703,47 @@ export default function AdminVouchers() {
         >
           {selectedVoucher && (
             <div className="space-y-4">
-              {/* Info Section */}
-              <div className="rounded-xl border border-gray-200 overflow-hidden">
-                <div className="bg-emerald-50 px-4 py-2.5 border-b border-emerald-100">
-                  <h3 className="text-sm font-semibold text-emerald-800">Thông tin voucher</h3>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  <div className="flex items-center px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Mã voucher</span>
-                    <span className="text-sm font-semibold text-emerald-700">
-                      {selectedVoucher.code}
-                    </span>
+              {/* Voucher Header Card */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-5 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                      <GiftOutlined className="text-white text-xl" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold m-0">{selectedVoucher.code}</h3>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                        selectedVoucher.isActive ? 'bg-white/20 text-white' : 'bg-white/10 text-white/70'
+                      }`}>
+                        {selectedVoucher.isActive ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                        {selectedVoucher.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-start px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Mô tả</span>
-                    <span className="text-sm text-gray-700">
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-3xl font-bold">{selectedVoucher.discountValue}%</span>
+                    <span className="text-white/70 text-sm">giảm giá</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Info Section */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <h4 className="text-sm font-semibold text-gray-700 m-0 mb-3 flex items-center gap-2">
+                  <FileTextOutlined className="text-gray-500" />
+                  Thông tin chi tiết
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Mô tả</span>
+                    <span className="text-sm text-gray-700 text-right max-w-[60%]">
                       {selectedVoucher.description || '-'}
                     </span>
                   </div>
-                  <div className="flex items-center px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Giảm giá</span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-                      <PercentageOutlined className="text-[10px]" />
-                      {selectedVoucher.discountValue}%
-                    </span>
-                  </div>
-                  <div className="flex items-center px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Số lượng</span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">Số lượng</span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700">
                       {selectedVoucher.quantity}
                     </span>
                   </div>
@@ -650,41 +751,27 @@ export default function AdminVouchers() {
               </div>
 
               {/* Date & Status Section */}
-              <div className="rounded-xl border border-gray-200 overflow-hidden">
-                <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-700">Thời hạn & Trạng thái</h3>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  <div className="flex items-center px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Ngày bắt đầu</span>
-                    <span className="text-sm text-gray-700">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <h4 className="text-sm font-semibold text-gray-700 m-0 mb-3 flex items-center gap-2">
+                  <CalendarOutlined className="text-gray-500" />
+                  Thời hạn
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400 m-0 mb-1">Bắt đầu</p>
+                    <p className="text-sm font-semibold text-gray-700 m-0">
                       {dayjs(selectedVoucher.startedAt).format('DD/MM/YYYY')}
-                    </span>
+                    </p>
                   </div>
-                  <div className="flex items-center px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Ngày hết hạn</span>
-                    <span
-                      className={`text-sm ${dayjs(selectedVoucher.expiredAt).isBefore(dayjs(), 'day') ? 'text-red-500 font-medium' : 'text-gray-700'}`}
-                    >
+                  <div className="bg-white rounded-lg p-3 border border-gray-100">
+                    <p className="text-xs text-gray-400 m-0 mb-1">Hết hạn</p>
+                    <p className={`text-sm font-semibold m-0 ${
+                      dayjs(selectedVoucher.expiredAt).isBefore(dayjs(), 'day')
+                        ? 'text-red-500'
+                        : 'text-gray-700'
+                    }`}>
                       {dayjs(selectedVoucher.expiredAt).format('DD/MM/YYYY')}
-                    </span>
-                  </div>
-                  <div className="flex items-center px-4 py-3">
-                    <span className="w-32 text-sm text-gray-500 shrink-0">Trạng thái</span>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                        selectedVoucher.isActive
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {selectedVoucher.isActive ? (
-                        <CheckCircleOutlined className="text-[10px]" />
-                      ) : (
-                        <CloseCircleOutlined className="text-[10px]" />
-                      )}
-                      {selectedVoucher.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </div>
