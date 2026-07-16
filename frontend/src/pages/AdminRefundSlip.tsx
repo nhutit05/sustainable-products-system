@@ -522,7 +522,7 @@ export default function AdminRefundSlip() {
           setDrawerOpen(false)
           setSelectedRefundSlip(null)
         }}
-        destroyOnClose
+        destroyOnHidden
         className="refund-drawer"
         styles={{
           header: { borderBottom: '1px solid #f0f0f0', padding: '16px 20px' },

@@ -1,6 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Spin } from 'antd'
-import { ReloadOutlined, FileTextOutlined } from '@ant-design/icons'
+import {
+  ReloadOutlined,
+  FileTextOutlined,
+  CloudUploadOutlined,
+  BarChartOutlined,
+  FilterOutlined,
+  TableOutlined,
+} from '@ant-design/icons'
 
 import UploadCard from '../../components/knowledge/UploadCard'
 import StatisticCards from '../../components/knowledge/StatisticCards'
@@ -113,86 +120,157 @@ const KnowledgePage = () => {
   }, [currentPage, pageSize, total])
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-5 lg:space-y-6">
-        {/* ================= HEADER ================= */}
-        <header className="bg-white rounded-2xl shadow-sm border border-gray-100 px-5 py-4 sm:px-6 sm:py-5">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-                Knowledge Base
-              </h1>
-              <p className="text-sm text-gray-400 mt-0.5 truncate">
-                Quản lý tài liệu huấn luyện cho chatbot
-              </p>
+    <div className="min-h-screen">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-5 sm:space-y-6">
+
+        {/* ================= HERO HEADER ================= */}
+        <header className="relative overflow-hidden rounded-3xl"
+          style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)' }}
+        >
+          {/* Background decorations */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-white/5 blur-xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-white/5 blur-3xl" />
+          </div>
+
+          <div className="relative px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                  <CloudUploadOutlined className="text-white text-2xl sm:text-3xl" />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white m-0 tracking-tight">
+                    Knowledge Base
+                  </h1>
+                  <p className="text-emerald-100 text-sm sm:text-base mt-1 sm:mt-2 m-0 max-w-xl">
+                    Quản lý và tổ chức tài liệu huấn luyện cho chatbot AI
+                  </p>
+                  <div className="flex items-center gap-4 mt-3 sm:mt-4">
+                    <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                      <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                      <span className="text-white/90 text-xs font-medium">
+                        {statistics?.totalDocuments ?? 0} tài liệu
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                      <div className="w-2 h-2 rounded-full bg-blue-300" />
+                      <span className="text-white/90 text-xs font-medium">
+                        {statistics?.totalChunks ?? 0} chunks
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={refreshData}
+                disabled={loading}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/20 backdrop-blur-sm text-sm font-medium text-white hover:bg-white/30 active:bg-white/40 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer border border-white/20"
+              >
+                <ReloadOutlined className={`text-sm ${loading ? 'animate-spin' : ''}`} />
+                <span>Làm mới</span>
+              </button>
             </div>
-            <button
-              onClick={refreshData}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer"
-            >
-              <ReloadOutlined className={`text-sm ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden xs:inline">Làm mới</span>
-              <span className="xs:hidden">Refresh</span>
-            </button>
           </div>
         </header>
 
-        {/* ================= UPLOAD ================= */}
-        <UploadCard refreshData={refreshData} />
-
-        {/* ================= STATS ================= */}
-        <StatisticCards statistics={statistics} />
-
-        {/* ================= TOOLBAR ================= */}
-        <KnowledgeToolbar
-          keyword={keyword}
-          statusFilter={statusFilter}
-          onKeywordChange={setKeyword}
-          onStatusChange={setStatusFilter}
-          onRefresh={refreshData}
-        />
-
-        {/* ================= TABLE SECTION ================= */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Table Header */}
-          <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-              <div className="flex items-center gap-2.5">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50">
-                  <FileTextOutlined className="text-emerald-600 text-sm" />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-gray-900">Danh sách tài liệu</h2>
-                  {tableSummary && (
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Hiển thị {tableSummary.from}–{tableSummary.to} / {tableSummary.total} tài liệu
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {loading && (
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <Spin size="small" />
-                  <span>Đang tải...</span>
-                </div>
-              )}
+        {/* ================= UPLOAD SECTION ================= */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+              <CloudUploadOutlined className="text-emerald-600 text-sm" />
             </div>
+            <h2 className="text-base font-semibold text-gray-800 m-0">Tải lên tài liệu</h2>
+          </div>
+          <UploadCard refreshData={refreshData} />
+        </section>
+
+        {/* ================= STATISTICS SECTION ================= */}
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <BarChartOutlined className="text-blue-600 text-sm" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-800 m-0">Thống kê tổng quan</h2>
+          </div>
+          <StatisticCards statistics={statistics} />
+        </section>
+
+        {/* ================= DOCUMENTS SECTION ================= */}
+        <section>
+          {/* Section Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                <TableOutlined className="text-purple-600 text-sm" />
+              </div>
+              <h2 className="text-base font-semibold text-gray-800 m-0">Quản lý tài liệu</h2>
+            </div>
+            {tableSummary && (
+              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
+                <span>Hiển thị</span>
+                <span className="font-semibold text-emerald-600">{tableSummary.from}–{tableSummary.to}</span>
+                <span>trên</span>
+                <span className="font-semibold text-emerald-600">{tableSummary.total}</span>
+              </div>
+            )}
           </div>
 
-          {/* Table Content */}
-          <div className="overflow-x-auto">
-            <DocumentTable
-              documents={documents}
-              loading={loading}
-              onDelete={handleDelete}
-              onView={handleView}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              total={total}
-              onPageChange={handlePageChange}
+          {/* Toolbar */}
+          <div className="mb-4">
+            <KnowledgeToolbar
+              keyword={keyword}
+              statusFilter={statusFilter}
+              onKeywordChange={setKeyword}
+              onStatusChange={setStatusFilter}
+              onRefresh={refreshData}
             />
+          </div>
+
+          {/* Table Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+            style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
+          >
+            {/* Table Header */}
+            <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100">
+                    <FileTextOutlined className="text-emerald-600 text-sm" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-800 m-0">Danh sách tài liệu</h3>
+                    {tableSummary && (
+                      <p className="text-xs text-gray-400 mt-0.5 m-0">
+                        Hiển thị {tableSummary.from}–{tableSummary.to} / {tableSummary.total} tài liệu
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {loading && (
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <Spin size="small" />
+                    <span>Đang tải...</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Table Content */}
+            <div className="overflow-x-auto">
+              <DocumentTable
+                documents={documents}
+                loading={loading}
+                onDelete={handleDelete}
+                onView={handleView}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                total={total}
+                onPageChange={handlePageChange}
+              />
+            </div>
           </div>
         </section>
 

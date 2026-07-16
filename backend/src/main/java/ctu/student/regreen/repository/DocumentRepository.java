@@ -24,6 +24,7 @@ public interface DocumentRepository
        @Query("""
     SELECT d
     FROM Document d
+    LEFT JOIN FETCH d.documentContent
     WHERE
     (
         :keyword IS NULL
@@ -36,9 +37,9 @@ public interface DocumentRepository
         OR d.status = :status
     )
     """)
-Page<Document> searchDocuments(
+    Page<Document> searchDocuments(
         @Param("keyword") String keyword,
         @Param("status") DocumentStatus status,
         Pageable pageable
-);
+    );
 }

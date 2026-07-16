@@ -68,7 +68,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<RecentOrderResponse> getRecentOrders(Integer limit) {
-        List<ctu.student.regreen.model.Order> orders = dashboardRepository.findTop10ByOrderByOrderedAtDesc();
+        List<ctu.student.regreen.model.Order> orders = dashboardRepository.findRecentOrdersWithDetails();
 
         return orders.stream()
                 .limit(limit != null ? limit : 10)

@@ -49,7 +49,9 @@ public class AdminRefundSlipServiceImpl
                         String status,
                         Pageable pageable) {
 
-                Specification<RefundSlip> specification = RefundSlipSpecification.filter(search, status);
+                Specification<RefundSlip> specification = Specification
+                                .where(RefundSlipSpecification.withFetchJoins())
+                                .and(RefundSlipSpecification.filter(search, status));
 
                 return refundSlipRepository
                                 .findAll(specification, pageable)
@@ -60,7 +62,7 @@ public class AdminRefundSlipServiceImpl
         public RefundSlipResponse getRefundSlipById(
                         Integer refundSlipId) {
 
-                RefundSlip refundSlip = refundSlipRepository.findById(
+                RefundSlip refundSlip = refundSlipRepository.findByIdWithDetails(
                                 refundSlipId)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Refund slip not found"));
@@ -74,8 +76,10 @@ public class AdminRefundSlipServiceImpl
         public RefundSlipResponse approveRefund(
                         Integer refundSlipId) {
 
+                RefundSlip refundSlip = getRefundSlipEntity(refundSlipId);
+
                 return updateStatus(
-                                refundSlipId,
+                                refundSlip,
                                 RefundStatusName.APPROVED);
         }
 
@@ -84,8 +88,10 @@ public class AdminRefundSlipServiceImpl
         public RefundSlipResponse rejectRefund(
                         Integer refundSlipId) {
 
+                RefundSlip refundSlip = getRefundSlipEntity(refundSlipId);
+
                 return updateStatus(
-                                refundSlipId,
+                                refundSlip,
                                 RefundStatusName.REJECTED);
         }
 
@@ -94,8 +100,10 @@ public class AdminRefundSlipServiceImpl
         public RefundSlipResponse markRefunded(
                         Integer refundSlipId) {
 
+                RefundSlip refundSlip = getRefundSlipEntity(refundSlipId);
+
                 return updateStatus(
-                                refundSlipId,
+                                refundSlip,
                                 RefundStatusName.REFUNDED);
         }
 
@@ -103,8 +111,7 @@ public class AdminRefundSlipServiceImpl
         @Transactional
         public RefundSlipResponse transferRefund(Integer refundSlipId) {
 
-                RefundSlip refundSlip = refundSlipRepository.findById(refundSlipId)
-                                .orElseThrow(() -> new RuntimeException("Refund slip not found"));
+                RefundSlip refundSlip = getRefundSlipEntity(refundSlipId);
 
                 validateTransition(
                                 RefundStatusName.valueOf(refundSlip.getRefundStatus().getRefundStatusName()),
@@ -132,14 +139,15 @@ public class AdminRefundSlipServiceImpl
                                 refundSlipRepository.save(refundSlip));
         }
 
-        private RefundSlipResponse updateStatus(
-                        Integer refundSlipId,
-                        RefundStatusName statusName) {
-
-                RefundSlip refundSlip = refundSlipRepository.findById(
-                                refundSlipId)
+        private RefundSlip getRefundSlipEntity(Integer refundSlipId) {
+                return refundSlipRepository.findByIdWithDetails(refundSlipId)
                                 .orElseThrow(() -> new RuntimeException(
                                                 "Refund slip not found"));
+        }
+
+        private RefundSlipResponse updateStatus(
+                        RefundSlip refundSlip,
+                        RefundStatusName statusName) {
 
                 RefundStatusName currentStatus = RefundStatusName.valueOf(
                                 refundSlip.getRefundStatus()

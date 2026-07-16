@@ -218,7 +218,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin_dashboard min-h-screen bg-gray-50/50 p-3 sm:p-4 lg:p-6">
-      <Spin spinning={loading} size="large">
+      <Spin spinning={loading} size="medium">
         {/* BANNER */}
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-5 sm:p-6 lg:p-8 mb-4 sm:mb-6">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMS41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDgpIi8+PC9zdmc+')] opacity-40" />

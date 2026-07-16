@@ -20,9 +20,11 @@ import AdminProducts from '../pages/AdminProducts'
 import KnowledgePage from '../pages/knowledge/KnowledgePage'
 import AdminVouchers from '../pages/AdminVouchers'
 import AdminRefundSlip from '../pages/AdminRefundSlip'
+import { useNotification } from '../context/useNotification'
 
 export default function AdminLayout() {
   const location = useLocation()
+  const { showNotification } = useNotification()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -108,6 +110,42 @@ export default function AdminLayout() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [location.pathname])
+
+  // Check token validity on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      showNotification({
+        message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+        type: 'ERROR',
+        duration: 5000,
+      })
+      window.location.href = '/login'
+      return
+    }
+
+    const checkToken = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/admin/orders?page=0&size=1', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem('token')
+          showNotification({
+            message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+            type: 'ERROR',
+            duration: 5000,
+          })
+          window.location.href = '/login'
+        }
+      } catch {
+        // Network error - ignore, let individual pages handle their own errors
+      }
+    }
+
+    checkToken()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const currentPageTitle =
     NAV_LINKS.flatMap((link) => link.child_links).find(

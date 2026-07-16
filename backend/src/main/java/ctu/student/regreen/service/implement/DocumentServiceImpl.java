@@ -3,7 +3,9 @@ package ctu.student.regreen.service.implement;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -99,12 +101,25 @@ keyword = keyword.trim();
                 status,
                 pageable
         );
+
+                List<UUID> documentIds = documentPage.getContent().stream()
+                                .map(Document::getId)
+                                .toList();
+
+                Map<UUID, Long> chunkCountMap = documentChunkRepository
+                                .countByDocumentIdIn(documentIds)
+                                .stream()
+                                .collect(Collectors.toMap(
+                                        row -> (UUID) row[0],
+                                        row -> (Long) row[1]));
+
                 List<KnowledgeDocumentResponse> responses = documentPage.getContent()
                                 .stream()
                                 .map(document -> {
 
-                                        int chunkCount = documentChunkRepository.countByDocument_Id(
-                                                        document.getId());
+                                        int chunkCount = chunkCountMap
+                                                        .getOrDefault(document.getId(), 0L)
+                                                        .intValue();
 
                                         return documentMapper.toKnowledgeDocumentResponse(
                                                         document,
