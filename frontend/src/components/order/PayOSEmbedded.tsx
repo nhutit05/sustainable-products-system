@@ -1,30 +1,32 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
-import { Copy, ExternalLink, CheckCircle2, Clock3, QrCode } from 'lucide-react'
 import { useNotification } from '../../context/useNotification'
 import { useNavigate } from 'react-router-dom'
 import {
   Card,
-  Row,
-  Col,
   Typography,
   Button,
-  Space,
   Divider,
   Tag,
-  Statistic,
-  List,
-  Descriptions,
   Alert,
   Progress,
   Flex,
+  List,
 } from 'antd'
-
 import {
   CopyOutlined,
   LinkOutlined,
   CloseOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  DollarOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  HomeOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons'
+
+const { Text } = Typography
 
 interface OrderSummary {
   items: {
@@ -59,8 +61,6 @@ export default function PayOSEmbedded({
   setOnClose,
   orderSummary,
 }: PayOSEmbeddedProps) {
-  console.log('PayOSEmbedded render')
-  console.log(orderSummary)
   const [remainingSeconds, setRemainingSeconds] = useState(15 * 60)
   const [copied, setCopied] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'PENDING' | 'PAID' | 'EXPIRED'>('PENDING')
@@ -81,13 +81,11 @@ export default function PayOSEmbedded({
         if (order.paymentStatusName === 'PAID') {
           setPaymentStatus('PAID')
           clearInterval(timer)
-
           showNotification({
             message: 'Thanh toán thành công!',
             type: 'SUCCESS',
             duration: 3000,
           })
-
           setTimeout(() => {
             setOnClose(true)
             navigate('/')
@@ -98,20 +96,13 @@ export default function PayOSEmbedded({
       }
     }, 2000)
     return () => clearInterval(timer)
-  }, [orderId, paymentStatus])
+  }, [orderId, paymentStatus, showNotification, navigate, setOnClose])
 
   useEffect(() => {
     if (!expiredAt) return
     const target = new Date(expiredAt + 'Z').getTime()
-
-    console.log('expiredAt =', expiredAt)
-    console.log('target =', target)
-    console.log('Date.now() =', Date.now())
-    console.log('diff =', target - Date.now())
-
     const update = () => {
       const diff = Math.max(0, Math.floor((target - Date.now()) / 1000))
-
       setRemainingSeconds(diff)
       if (diff <= 0) {
         setPaymentStatus('EXPIRED')
@@ -138,325 +129,228 @@ export default function PayOSEmbedded({
   const openPayOS = () => {
     window.open(checkoutUrl, '_blank')
   }
- return (
-  <div className="fixed inset-0 z-52 bg-black/45 backdrop-blur-sm flex items-center justify-center p-6">
-    <Card
-      style={{
-        width: '100%',
-        maxWidth: 1500,
-        height: '95vh',
-        borderRadius: 20,
-        overflow: 'hidden',
-      }}
-      styles={{
-        body: {
-          padding: 0,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        },
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg,#16a34a,#059669)',
-          padding: 24,
-          color: '#fff',
-        }}
-      >
-        <Typography.Title
-          level={2}
-          style={{
-            color: '#fff',
-            marginBottom: 4,
-          }}
+
+  const formatCurrency = (value: number) =>
+    Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+
+  const getStatusAlert = () => {
+    switch (paymentStatus) {
+      case 'PAID':
+        return (
+          <Alert
+            showIcon
+            icon={<CheckCircleOutlined />}
+            type="success"
+            message="Thanh toán thành công"
+            description="Đơn hàng của bạn đã được xác nhận."
+            style={{ borderRadius: 10 }}
+          />
+        )
+      case 'EXPIRED':
+        return (
+          <Alert
+            showIcon
+            type="error"
+            message="QR đã hết hạn"
+            description="Vui lòng tạo đơn hàng mới."
+            style={{ borderRadius: 10 }}
+          />
+        )
+      default:
+        return (
+          <Alert
+            showIcon
+            type="warning"
+            message="Đang chờ thanh toán"
+            description="Quét QR hoặc mở link để thanh toán."
+            style={{ borderRadius: 10 }}
+          />
+        )
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[1000] bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6">
+      {/* Full-screen scrollable container */}
+      <div className="w-full max-w-6xl h-full max-h-[95vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Header */}
+        <div
+          className="px-4 py-3 sm:px-6 sm:py-4 shrink-0"
+          style={{ background: 'linear-gradient(135deg, #16a34a, #059669)' }}
         >
-          Thanh toán đơn hàng
-        </Typography.Title>
-
-        <Typography.Text style={{ color: '#e8ffe8' }}>
-          Quét QR bằng ứng dụng ngân hàng hoặc mở PayOS để hoàn tất thanh toán.
-        </Typography.Text>
-      </div>
-
-      <div
-        style={{
-          flex: 1,
-          overflow: 'auto',
-          padding: 24,
-        }}
-      >
-        <Row gutter={24}>
-          {/* LEFT */}
-          <Col xs={24} xl={15}>
-            <Space direction="vertical" style={{ width: '100%' }} size={24}>
-              <Card
-  bordered={false}
-  style={{
-    borderRadius: 24,
-    textAlign: 'center',
-    background: '#f8fafc',
-    border: '1px solid #e5e7eb',
-  }}
->
-  <Space
-    direction="vertical"
-    size={20}
-    style={{
-      width: '100%',
-      alignItems: 'center',
-    }}
-  >
-    <Tag
-      color="green"
-      style={{
-        fontSize: 14,
-        padding: '6px 18px',
-        borderRadius: 20,
-      }}
-    >
-      Quét mã để thanh toán
-    </Tag>
-
-    <div
-      style={{
-        background: '#fff',
-        padding: 22,
-        borderRadius: 24,
-        boxShadow:
-          '0 10px 35px rgba(0,0,0,.08)',
-      }}
-    >
-      <QRCode value={qrCode} size={300} />
-    </div>
-
-    <Typography.Text type="secondary">
-      Mở ứng dụng ngân hàng hoặc ví điện tử hỗ trợ QR để quét mã
-    </Typography.Text>
-  </Space>
-</Card>
-
-              <Card
-                title={
-                  <Flex align="center" gap={8}>
-                    <QrCode size={18} />
-                    Liên kết thanh toán
-                  </Flex>
-                }
-                style={{ borderRadius: 18 }}
-              >
-                <Typography.Paragraph copyable>
-                  {checkoutUrl}
-                </Typography.Paragraph>
-
-                <Divider />
-
-                <Flex justify="space-between" align="center">
-                  <Typography.Text type="secondary">
-                    Mã đơn hàng
-                  </Typography.Text>
-
-                  <Tag color="green" style={{ fontSize: 18, padding: '6px 18px' }}>
-                    #{orderId}
-                  </Tag>
-                </Flex>
-              </Card>
-            </Space>
-          </Col>
-
-          {/* RIGHT */}
-          <Col xs={24} xl={9}>
-            <Space
-              direction="vertical"
-              style={{ width: '100%' }}
-              size={20}
+          <Flex justify="space-between" align="center" wrap="wrap" gap={8}>
+            <div className="min-w-0">
+              <Text strong style={{ color: '#fff', fontSize: 18 }}>
+                Thanh toán đơn hàng #{orderId}
+              </Text>
+              <div>
+                <Text style={{ color: '#d1fae5', fontSize: 12 }}>
+                  Quét QR hoặc mở link để hoàn tất thanh toán
+                </Text>
+              </div>
+            </div>
+            <Tag
+              color={paymentStatus === 'PAID' ? 'success' : paymentStatus === 'EXPIRED' ? 'error' : 'warning'}
+              style={{ fontSize: 12, padding: '2px 10px', borderRadius: 20, margin: 0 }}
             >
+              {paymentStatus === 'PAID' ? 'Đã thanh toán' : paymentStatus === 'EXPIRED' ? 'Hết hạn' : 'Chờ thanh toán'}
+            </Tag>
+          </Flex>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-0">
+            {/* Left column - QR & Link */}
+            <div className="lg:col-span-3 p-4 sm:p-5 lg:border-r border-gray-100 space-y-4">
+              {/* QR Code */}
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="bg-white p-4 rounded-xl" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+                  <QRCode value={qrCode} size={220} />
+                </div>
+                <Text type="secondary" className="text-xs text-center">
+                  Mở ứng dụng ngân hàng hoặc ví điện tử hỗ trợ QR
+                </Text>
+              </div>
+
+              {/* Payment Link */}
+              <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                <Flex align="center" gap={8} className="mb-2">
+                  <LinkOutlined className="text-emerald-600" />
+                  <Text strong className="text-sm">Liên kết thanh toán</Text>
+                </Flex>
+                <div
+                  className="p-2.5 rounded-lg text-xs break-all mb-3"
+                  style={{ background: '#fff', border: '1px solid #e5e7eb', fontFamily: 'monospace', wordBreak: 'break-all' }}
+                >
+                  {checkoutUrl}
+                </div>
+                <Flex gap={8} wrap="wrap">
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={copyCheckoutLink}
+                    className="!bg-emerald-600 !border-emerald-600"
+                  >
+                    {copied ? 'Đã sao chép' : 'Sao chép'}
+                  </Button>
+                  <Button size="small" icon={<LinkOutlined />} onClick={openPayOS}>
+                    Mở PayOS
+                  </Button>
+                </Flex>
+              </div>
+            </div>
+
+            {/* Right column - Status & Summary */}
+            <div className="lg:col-span-2 p-4 sm:p-5 space-y-3">
               {/* Countdown */}
-
-              <Card
-                style={{
-                  borderRadius: 18,
-                }}
-              >
-                <Statistic.Countdown
-                  title="Thời gian còn lại"
-                  value={Date.now() + remainingSeconds * 1000}
-                  format="mm:ss"
-                  valueStyle={{
-                    color: '#cf1322',
-                    fontWeight: 800,
-                    fontSize: 46,
-                  }}
-                />
-
+              <div className="bg-red-50 rounded-xl p-4 text-center">
+                <Flex justify="center" align="center" gap={6} className="mb-1">
+                  <ClockCircleOutlined className="text-red-500" />
+                  <Text type="secondary" className="text-xs">Thời gian còn lại</Text>
+                </Flex>
+                <div className="text-3xl sm:text-4xl font-bold text-red-600 mb-2" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {minutes}:{seconds}
+                </div>
                 <Progress
                   percent={(remainingSeconds / (15 * 60)) * 100}
                   showInfo={false}
                   strokeColor="#16a34a"
+                  size="small"
                 />
-              </Card>
+              </div>
 
               {/* Status */}
+              {getStatusAlert()}
 
-              {paymentStatus === 'PAID' ? (
-                <Alert
-                  showIcon
-                  type="success"
-                  message="Đã thanh toán"
-                  description="Hệ thống đã xác nhận giao dịch."
-                />
-              ) : paymentStatus === 'EXPIRED' ? (
-                <Alert
-                  showIcon
-                  type="error"
-                  message="QR đã hết hạn"
-                  description="Liên kết thanh toán đã hết hạn."
-                />
-              ) : (
-                <Alert
-                  showIcon
-                  type="warning"
-                  message="Đang chờ thanh toán..."
-                  description="Trạng thái sẽ tự động cập nhật."
-                />
-              )}
-
-              {/* Order */}
-
-              <Card
-                title="Thông tin đơn hàng"
-                style={{ borderRadius: 18 }}
-              >
-                <Descriptions
-                  column={1}
-                  size="small"
-                  bordered
-                >
-                  <Descriptions.Item label="Người nhận">
-                    {orderSummary.receiver}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label="Số điện thoại">
-                    {orderSummary.phone}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label="Địa chỉ">
-                    {orderSummary.address}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label="Thanh toán">
-                    {orderSummary.paymentMethod}
-                  </Descriptions.Item>
-                </Descriptions>
-              </Card>
-
-              {/* Product */}
-
-              <Card
-                title="Sản phẩm"
-                style={{
-                  borderRadius: 18,
-                }}
-              >
-                <List
-                  dataSource={orderSummary.items}
-                  style={{
-                    maxHeight: 280,
-                    overflow: 'auto',
-                  }}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <List.Item.Meta
-                        title={item.productName}
-                        description={`Số lượng: ${item.quantity}`}
-                      />
-
-                      <Typography.Text strong>
-                        {Intl.NumberFormat('vi-VN', {
-                          style: 'currency',
-                          currency: 'VND',
-                        }).format(item.productPrice)}
-                      </Typography.Text>
-                    </List.Item>
-                  )}
-                />
-
-                <Divider />
-
-                <Flex justify="space-between">
-                  <Typography.Text>Giảm giá</Typography.Text>
-
-                  <Typography.Text style={{ color: '#f5222d' }}>
-                    -
-                    {Intl.NumberFormat('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND',
-                    }).format(orderSummary.discount)}
-                  </Typography.Text>
+              {/* Order Info */}
+              <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                <Flex align="center" gap={8} className="mb-3">
+                  <DollarOutlined className="text-emerald-600" />
+                  <Text strong className="text-sm">Thông tin đơn hàng</Text>
                 </Flex>
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-start gap-2">
+                    <Flex gap={6} align="center" className="text-gray-500 shrink-0">
+                      <UserOutlined /> <span className="hidden sm:inline">Người nhận</span>
+                    </Flex>
+                    <Text strong className="text-right">{orderSummary.receiver}</Text>
+                  </div>
+                  <div className="flex justify-between items-center gap-2">
+                    <Flex gap={6} align="center" className="text-gray-500 shrink-0">
+                      <PhoneOutlined /> <span className="hidden sm:inline">Điện thoại</span>
+                    </Flex>
+                    <Text>{orderSummary.phone}</Text>
+                  </div>
+                  <div className="flex justify-between items-start gap-2">
+                    <Flex gap={6} align="center" className="text-gray-500 shrink-0">
+                      <HomeOutlined /> <span className="hidden sm:inline">Địa chỉ</span>
+                    </Flex>
+                    <Text className="text-right break-words">{orderSummary.address}</Text>
+                  </div>
+                  <Divider style={{ margin: '6px 0' }} />
+                  <div className="flex justify-between items-center gap-2">
+                    <Flex gap={6} align="center" className="text-gray-500 shrink-0">
+                      <CreditCardOutlined /> <span className="hidden sm:inline">Thanh toán</span>
+                    </Flex>
+                    <Tag color="blue" style={{ margin: 0 }}>{orderSummary.paymentMethod}</Tag>
+                  </div>
+                </div>
+              </div>
 
-                <Divider />
-
-                <Flex justify="space-between">
-                  <Typography.Title level={4} style={{ margin: 0 }}>
-                    Tổng tiền
-                  </Typography.Title>
-
-                  <Typography.Title
-                    level={3}
-                    style={{
-                      margin: 0,
-                      color: '#16a34a',
-                    }}
-                  >
-                    {Intl.NumberFormat('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND',
-                    }).format(orderSummary.total)}
-                  </Typography.Title>
+              {/* Products */}
+              <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                <Flex align="center" gap={8} className="mb-3">
+                  <DollarOutlined className="text-emerald-600" />
+                  <Text strong className="text-sm">Sản phẩm ({orderSummary.items.length})</Text>
                 </Flex>
-              </Card>
+                <div className="space-y-2 max-h-36 overflow-y-auto">
+                  {orderSummary.items.map((item) => (
+                    <div key={item.productId} className="flex justify-between items-center gap-2 bg-white rounded-lg px-3 py-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium truncate">{item.productName}</div>
+                        <div className="text-xs text-gray-400">x{item.quantity}</div>
+                      </div>
+                      <Text strong className="text-sm whitespace-nowrap">
+                        {formatCurrency(item.subtotal)}
+                      </Text>
+                    </div>
+                  ))}
+                </div>
+                <Divider style={{ margin: '10px 0 6px' }} />
+                {orderSummary.discount > 0 && (
+                  <>
+                    <div className="flex justify-between text-sm mb-1">
+                      <Text type="secondary">Giảm giá</Text>
+                      <Text type="danger">-{formatCurrency(orderSummary.discount)}</Text>
+                    </div>
+                    <Divider style={{ margin: '6px 0' }} />
+                  </>
+                )}
+                <div className="flex justify-between items-center">
+                  <Text strong>Tổng cộng</Text>
+                  <Text strong className="text-lg" style={{ color: '#16a34a' }}>
+                    {formatCurrency(orderSummary.total)}
+                  </Text>
+                </div>
+              </div>
 
-              {/* Buttons */}
-
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<CopyOutlined />}
-                  onClick={copyCheckoutLink}
-                  block
-                >
-                  {copied
-                    ? 'Đã sao chép liên kết'
-                    : 'Sao chép link thanh toán'}
-                </Button>
-
-                <Button
-                  size="large"
-                  icon={<LinkOutlined />}
-                  onClick={openPayOS}
-                  block
-                >
-                  Mở trang PayOS
-                </Button>
-
-                <Button
-                  danger
-                  icon={<CloseOutlined />}
-                  size="large"
-                  onClick={() => setOnClose(true)}
-                  block
-                >
-                  Đóng
-                </Button>
-              </Space>
-            </Space>
-          </Col>
-        </Row>
+              {/* Close Button */}
+              <Button
+                danger
+                icon={<CloseOutlined />}
+                onClick={() => setOnClose(true)}
+                block
+                size="large"
+                style={{ borderRadius: 10 }}
+              >
+                Đóng
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-    </Card>
-  </div>
-)
+    </div>
+  )
 }
