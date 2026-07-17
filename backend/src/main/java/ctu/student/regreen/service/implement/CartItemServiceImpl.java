@@ -95,7 +95,7 @@ public class CartItemServiceImpl implements CartItemService {
 
         Cart cart = getCurrentCart();
 
-        return repository.findByCartCartId(cart.getCartId())
+        return repository.findByCartCartIdWithProduct(cart.getCartId())
                 .stream()
                 .map(mapper::toResponse)
                 .toList();

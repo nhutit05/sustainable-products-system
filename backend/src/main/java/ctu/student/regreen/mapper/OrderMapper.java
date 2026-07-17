@@ -8,6 +8,7 @@ import ctu.student.regreen.dto.response.OrderItemResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.dto.response.OrderSummaryResponse;
 import ctu.student.regreen.model.Order;
+import ctu.student.regreen.model.OrderItem;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -23,15 +24,17 @@ public class OrderMapper {
                 .map(itemMapper::toResponse)
                 .toList();
 
-        Float total = order.getOrderItems()
-                .stream()
-                .map(i -> i.getPurchasedPrice() * i.getQuantity())
-                .reduce(0f, Float::sum);
+        float total = 0;
+
+        for (OrderItem item : order.getOrderItems()) {
+
+            long price = Math.round(item.getPurchasedPrice());
+
+            total += price * item.getQuantity();
+        }
 
         if (order.getVoucher() != null) {
-            total -= total*order.getVoucher().getDiscountValue();
-            if (total < 0)
-                total = 0f;
+            total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
         }
 
         return new OrderResponse(
@@ -64,18 +67,17 @@ public class OrderMapper {
 
     public OrderSummaryResponse toSummary(Order order) {
 
-        Float total = order.getOrderItems()
-                .stream()
-                .map(i -> i.getPurchasedPrice() * i.getQuantity())
-                .reduce(0f, Float::sum);
+        float total = 0;
+
+        for (OrderItem item : order.getOrderItems()) {
+
+            long price = Math.round(item.getPurchasedPrice());
+
+            total += price * item.getQuantity();
+        }
 
         if (order.getVoucher() != null) {
-
-            total -= order.getVoucher().getDiscountValue();
-
-            if (total < 0) {
-                total = 0f;
-            }
+            total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
         }
 
         return new OrderSummaryResponse(

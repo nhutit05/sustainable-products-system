@@ -113,6 +113,7 @@ export default function AdminOrders() {
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<number>();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>();
   const [currentPage, setCurrentPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -169,7 +170,7 @@ export default function AdminOrders() {
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
-  }, [token, currentPage, pageSize, debouncedKeyword, selectedOrderStatus, selectedPaymentStatus, selectedPaymentMethod, dateRange]);
+  }, [token, currentPage, pageSize, debouncedKeyword, selectedOrderStatus, selectedPaymentStatus, selectedPaymentMethod, dateRange, refreshKey]);
 
   // ---- reset page on filter change ----
   useEffect(() => {
@@ -189,6 +190,7 @@ export default function AdminOrders() {
 
   // ---- handlers ----
   const handleRefresh = useCallback(() => {
+    setRefreshKey((k) => k + 1);
     setKeyword("");
     setSelectedOrderStatus(undefined);
     setSelectedPaymentStatus(undefined);
@@ -295,7 +297,7 @@ export default function AdminOrders() {
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-medium text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 active:bg-emerald-200 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer"
             >
-              <ReloadOutlined className={`text-sm ${loading ? "animate-spin" : ""}`} />
+              <ReloadOutlined className={`text-sm ${loading ? "animate-spin" : ""}`}/>
               Làm mới
             </button>
           </div>
@@ -460,10 +462,10 @@ export default function AdminOrders() {
         {/* ================= DETAIL DRAWER ================= */}
         <Drawer
           title={selectedOrder ? `Chi tiết đơn hàng #${selectedOrder.orderId}` : "Chi tiết đơn hàng"}
-          width={720}
+          size={720}
           open={drawerOpen}
           onClose={handleCloseDrawer}
-          destroyOnClose
+          destroyOnHidden
         >
           {detailLoading ? (
             <div className="space-y-4">
@@ -479,7 +481,7 @@ export default function AdminOrders() {
                 <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small">
                   <Descriptions.Item label="Mã đơn">#{selectedOrder?.orderId}</Descriptions.Item>
                   <Descriptions.Item label="Ngày đặt">
-                    {selectedOrder && formatDateTime(selectedOrder.orderedAt)}
+                    {selectedOrder && formatDateTime(selectedOrder.orderedAt + 'Z')}
                   </Descriptions.Item>
                   <Descriptions.Item label="Khách hàng">{selectedOrder?.customerUsername}</Descriptions.Item>
                   <Descriptions.Item label="Mã khách hàng">#{selectedOrder?.customerId}</Descriptions.Item>

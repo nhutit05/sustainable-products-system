@@ -56,7 +56,7 @@ const KnowledgeToolbar = ({
                     {/* Status Filter */}
                     <Select
                         value={statusFilter}
-                        onChange={onRefresh}
+                        onChange={onStatusChange}
                         size="large"
                         className="!rounded-xl min-w-[160px]"
                         suffixIcon={<FilterOutlined className="text-gray-400" />}

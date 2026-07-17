@@ -54,9 +54,13 @@ export async function getOrders(
       paymentMethodId:
         params.paymentMethodId || undefined,
 
-        startDate: params.startDate || null,
+        startDate: params.startDate
+          ? params.startDate.toISOString().slice(0, 10)
+          : undefined,
 
-        endDate: params.endDate || null
+        endDate: params.endDate
+          ? params.endDate.toISOString().slice(0, 10)
+          : undefined
     },
   });
 

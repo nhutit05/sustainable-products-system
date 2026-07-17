@@ -1,6 +1,7 @@
 package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.VillageRequest;
+import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.dto.response.VillageResponse;
 import ctu.student.regreen.service.interfaces.VillageService;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,17 @@ public class VillageController {
     @PreAuthorize("hasRole('ADMIN')")
     public boolean deleteVillage(@PathVariable Integer id) {
         return service.deleteVillage(id);
+    }
+
+    // [GET] /api/villages/paginated
+    @GetMapping("/paginated")
+    @PreAuthorize("hasRole('ADMIN')")
+    public PageResponse<VillageResponse> getVillagesPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Integer cityId,
+            @RequestParam(required = false) String keyword) {
+        return service.getVillagesPaginated(page, size, cityId, keyword);
     }
 
 }

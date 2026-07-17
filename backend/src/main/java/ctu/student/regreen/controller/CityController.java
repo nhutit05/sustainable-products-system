@@ -2,6 +2,7 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.CityRequest;
 import ctu.student.regreen.dto.response.CityResponse;
+import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.service.interfaces.CityService;
 import lombok.RequiredArgsConstructor;
 
@@ -51,5 +52,15 @@ public class CityController {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCity(@PathVariable Integer id) {
         service.deleteCity(id);
+    }
+
+    // [GET] /api/cities/paginated
+    @GetMapping("/paginated")
+    @PreAuthorize("hasRole('ADMIN')")
+    public PageResponse<CityResponse> getCitiesPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
+        return service.getCitiesPaginated(page, size, keyword);
     }
 }

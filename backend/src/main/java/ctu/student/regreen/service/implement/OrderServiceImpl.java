@@ -201,16 +201,37 @@ public class OrderServiceImpl implements OrderService {
                         throw new RuntimeException("No products selected");
                 }
 
+                List<CartItem> cartItems = cartItemRepository
+                                .findByCartCartIdWithProduct(cart.getCartId());
+
+                List<Product> products = productRepository
+                                .findAllWithCategoryByIdIn(request.getProductIds());
+
+                java.util.Map<Integer, CartItem> cartItemMap = new java.util.HashMap<>();
+                for (CartItem ci : cartItems) {
+                        cartItemMap.put(ci.getId().getProductId(), ci);
+                }
+
+                java.util.Map<Integer, Product> productMap = new java.util.HashMap<>();
+                for (Product p : products) {
+                        productMap.put(p.getProductId(), p);
+                }
+
                 List<OrderItem> items = new ArrayList<>();
 
                 for (Integer productId : request.getProductIds()) {
 
-                        CartItem cartItem = cartItemRepository
-                                        .findById(new CartItemId(cart.getCartId(), productId))
-                                        .orElseThrow();
+                        CartItem cartItem = cartItemMap.get(productId);
 
-                        Product product = productRepository.findById(productId)
-                                        .orElseThrow();
+                        if (cartItem == null) {
+                                throw new RuntimeException("Cart item not found");
+                        }
+
+                        Product product = productMap.get(productId);
+
+                        if (product == null) {
+                                throw new RuntimeException("Product not found");
+                        }
 
                         // Kiểm tra tồn kho
                         if (product.getInventory() < cartItem.getQuantity()) {
@@ -263,7 +284,7 @@ public class OrderServiceImpl implements OrderService {
         public CheckoutResponse repay(Integer orderId) {
                 Customer customer = getCurrentCustomer();
 
-                Order oldOrder = orderRepository.findById(orderId)
+                Order oldOrder = orderRepository.findByIdWithDetails(orderId)
                                 .orElseThrow(() -> new RuntimeException("Order not found."));
 
                 checkOwnership(oldOrder, customer);
@@ -351,7 +372,7 @@ public class OrderServiceImpl implements OrderService {
 
                 Customer customer = getCurrentCustomer();
 
-                Order order = orderRepository.findById(id)
+                Order order = orderRepository.findByIdWithDetails(id)
                                 .orElseThrow();
 
                 checkOwnership(order, customer);
@@ -364,7 +385,7 @@ public class OrderServiceImpl implements OrderService {
 
                 Customer customer = getCurrentCustomer();
 
-                return orderRepository.findByCustomerUserId(customer.getUserId())
+                return orderRepository.findByCustomerUserIdWithDetails(customer.getUserId())
                                 .stream()
                                 .map(orderMapper::toResponse)
                                 .toList();
@@ -376,7 +397,7 @@ public class OrderServiceImpl implements OrderService {
 
                 Customer customer = getCurrentCustomer();
 
-                Order order = orderRepository.findById(id)
+                Order order = orderRepository.findByIdWithDetails(id)
                                 .orElseThrow();
 
                 checkOwnership(order, customer);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { CartItemResponse } from '../../model/cart.model'
 import type { voucherResponse } from '../../model/voucher.model'
 import { PaymentMethodName } from '../../enum/PaymentMethod.enum'
@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../../context/useNotification'
 import type { Addressresponse } from '../../model/address.model'
 import AddNewAddress from '../admin/AddNewAddress'
-import PayOSEmbedded from './PayOSEmbedded'
+const PayOSEmbedded = lazy(() => import('./PayOSEmbedded'))
 import {
   Modal,
   Typography,
@@ -66,6 +66,7 @@ export default function Checkout({
 
   const [showAddressList, setShowAddressList] = useState(false)
   const [showAddAddress, setShowAddAddress] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
@@ -151,7 +152,12 @@ export default function Checkout({
     }
   }, [token])
 
+  useEffect(() => {
+    import('./PayOSEmbedded')
+  }, [])
+
   const handleSubmitCheckout = async () => {
+    setIsSubmitting(true)
     const request = {
       orderReceiver,
       orderReceiverPhone,
@@ -217,19 +223,23 @@ export default function Checkout({
         type: 'ERROR',
         duration: 3000,
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   if (checkoutUrl && orderSummary && qrCode) {
     return (
-      <PayOSEmbedded
-        checkoutUrl={checkoutUrl}
-        orderId={orderId!}
-        qrCode={qrCode}
-        expiredAt={expiredAt}
-        setOnClose={setOnClose}
-        orderSummary={orderSummary}
-      />
+      <Suspense fallback={null}>
+        <PayOSEmbedded
+          checkoutUrl={checkoutUrl}
+          orderId={orderId!}
+          qrCode={qrCode}
+          expiredAt={expiredAt}
+          setOnClose={setOnClose}
+          orderSummary={orderSummary}
+        />
+      </Suspense>
     )
   }
 
@@ -543,6 +553,8 @@ export default function Checkout({
                 type="primary"
                 size="large"
                 block
+                loading={isSubmitting}
+                disabled={isSubmitting}
                 onClick={handleSubmitCheckout}
                 className="!bg-emerald-600 !border-emerald-600 hover:!bg-emerald-700 !h-12 !text-base !font-semibold"
                 style={{ borderRadius: 12 }}

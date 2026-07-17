@@ -1,10 +1,8 @@
 package ctu.student.regreen.service.implement;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import ctu.student.regreen.dto.request.ProductMaterialRequest;
@@ -14,6 +12,12 @@ import ctu.student.regreen.mapper.ProductMaterialMapper;
 import ctu.student.regreen.model.*;
 import ctu.student.regreen.repository.*;
 import ctu.student.regreen.service.interfaces.ProductImageService;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,7 @@ import ctu.student.regreen.dto.request.ProductRequest;
 import ctu.student.regreen.dto.response.ProductResponse;
 import ctu.student.regreen.mapper.ProductMapper;
 import ctu.student.regreen.service.interfaces.ProductService;
+import ctu.student.regreen.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,13 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @Transactional
 public class ProductServiceImpl implements ProductService {
-
-    private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-
-    private static String stripDiacritics(String str) {
-        String normalized = Normalizer.normalize(str, Normalizer.Form.NFD);
-        return DIACRITICS_PATTERN.matcher(normalized).replaceAll("").toLowerCase();
-    }
 
     private final ProductMapper mapper;
     private final ProductRepository repository;
@@ -314,83 +312,46 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Map<String, Object> getAllFiltered(String keyword, Integer categoryId, Boolean statusSale, Integer page, Integer limit) {
-        // 1. Lay tat ca san pham chua xoa
-        List<Product> products = repository.findAllWithCategory()
-                .stream()
-                .filter(p -> p.getIsDeleted() == null || !p.getIsDeleted())
-                .toList();
 
-        // 2. Loc theo keyword (ten san pham)
-        if (keyword != null && !keyword.isBlank()) {
-            String kw = stripDiacritics(keyword);
-            products = products.stream()
-                    .filter(p -> stripDiacritics(p.getProductName()).contains(kw))
-                    .toList();
-        }
+        // Validate pagination params
+        if (page == null || page < 1) page = 1;
+        if (limit == null || limit <= 0) limit = 10;
 
-        // 3. Loc theo danh muc
-        if (categoryId != null) {
-            products = products.stream()
-                    .filter(p -> p.getCategory().getCategoryId().equals(categoryId))
-                    .toList();
-        }
+        Pageable pageable = PageRequest.of(page - 1, limit, Sort.by("productId").descending());
 
-        // 4. Loc theo trang thai ban
-        if (statusSale != null) {
-            products = products.stream()
-                    .filter(p -> p.getStatusSale().equals(statusSale))
-                    .toList();
-        }
+        Specification<Product> spec = Specification
+                .where(ProductSpecification.withFetchJoins())
+                .and(ProductSpecification.filter(keyword, categoryId, statusSale));
 
-        // 5. Tong so san pham sau loc
-        int total = products.size();
+        Page<Product> productPage = repository.findAll(spec, pageable);
 
-        // 6. Phan trang
-        if (page == null || limit == null || limit <= 0 || page < 1) {
-            page = 1;
-            limit = total;
-        }
-        int fromIndex = (page - 1) * limit;
-        int toIndex = Math.min(fromIndex + limit, total);
-
-        if (fromIndex >= total) {
-            return Map.of("data", List.of(), "total", total);
-        }
-
-        List<Product> pageProducts = products.subList(fromIndex, toIndex);
-
-        // 7. Chi load materials va images cho tung san pham tren trang hien tai (toi uu hieu nang)
-        List<Integer> productIds = pageProducts.stream()
+        List<Integer> productIds = productPage.getContent().stream()
                 .map(Product::getProductId)
                 .toList();
 
-        // Map<Integer, List<ProductMaterialResponse>> materialsMap = Map.of();
-        // Map<Integer, List<String>> imagesMap = Map.of();
-
         final Map<Integer, List<ProductMaterialResponse>> materialsMap;
-final Map<Integer, List<String>> imagesMap;
+        final Map<Integer, List<String>> imagesMap;
 
-if (productIds.isEmpty()) {
-    materialsMap = Map.of();
-    imagesMap = Map.of();
-} else {
-    materialsMap = productMaterialRepository.findAllByProductProductIdIn(productIds)
-            .stream()
-            .collect(Collectors.groupingBy(
-                    pm -> pm.getProduct().getProductId(),
-                    Collectors.mapping(productMaterialMapper::toResponse, Collectors.toList())
-            ));
+        if (productIds.isEmpty()) {
+            materialsMap = Map.of();
+            imagesMap = Map.of();
+        } else {
+            materialsMap = productMaterialRepository.findAllByProductProductIdIn(productIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(
+                            pm -> pm.getProduct().getProductId(),
+                            Collectors.mapping(productMaterialMapper::toResponse, Collectors.toList())
+                    ));
 
-    imagesMap = productImageRepository.findAllByProductProductIdIn(productIds)
-            .stream()
-            .collect(Collectors.groupingBy(
-                    pi -> pi.getProduct().getProductId(),
-                    Collectors.mapping(ProductImage::getImageUrl, Collectors.toList())
-            ));
-}
+            imagesMap = productImageRepository.findAllByProductProductIdIn(productIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(
+                            pi -> pi.getProduct().getProductId(),
+                            Collectors.mapping(ProductImage::getImageUrl, Collectors.toList())
+                    ));
+        }
 
-        // 8. Map du lieu
-        List<ProductResponse> data = pageProducts.stream().map(product -> {
+        List<ProductResponse> data = productPage.getContent().stream().map(product -> {
             Integer productId = product.getProductId();
             List<ProductMaterialResponse> productMaterials = materialsMap.getOrDefault(productId, List.of());
             List<String> productImages = imagesMap.getOrDefault(productId, List.of());
@@ -413,7 +374,7 @@ if (productIds.isEmpty()) {
             );
         }).toList();
 
-        return Map.of("data", data, "total", total);
+        return Map.of("data", data, "total", productPage.getTotalElements());
     }
 
     @Override

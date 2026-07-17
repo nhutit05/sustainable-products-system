@@ -10,7 +10,6 @@ import Products from '../pages/Products'
 import ProductDetail from '../pages/ProductDetail'
 import Cart from '../pages/Cart'
 import { useEffect, useState } from 'react'
-import PaymentOnline from '../components/order/PaymentOnline'
 import { CustomerProvider } from '../context/CustomerContext'
 import ProfileInfo from '../components/ProfileInfo'
 import ProfileAddress from '../components/ProfileAddress'
@@ -71,7 +70,6 @@ export default function CustomerLayout() {
               </CustomerProvider>
             }
           />
-          <Route path="cart/:id/payment-online" element={<PaymentOnline />} />
           <Route
             path="profile"
             element={

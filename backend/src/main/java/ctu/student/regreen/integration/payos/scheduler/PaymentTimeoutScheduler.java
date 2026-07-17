@@ -13,6 +13,7 @@ import ctu.student.regreen.enums.PaymentStatusName;
 import ctu.student.regreen.model.Order;
 import ctu.student.regreen.model.OrderItem;
 import ctu.student.regreen.model.OrderStatus;
+import ctu.student.regreen.model.PaymentMethod;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.repository.OrderRepository;
@@ -20,9 +21,11 @@ import ctu.student.regreen.repository.OrderStatusRepository;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.*;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentTimeoutScheduler {
 
     private final OrderRepository orderRepository;
@@ -37,13 +40,16 @@ public class PaymentTimeoutScheduler {
         LocalDateTime expiredTime = LocalDateTime.now(Clock.systemUTC()).minusMinutes(15);
         // System.out.println("UTC now = " + LocalDateTime.now(Clock.systemUTC()));
         System.out.println("Expired = " + expiredTime);
+        // log.info("Expired:", expiredTime);
 
-        List<Order> orders = orderRepository
-                .findByPaymentStatusPaymentStatusNameAndOrderedAtBefore(
+        List<Order> orders = orderRepository.findExpiredOrdersWithItems(
+                        true,
                         PaymentStatusName.UNPAID.name(),
                         expiredTime);
 
         System.out.println("Expired orders: " + orders.size());
+        // log.info("Expired orders:", orders.size());
+        
 
         PaymentStatus failed = paymentStatusRepository
                 .findByPaymentStatusName(PaymentStatusName.FAILED.name())
@@ -56,6 +62,7 @@ public class PaymentTimeoutScheduler {
         for (Order order : orders) {
 
             System.out.println("Cancelling order " + order.getOrderId());
+            // log.info("Cancelling order:", order.getOrderId());
 
             order.setPaymentStatus(failed);
             order.setOrderStatus(cancelled);
@@ -74,5 +81,6 @@ public class PaymentTimeoutScheduler {
         }
 
         System.out.println("Scheduler done");
+        // log.info("Schedule done");
     }
 }
