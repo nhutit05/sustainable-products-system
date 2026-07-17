@@ -16,6 +16,7 @@ import ProfileAddress from '../components/ProfileAddress'
 import MyOrder from '../components/order/MyOrder'
 import Chatbot from '../components/Chatbot'
 import { Sparkles, X } from 'lucide-react'
+import ProfileFavorite from '../components/ProfileFavorite'
 // import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {
@@ -80,7 +81,7 @@ export default function CustomerLayout() {
             <Route path="" element={<ProfileInfo />} />
             <Route path="orders" element={<MyOrder />} />
             <Route path="addresses" element={<ProfileAddress />} />
-            <Route path="favorites" element={<h1>Sản phẩm yêu thích</h1>} />
+            <Route path="favorites" element={<ProfileFavorite />} />
           </Route>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />

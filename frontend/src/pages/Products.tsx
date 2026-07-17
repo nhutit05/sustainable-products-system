@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CategoryResponse, ProductResponse } from '../model/product.model'
 import ProductCard from '../components/product/ProductCard'
 import ProductFilter from '../components/product/ProductFilter'
-import Loading from '../components/Loading'
 
 const PAGE_SIZE = 8
 
@@ -151,13 +150,6 @@ export default function Products() {
     }
 
     paginationProducts()
-
-    const updateTotalPages = () => {
-      setCurrentPage(1) // Reset current page to 1 when filters change
-      setTotalPages(Math.max(1, Math.ceil(resultFilter.length / PAGE_SIZE)))
-    }
-
-    updateTotalPages()
   }, [resultFilter, currentPage])
 
   return (
@@ -209,7 +201,7 @@ export default function Products() {
 
           {isLoading ? (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center backdrop-blur-sm rounded-2xl">
-              <div className="w-10 h-10 mb-4 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-10 h-10 mb-4 border-4 border-green-500 border-t-transparent rounded-full animate-spin mt-7"></div>
               <p className="font-semibold text-green-900">Đang tải sản phẩm...</p>
             </div>
           ) : null}

@@ -397,6 +397,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     public Integer countProducts() {
-        return (int) repository.count();
+        return (int) getAll().size();
     }
 }

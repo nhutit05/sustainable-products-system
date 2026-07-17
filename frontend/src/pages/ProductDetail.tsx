@@ -13,6 +13,8 @@ export default function ProductDetail() {
 
   const productId = location.pathname.split('/').pop() // Lấy productId từ URL
 
+  const [isFavorite, setIsFavorite] = useState(false)
+
   const [product, setProduct] = useState<ProductResponse | null>(null)
 
   const [listImage, setListImage] = useState<string[]>(product?.imageUrls || [])
@@ -107,8 +109,29 @@ export default function ProductDetail() {
       }
     }
 
+    // check favorite product
+    const checkFavoriteProduct = async (productId: number) => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        if (response.ok) {
+          setIsFavorite(true)
+        }
+      } catch (error) {
+        console.error('Error checking favorite product:', error)
+      }
+    }
+
     fetchProduct()
     fetchImageProduct()
+    checkFavoriteProduct(Number(productId))
 
     // fetch tam toan bo product de goi y
     fetchSuggestProducts()
@@ -163,7 +186,77 @@ export default function ProductDetail() {
     }
   }
 
-  console.log('product', product)
+  const addFavoriteProduct = async (productId: number) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      showNotification({
+        message: 'Vui lòng đăng nhập để thêm sản phẩm yêu thích',
+        type: 'WARNING',
+        duration: 3000,
+      })
+      return
+    }
+
+    if (isFavorite) {
+      setIsFavorite(false)
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        if (response.ok) {
+          showNotification({
+            message: 'Xóa sản phẩm yêu thích thành công',
+            type: 'SUCCESS',
+            duration: 3000,
+          })
+        }
+      } catch (error) {
+        console.error('Error removing favorite product:', error)
+        showNotification({
+          message: 'Xóa sản phẩm yêu thích thất bại',
+          type: 'ERROR',
+          duration: 3000,
+        })
+        setIsFavorite(true)
+      }
+    } else {
+      setIsFavorite(true)
+
+      try {
+        const response = await fetch('http://localhost:8080/api/favorite-products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ productId }),
+        })
+
+        if (response.ok) {
+          showNotification({
+            message: 'Thêm sản phẩm yêu thích thành công',
+            type: 'SUCCESS',
+            duration: 3000,
+          })
+        }
+      } catch (error) {
+        console.error('Error adding favorite product:', error)
+        showNotification({
+          message: 'Thêm sản phẩm yêu thích thất bại',
+          type: 'ERROR',
+          duration: 3000,
+        })
+        setIsFavorite(false)
+      }
+    }
+  }
 
   return (
     <div className="page-cus_product-detail mt-14 min-h-screen bg-[#F8FFF4] text-left">
@@ -272,8 +365,15 @@ export default function ProductDetail() {
                       <ShoppingCart className="inline-block mr-2" size={20} />
                       Thêm vào giỏ hàng
                     </button>
-                    <button className="flex items-center justify-center text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200">
-                      <Heart className="inline-block mr-2" size={20} />
+                    <button
+                      onClick={() => addFavoriteProduct(product.productId)}
+                      className="flex items-center justify-center text-green-900 font-bold px-4 py-3 rounded-2xl  border border-emerald-400 hover:bg-emerald-500 hover:text-white hover:cursor-pointer transition-all duration-200"
+                    >
+                      <Heart
+                        className="inline-block mr-2"
+                        size={20}
+                        fill={isFavorite ? 'red' : 'white'}
+                      />
                       Thêm vào yêu thích
                     </button>
                   </div>

@@ -16,32 +16,17 @@ public class FavoriteProductController {
 
     private final FavoriteProductService service;
 
-    // [GET] /api/favorite-products
-    @GetMapping
-    public List<FavoriteProductResponse> getAll() {
-        return service.getAll();
-    }
-
     // [GET] /api/favorite-products?userId={userId}
-    @GetMapping(params = "userId")
-    public List<FavoriteProductResponse> getAllByUserId(
-            @RequestParam Integer userId) {
-        return service.getAllByUserId(userId);
-    }
-
-    // [GET] /api/favorite-products?productId={productId}
-    @GetMapping(params = "productId")
-    public List<FavoriteProductResponse> getAllByProductId(
-            @RequestParam Integer productId) {
-        return service.getAllByProductId(productId);
+    @GetMapping
+    public List<FavoriteProductResponse> getAllByUserId() {
+        return service.getAllByUserId();
     }
 
     // [GET] /api/favorite-products?userId={userId}&productId={productId}
-    @GetMapping(params = {"userId", "productId"})
+    @GetMapping("product/{productId}")
     public FavoriteProductResponse getByUserIdAndProductId(
-            @RequestParam Integer userId,
-            @RequestParam Integer productId) {
-        return service.getByUserIdAndProductId(userId, productId);
+            @PathVariable Integer productId) {
+        return service.getByUserIdAndProductId(productId);
     }
 
     // [POST] /api/favorite-products
@@ -51,21 +36,11 @@ public class FavoriteProductController {
         return service.create(request);
     }
 
-    // [PUT] /api/favorite-products?userId={userId}&productId={productId}
-    @PutMapping(params = {"userId", "productId"})
-    public FavoriteProductResponse update(
-            @RequestParam Integer userId,
-            @RequestParam Integer productId,
-            @RequestBody FavoriteProductRequest request) {
-        return service.update(userId, productId, request);
-    }
-
     // [DELETE] /api/favorite-products?userId={userId}&productId={productId}
-    @DeleteMapping(params = {"userId", "productId"})
+    @DeleteMapping("product/{productId}")
     public Boolean delete(
-            @RequestParam Integer userId,
-            @RequestParam Integer productId) {
-        return service.delete(userId, productId);
+            @PathVariable Integer productId) {
+        return service.delete(productId);
     }
 
 }
