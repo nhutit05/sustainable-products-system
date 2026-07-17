@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Spin, message } from 'antd';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Spin, message } from 'antd'
 import {
   BanknoteCheck,
   Boxes,
@@ -9,24 +9,16 @@ import {
   TrendingDown,
   Package,
   RefreshCw,
-} from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+} from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-import type { DashboardSummary, RevenueByMonth, RecentOrder } from '../model/dashboard.model';
+import type { DashboardSummary, RevenueByMonth, RecentOrder } from '../model/dashboard.model'
 
 import {
   getDashboardSummary,
   getRevenueByMonth,
   getRecentOrders,
-} from '../services/dashboard.service';
+} from '../services/dashboard.service'
 
 // ==========================
 // HELPERS
@@ -37,18 +29,13 @@ const formatCurrency = (value: number) =>
     style: 'currency',
     currency: 'VND',
     maximumFractionDigits: 0,
-  }).format(value);
+  }).format(value)
 
-const formatNumber = (value: number) =>
-  new Intl.NumberFormat('vi-VN').format(value);
+const formatNumber = (value: number) => new Intl.NumberFormat('vi-VN').format(value)
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('vi-VN');
+const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('vi-VN')
 
-const MONTH_LABELS = [
-  'T1', 'T2', 'T3', 'T4', 'T5', 'T6',
-  'T7', 'T8', 'T9', 'T10', 'T11', 'T12',
-];
+const MONTH_LABELS = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12']
 
 const statusBadge = (name: string) => {
   const map: Record<string, string> = {
@@ -57,7 +44,7 @@ const statusBadge = (name: string) => {
     SHIPPING: 'bg-violet-50 text-violet-700 ring-1 ring-violet-200/60',
     COMPLETED: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60',
     CANCELLED: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60',
-  };
+  }
   return (
     <span
       className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
@@ -66,15 +53,15 @@ const statusBadge = (name: string) => {
     >
       {name}
     </span>
-  );
-};
+  )
+}
 
 const paymentBadge = (name: string) => {
   const map: Record<string, string> = {
     PAID: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60',
     UNPAID: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200/60',
     FAILED: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60',
-  };
+  }
   return (
     <span
       className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
@@ -83,8 +70,8 @@ const paymentBadge = (name: string) => {
     >
       {name}
     </span>
-  );
-};
+  )
+}
 
 // ==========================
 // COLOR MAP
@@ -119,55 +106,51 @@ const colorMap = {
     iconBg: 'bg-blue-50',
     ring: 'ring-blue-200',
   },
-} as const;
+} as const
 
-type ColorKey = keyof typeof colorMap;
-
-// ==========================
-// COMPONENT
-// ==========================
+type ColorKey = keyof typeof colorMap
 
 export default function AdminDashboard() {
-  const token = localStorage.getItem('token') ?? '';
-  const abortRef = useRef<AbortController | null>(null);
+  const token = localStorage.getItem('token') ?? ''
+  const abortRef = useRef<AbortController | null>(null)
 
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [revenue, setRevenue] = useState<RevenueByMonth[]>([]);
-  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [chartYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
+  const [revenue, setRevenue] = useState<RevenueByMonth[]>([])
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
+  const [loading, setLoading] = useState(true)
+  const [chartYear] = useState(new Date().getFullYear())
 
   const fetchDashboard = useCallback(async () => {
-    if (!token) return;
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+    if (!token) return
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
-    setLoading(true);
+    setLoading(true)
     try {
       const [summaryData, revenueData, ordersData] = await Promise.all([
         getDashboardSummary(token),
         getRevenueByMonth(token, chartYear),
         getRecentOrders(token, 8),
-      ]);
+      ])
       if (!controller.signal.aborted) {
-        setSummary(summaryData);
-        setRevenue(revenueData);
-        setRecentOrders(ordersData);
+        setSummary(summaryData)
+        setRevenue(revenueData)
+        setRecentOrders(ordersData)
       }
     } catch (_e: unknown) {
       if (!controller.signal.aborted) {
-        message.error('Không thể tải dữ liệu dashboard.');
+        message.error('Không thể tải dữ liệu dashboard.')
       }
     } finally {
-      if (!controller.signal.aborted) setLoading(false);
+      if (!controller.signal.aborted) setLoading(false)
     }
-  }, [token, chartYear]);
+  }, [token, chartYear])
 
   useEffect(() => {
-    fetchDashboard();
-    return () => abortRef.current?.abort();
-  }, [fetchDashboard]);
+    fetchDashboard()
+    return () => abortRef.current?.abort()
+  }, [fetchDashboard])
 
   const chartData = useMemo(
     () =>
@@ -175,11 +158,11 @@ export default function AdminDashboard() {
         name: MONTH_LABELS[r.month - 1],
         revenue: r.revenue,
       })),
-    [revenue],
-  );
+    [revenue]
+  )
 
   const summaryCards = useMemo(() => {
-    if (!summary) return [];
+    if (!summary) return []
     return [
       {
         label: 'Doanh số',
@@ -209,8 +192,8 @@ export default function AdminDashboard() {
         icon: <Boxes size={22} />,
         color: 'blue' as ColorKey,
       },
-    ];
-  }, [summary]);
+    ]
+  }, [summary])
 
   // ==========================
   // RENDER
@@ -244,10 +227,7 @@ export default function AdminDashboard() {
               disabled={loading}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-sm font-medium text-white hover:bg-white/25 hover:border-white/35 active:bg-white/30 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 cursor-pointer"
             >
-              <RefreshCw
-                size={15}
-                className={loading ? 'animate-spin' : ''}
-              />
+              <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
               Làm mới
             </button>
           </div>
@@ -256,7 +236,7 @@ export default function AdminDashboard() {
         {/* SUMMARY CARDS */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           {summaryCards.map((item, index) => {
-            const c = colorMap[item.color];
+            const c = colorMap[item.color]
             return (
               <div
                 key={index}
@@ -276,9 +256,7 @@ export default function AdminDashboard() {
                   <h4
                     className={`text-lg sm:text-xl lg:text-2xl font-bold ${c.value} mt-1 tabular-nums leading-tight break-all`}
                   >
-                    {item.unit === 'đ'
-                      ? formatCurrency(item.value)
-                      : formatNumber(item.value)}
+                    {item.unit === 'đ' ? formatCurrency(item.value) : formatNumber(item.value)}
                   </h4>
                   {item.unit !== 'đ' && (
                     <span className="text-[11px] sm:text-xs text-gray-400 font-normal">
@@ -287,7 +265,7 @@ export default function AdminDashboard() {
                   )}
                 </div>
               </div>
-            );
+            )
           })}
         </section>
 
@@ -301,15 +279,8 @@ export default function AdminDashboard() {
             {chartData.length > 0 ? (
               <div className="h-[220px] sm:h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData}
-                    margin={{ top: 5, right: 10, left: -10, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="#f0f0f0"
-                      vertical={false}
-                    />
+                  <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                     <XAxis
                       dataKey="name"
                       tick={{ fontSize: 12, fill: '#9ca3af' }}
@@ -340,16 +311,13 @@ export default function AdminDashboard() {
                       }}
                     /> */}
                     <Tooltip
-  formatter={(value) => [
-    formatCurrency(Number(value ?? 0)),
-    'Doanh thu',
-  ]}
-  contentStyle={{
-    borderRadius: '12px',
-    border: '1px solid #e5e7eb',
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-  }}
-/>
+                      formatter={(value) => [formatCurrency(Number(value ?? 0)), 'Doanh thu']}
+                      contentStyle={{
+                        borderRadius: '12px',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                      }}
+                    />
                     <Bar
                       dataKey="revenue"
                       fill="url(#barGradient)"
@@ -357,23 +325,9 @@ export default function AdminDashboard() {
                       maxBarSize={40}
                     />
                     <defs>
-                      <linearGradient
-                        id="barGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="#10b981"
-                          stopOpacity={0.9}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#06b6d4"
-                          stopOpacity={0.7}
-                        />
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.7} />
                       </linearGradient>
                     </defs>
                   </BarChart>
@@ -381,9 +335,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 p-6 min-h-[160px] flex items-center justify-center">
-                <p className="text-gray-400 text-sm">
-                  Chưa có dữ liệu doanh thu
-                </p>
+                <p className="text-gray-400 text-sm">Chưa có dữ liệu doanh thu</p>
               </div>
             )}
           </section>
@@ -400,9 +352,7 @@ export default function AdminDashboard() {
                     <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
                       <TrendingUp size={16} className="text-emerald-600" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Đơn hoàn thành
-                    </span>
+                    <span className="text-sm font-medium text-gray-700">Đơn hoàn thành</span>
                   </div>
                   <span className="text-sm font-bold text-emerald-700">
                     {formatNumber(summary.completedOrders)}
@@ -413,9 +363,7 @@ export default function AdminDashboard() {
                     <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
                       <Package size={16} className="text-amber-600" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Đơn đang chờ
-                    </span>
+                    <span className="text-sm font-medium text-gray-700">Đơn đang chờ</span>
                   </div>
                   <span className="text-sm font-bold text-amber-700">
                     {formatNumber(summary.pendingOrders)}
@@ -426,9 +374,7 @@ export default function AdminDashboard() {
                     <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
                       <TrendingDown size={16} className="text-rose-600" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Đơn huỷ
-                    </span>
+                    <span className="text-sm font-medium text-gray-700">Đơn huỷ</span>
                   </div>
                   <span className="text-sm font-bold text-rose-700">
                     {formatNumber(summary.cancelledOrders)}
@@ -439,9 +385,7 @@ export default function AdminDashboard() {
                     <div className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
                       <WalletCards size={16} className="text-sky-600" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Khách hàng
-                    </span>
+                    <span className="text-sm font-medium text-gray-700">Khách hàng</span>
                   </div>
                   <span className="text-sm font-bold text-sky-700">
                     {formatNumber(summary.totalCustomers)}
@@ -451,10 +395,7 @@ export default function AdminDashboard() {
             ) : (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-12 rounded-xl bg-gray-100 animate-pulse"
-                  />
+                  <div key={i} className="h-12 rounded-xl bg-gray-100 animate-pulse" />
                 ))}
               </div>
             )}
@@ -493,10 +434,7 @@ export default function AdminDashboard() {
               <tbody className="divide-y divide-gray-50">
                 {recentOrders.length === 0 && !loading && (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="py-12 text-center text-gray-400"
-                    >
+                    <td colSpan={6} className="py-12 text-center text-gray-400">
                       <div className="flex flex-col items-center gap-2">
                         <Package size={32} className="text-gray-300" />
                         <p className="text-sm">Chưa có đơn hàng nào</p>
@@ -535,5 +473,5 @@ export default function AdminDashboard() {
         </section>
       </Spin>
     </div>
-  );
+  )
 }

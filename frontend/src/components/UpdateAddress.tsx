@@ -1,11 +1,6 @@
 import { X } from 'lucide-react'
 import { useCustomer } from '../context/useCustomer'
-import type {
-  VillageResponse,
-  CityResponse,
-  Addressresponse,
-  AddressRequest,
-} from '../model/address.model'
+import type { VillageResponse, CityResponse, Addressresponse } from '../model/address.model'
 import { useEffect, useState } from 'react'
 import { useNotification } from '../context/useNotification'
 import { useNavigate } from 'react-router-dom'

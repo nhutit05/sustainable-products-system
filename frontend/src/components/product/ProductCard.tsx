@@ -1,6 +1,9 @@
 import { Heart, Leaf, Sprout } from 'lucide-react'
-import type { ProductIntroduce, ProductResponse } from '../../model/product.model'
+import type { ProductResponse } from '../../model/product.model'
 import { useNavigate } from 'react-router-dom'
+import { useCustomer } from '../../context/useCustomer'
+import { useNotification } from '../../context/useNotification'
+import { useEffect, useState } from 'react'
 
 interface ProductCardProps {
   product: ProductResponse
@@ -9,8 +12,122 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const navigate = useNavigate()
 
+  const [token, setToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    const storedToken = () => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        setToken(token)
+      }
+    }
+
+    storedToken()
+  }, [])
+
+  const [isFavorite, setIsFavorite] = useState(false)
+
+  const { showNotification } = useNotification()
+
   const handleViewDetail = (productId: number) => {
     navigate(`/products/${productId}`)
+  }
+
+  useEffect(() => {
+    const checkFavoriteProduct = async (productId: number) => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        if (response.ok) {
+          setIsFavorite(true)
+        }
+      } catch (error) {
+        console.error('Error checking favorite product:', error)
+      }
+    }
+
+    if (token) {
+      checkFavoriteProduct(product.productId)
+    }
+  }, [product.productId, token])
+
+  const addFavoriteProduct = async (productId: number) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      showNotification({
+        message: 'Vui lòng đăng nhập để thêm sản phẩm yêu thích',
+        type: 'WARNING',
+        duration: 3000,
+      })
+      return
+    }
+
+    if (isFavorite) {
+      setIsFavorite(false)
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        if (response.ok) {
+          showNotification({
+            message: 'Xóa sản phẩm yêu thích thành công',
+            type: 'SUCCESS',
+            duration: 3000,
+          })
+        }
+      } catch (error) {
+        console.error('Error removing favorite product:', error)
+        showNotification({
+          message: 'Xóa sản phẩm yêu thích thất bại',
+          type: 'ERROR',
+          duration: 3000,
+        })
+        setIsFavorite(true)
+      }
+    } else {
+      setIsFavorite(true)
+
+      try {
+        const response = await fetch('http://localhost:8080/api/favorite-products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ productId }),
+        })
+
+        if (response.ok) {
+          showNotification({
+            message: 'Thêm sản phẩm yêu thích thành công',
+            type: 'SUCCESS',
+            duration: 3000,
+          })
+        }
+      } catch (error) {
+        console.error('Error adding favorite product:', error)
+        showNotification({
+          message: 'Thêm sản phẩm yêu thích thất bại',
+          type: 'ERROR',
+          duration: 3000,
+        })
+        setIsFavorite(false)
+      }
+    }
   }
 
   return (
@@ -27,10 +144,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
 
         <button
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-green-400 hover:text-emerald-600 transition-all shadow-sm "
-          onClick={(e) => e.preventDefault()}
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center 
+          justify-center hover:text-emerald-600 transition-all shadow-sm hover:cursor-pointer hover:scale-110"
+          onClick={(e) => {
+            e.preventDefault()
+            addFavoriteProduct(product.productId)
+          }}
         >
-          <Heart className="w-4 h-4" />
+          <Heart className="w-4 h-4" fill={isFavorite ? 'red' : 'white'} />
         </button>
 
         <div className="text-sm text-white font-semibold absolute top-2 left-2 bg-linear-to-r from-emerald-400 to-teal-600 px-3 py-1 rounded-full flex items-center gap-2 shadow-md">
