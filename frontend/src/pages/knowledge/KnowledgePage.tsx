@@ -142,7 +142,7 @@ const KnowledgePage = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white m-0 tracking-tight">
-                    Knowledge Base
+                    Kho lưu trữ dữ liệu
                   </h1>
                   <p className="text-emerald-100 text-sm sm:text-base mt-1 sm:mt-2 m-0 max-w-xl">
                     Quản lý và tổ chức tài liệu huấn luyện cho chatbot AI

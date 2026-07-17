@@ -1,12 +1,13 @@
 import { Leaf, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import type { CartItemResponse, Cart } from '../model/cart.model'
 import CartItem from '../components/order/CartItem'
 import type { paymentMethodResponse } from '../model/paymentMethod.model'
-import Checkout from '../components/order/Checkout'
 import { useNotification } from '../context/useNotification'
 import { useCustomer } from '../context/useCustomer'
+
+const Checkout = lazy(() => import('../components/order/Checkout'))
 
 export default function Cart() {
   // const [currentUser, setCurrentUser] = useState(null)
@@ -21,6 +22,10 @@ export default function Cart() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>()
 
   const [onClose, setOnClose] = useState(true)
+
+  useEffect(() => {
+    import('../components/order/Checkout')
+  }, [])
 
   useEffect(() => {
     // Lay danh sach san pham trong gio hang
@@ -275,12 +280,14 @@ export default function Cart() {
           )}
         </main>
         {!onClose && (
-          <Checkout
-            cartItems={cartItems}
-            totalPrice={totalPrice}
-            paymentMethodId={selectedPaymentMethod || 0}
-            setOnClose={setOnClose}
-          />
+          <Suspense fallback={null}>
+            <Checkout
+              cartItems={cartItems}
+              totalPrice={totalPrice}
+              paymentMethodId={selectedPaymentMethod || 0}
+              setOnClose={setOnClose}
+            />
+          </Suspense>
         )}
       </div>
       {!onClose && (

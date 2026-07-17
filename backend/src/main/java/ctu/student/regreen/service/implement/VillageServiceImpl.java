@@ -1,6 +1,7 @@
 package ctu.student.regreen.service.implement;
 
 import ctu.student.regreen.dto.request.VillageRequest;
+import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.dto.response.VillageResponse;
 import ctu.student.regreen.exception.ErrorCode;
 import ctu.student.regreen.exception.ResourceNotFoundException;
@@ -9,6 +10,10 @@ import ctu.student.regreen.model.Village;
 import ctu.student.regreen.repository.VillageRepository;
 import ctu.student.regreen.service.interfaces.VillageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,5 +67,26 @@ public class VillageServiceImpl implements VillageService {
             return true;
         }
         return false;
+    }
+
+    public PageResponse<VillageResponse> getVillagesPaginated(int page, int size, Integer cityId, String keyword) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("villageName").ascending());
+        if (keyword == null) keyword = "";
+        keyword = keyword.trim();
+
+        Page<Village> villagePage = repository.searchVillages(cityId, keyword, pageable);
+
+        List<VillageResponse> responses = villagePage.getContent().stream()
+                .map(villageMapper::toResponse)
+                .toList();
+
+        return PageResponse.<VillageResponse>builder()
+                .content(responses)
+                .page(villagePage.getNumber())
+                .size(villagePage.getSize())
+                .totalElements(villagePage.getTotalElements())
+                .totalPages(villagePage.getTotalPages())
+                .last(villagePage.isLast())
+                .build();
     }
 }

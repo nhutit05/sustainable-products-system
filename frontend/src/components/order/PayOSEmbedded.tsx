@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import QRCode from 'react-qr-code'
+import QRCodeCanvas from './QRCodeCanvas'
 import { useNotification } from '../../context/useNotification'
 import { useNavigate } from 'react-router-dom'
 import { Button, Tag, Alert, Progress } from 'antd'
@@ -215,7 +215,7 @@ export default function PayOSEmbedded({
                       <p className="text-gray-400 text-xs m-0 mt-1">Sử dụng ứng dụng ngân hàng hoặc ví điện tử</p>
                     </div>
                     <div className="flex justify-center p-4 bg-gray-50 rounded-2xl">
-                      <QRCode value={qrCode} size={200} />
+                      <QRCodeCanvas value={qrCode} size={200} />
                     </div>
                     <div className="mt-4 text-center">
                       <p className="text-gray-400 text-xs m-0">

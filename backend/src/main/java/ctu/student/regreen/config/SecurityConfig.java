@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/api/payos/**").permitAll()
+                        .requestMatchers("/api/customers/**").hasAnyRole("CUSTOMER", "ADMIN")
 
                         // ================= ADMIN ONLY =================
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -64,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/addresses/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/favorite-products/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/payment-methods/**").hasRole("CUSTOMER")
-                        .requestMatchers("/api/customers/**").hasRole("CUSTOMER")
+                        // .requestMatchers("/api/customers/**").hasRole("CUSTOMER")
                         // .requestMatchers("/api/villages/**").hasRole("CUSTOMER")
                         // .requestMatchers("/api/cities/**").hasRole("CUSTOMER")
 

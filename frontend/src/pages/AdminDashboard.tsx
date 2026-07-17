@@ -175,7 +175,7 @@ export default function AdminDashboard() {
         name: MONTH_LABELS[r.month - 1],
         revenue: r.revenue,
       })),
-    [revenue],
+    [revenue], 
   );
 
   const summaryCards = useMemo(() => {

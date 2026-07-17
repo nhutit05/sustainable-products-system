@@ -1,6 +1,7 @@
 package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.request.VillageRequest;
+import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.dto.response.VillageResponse;
 
 import java.util.List;
@@ -19,5 +20,5 @@ public interface VillageService {
 
     boolean deleteVillage(Integer id);
 
-//    int getCountVillages();
+    PageResponse<VillageResponse> getVillagesPaginated(int page, int size, Integer cityId, String keyword);
 }
