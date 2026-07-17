@@ -4,8 +4,5 @@ import lombok.Data;
 
 @Data
 public class FavoriteProductRequest {
-
-    private Integer userId;
-
     private Integer productId;
 }

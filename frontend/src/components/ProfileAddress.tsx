@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { Addressresponse } from '../model/address.model'
-import { Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import AddressItem from './admin/AddressItem'
 import AddNewAddress from './admin/AddNewAddress'
 import UpdateAddress from './UpdateAddress'
+import { useNotification } from '../context/useNotification'
 
 export default function ProfileAddress() {
   const [addresses, setAddresses] = useState<Addressresponse[]>([])
@@ -11,6 +12,8 @@ export default function ProfileAddress() {
   const token = localStorage.getItem('token')
 
   const [selectedAddress, setSelectedAddress] = useState<Addressresponse | null>(null)
+
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -39,6 +42,43 @@ export default function ProfileAddress() {
 
   const [showAddAddress, setShowAddAddress] = useState(false)
 
+  const [selectedAddressRemove, setSelectedAddressRemove] = useState<Addressresponse | null>(null)
+
+  useEffect(() => {
+    const deleteAddress = async () => {
+      if (selectedAddressRemove) {
+        try {
+          const response = await fetch(
+            `http://localhost:8080/api/addresses/${selectedAddressRemove.addressId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
+
+          if (response.ok) {
+            showNotification({
+              message: 'Xóa địa chỉ thành công',
+              type: 'SUCCESS',
+              duration: 3000,
+            })
+          }
+        } catch (error) {
+          console.error('Error deleting address:', error)
+          showNotification({
+            message: 'Xóa địa chỉ thất bại',
+            type: 'ERROR',
+            duration: 3000,
+          })
+        }
+      }
+    }
+
+    deleteAddress()
+  }, [selectedAddressRemove, token, showNotification])
+
   return (
     <div className="profileAddress">
       <header className="border-b border-green-100 pb-4 pt-2 px-3 mb-4 text-left flex items-center justify-between">
@@ -54,6 +94,7 @@ export default function ProfileAddress() {
               address={address}
               setShowUpdate={setShowUpdateAddress}
               setSelectedAddress={setSelectedAddress}
+              setSelectedAddressRemove={setSelectedAddressRemove}
             />
           ))}
         {/* DEAFAULT ADDRESS */}

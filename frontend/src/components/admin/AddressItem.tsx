@@ -1,17 +1,28 @@
 import { MapPin, SquarePen } from 'lucide-react'
 import type { Addressresponse } from '../../model/address.model'
+import { useState } from 'react'
 
 interface AddressItemProps {
   address: Addressresponse
   setShowUpdate: (value: boolean) => void
   setSelectedAddress: (address: Addressresponse) => void
+
+  setSelectedAddressRemove: (address: Addressresponse) => void
 }
 
 export default function AddressItem({
   address,
   setShowUpdate,
   setSelectedAddress,
+  setSelectedAddressRemove,
 }: AddressItemProps) {
+  const [showOptions, setShowOptions] = useState(false)
+
+  const handleEditClick = () => {
+    setSelectedAddress(address)
+    setShowOptions(!showOptions)
+  }
+
   return (
     <div
       onClick={() => setSelectedAddress(address)}
@@ -31,12 +42,33 @@ export default function AddressItem({
           {address.addressStreet} , {address.villageName}, {address.cityName}{' '}
         </p>
       </div>
-      <div className="p-3">
+      <div className="p-3 relative">
         <SquarePen
-          onClick={() => setShowUpdate(true)}
+          onClick={() => handleEditClick()}
           className="text-blue-600 hover:text-blue-900 transition-colors cursor-pointer"
           size={20}
         />
+
+        {showOptions && (
+          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+            <button
+              onClick={() => {
+                setShowUpdate(true)
+                setShowOptions(false)
+              }}
+              className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              Chỉnh sửa
+            </button>
+
+            <button
+              onClick={() => setSelectedAddressRemove(address)}
+              className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              Xóa địa chỉ
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -15,4 +15,5 @@ public interface ProductRepository
 
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category WHERE p.productId IN :ids")
     List<Product> findAllWithCategoryByIdIn(List<Integer> ids);
+
 }

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FavoriteProductMapper {
 
+    private final ProductMapper productMapper;
+
     public FavoriteProduct toEntity(FavoriteProductRequest request,
                                     Product product,
                                     Customer customer) {
@@ -37,9 +39,10 @@ public class FavoriteProductMapper {
     }
 
     public FavoriteProductResponse toResponse(FavoriteProduct entity) {
+
         return new FavoriteProductResponse(
                 entity.getProduct().getProductId(),
-                entity.getCustomer().getUserId()
+                entity.getCustomer().getUsername()
         );
     }
 }
