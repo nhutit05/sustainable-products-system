@@ -17,15 +17,16 @@ import MyOrder from '../components/order/MyOrder'
 import Chatbot from '../components/Chatbot'
 import { Sparkles, X } from 'lucide-react'
 import ProfileFavorite from '../components/ProfileFavorite'
+import CarbonCalculator from '../pages/caculator/CarbonCaculator'
 // import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
     { label: 'Home', to: '/' },
     { label: 'Products', to: '/products' },
-    { label: 'Blog', to: '/blog' },
+    // { label: 'Blog', to: '/blog' },
     { label: 'Carbon-Calculator', to: '/carbon-calculator' },
-    { label: 'About Us', to: '/about' },
+    // { label: 'About Us', to: '/about' },
   ]
 
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
@@ -85,7 +86,7 @@ export default function CustomerLayout() {
           </Route>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />
-          <Route path="carbon-calculator" element={<h1>Carbon Calculator</h1>} />
+          <Route path="carbon-calculator" element={<CarbonCalculator />} />
         </Routes>
       </main>
 
