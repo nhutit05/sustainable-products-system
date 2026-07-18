@@ -147,6 +147,7 @@ export default function Products() {
       const startIndex = (currentPage - 1) * PAGE_SIZE
       const endIndex = startIndex + PAGE_SIZE
       setFilteredProducts(resultFilter.slice(startIndex, endIndex))
+      setTotalPages(Math.max(1, Math.ceil(resultFilter.length / PAGE_SIZE)))
     }
 
     paginationProducts()
@@ -190,7 +191,7 @@ export default function Products() {
         {/* Product List */}
         <div className="product_list--grid mt-6 text-left relative">
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-4 gap-8">
+            <div className="grid xl:grid-cols-4 lg:gap-8 lg:grid-cols-3 sm:grid-cols-2 sm:gap-6 xs:grid-cols-1 xs:gap-4">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.productId} product={product} />
               ))}
