@@ -20,7 +20,13 @@ public class CacheConfig {
 
         CaffeineCacheManager manager = new CaffeineCacheManager();
 
-        manager.setCacheNames(List.of("embeddings", "retrievals", "rag-context", "rewrite-query"));
+        manager.setCacheNames(List.of(
+                "embeddings", "retrievals", "rag-context", "rewrite-query",
+                "stats-revenue-by-category", "stats-top-products",
+                "stats-order-status", "stats-review",
+                "stats-refund", "stats-voucher",
+                "stats-carbon", "stats-top-customers"
+        ));
 
         manager.setCaffeine(
 

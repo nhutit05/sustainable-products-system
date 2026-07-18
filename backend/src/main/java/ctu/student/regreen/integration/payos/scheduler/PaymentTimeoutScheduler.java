@@ -39,7 +39,7 @@ public class PaymentTimeoutScheduler {
 
         LocalDateTime expiredTime = LocalDateTime.now(Clock.systemUTC()).minusMinutes(15);
         // System.out.println("UTC now = " + LocalDateTime.now(Clock.systemUTC()));
-        System.out.println("Expired = " + expiredTime);
+        // System.out.println("Expired = " + expiredTime);
         // log.info("Expired:", expiredTime);
 
         List<Order> orders = orderRepository.findExpiredOrdersWithItems(
