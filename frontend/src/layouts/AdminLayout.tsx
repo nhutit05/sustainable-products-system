@@ -20,6 +20,7 @@ import AdminProducts from '../pages/AdminProducts'
 import KnowledgePage from '../pages/knowledge/KnowledgePage'
 import AdminVouchers from '../pages/AdminVouchers'
 import AdminRefundSlip from '../pages/AdminRefundSlip'
+import StatisticPage from '../pages/StatisticPage'
 import { useNotification } from '../context/useNotification'
 
 export default function AdminLayout() {
@@ -202,7 +203,7 @@ export default function AdminLayout() {
           <Routes>
             <Route index element={<AdminDashboard />} />
             <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="reports" element={<h1>Reports</h1>} />
+            <Route path="reports" element={<StatisticPage />} />
             <Route path="categories" element={<AdminSystemCategories />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="warehouses" element={<h1>Warehouses</h1>} />

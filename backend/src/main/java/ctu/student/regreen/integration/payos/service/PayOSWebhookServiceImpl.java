@@ -1,6 +1,7 @@
 package ctu.student.regreen.integration.payos.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.enums.PaymentStatusName;
 import ctu.student.regreen.model.Order;
@@ -13,6 +14,7 @@ import vn.payos.model.webhooks.WebhookData;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PayOSWebhookServiceImpl
         implements PayOSWebhookService {
 
@@ -63,6 +65,9 @@ public class PayOSWebhookServiceImpl
         order.setPaymentStatus(paid);
 
         orderRepository.save(order);
+
+        System.out.println("After payment status: "
+                + order.getPaymentStatus().getPaymentStatusName());
         // bước sau sẽ xử lý data
     }
 

@@ -15,6 +15,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -25,7 +26,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_order_ordered_at", columnList = "ordered_at"),
+    @Index(name = "idx_order_user_id", columnList = "user_id"),
+    @Index(name = "idx_order_status_id", columnList = "order_status_id"),
+    @Index(name = "idx_order_payment_status_id", columnList = "payment_status_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
