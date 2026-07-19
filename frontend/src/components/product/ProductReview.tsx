@@ -102,7 +102,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
 
   return (
     <div className="reviews bg-white p-4 shadow rounded-2xl">
-      <div className="review_summary bg-teal-50 rounded-2xl p-4 mb-4 flex items-center justify-between">
+      <div className="review_summary bg-teal-50 rounded-2xl p-4 mb-4 flex items-start lg:items-center lg:justify-between lg:flex-row flex-col gap-3">
         <h2 className="text-green-900 text-lg font-semibold mb-4 uppercase">Tổng quan đánh giá</h2>
         <p className="text-gray-700 mb-2">Số lượng đánh giá: {countReviews}</p>
       </div>
@@ -125,7 +125,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
                 <p className="review-content text-gray-700">{review.reviewContent}</p>
               </div>
 
-              <div className="col-span-1">
+              <div className="col-span-1 hidden lg:flex flex-col items-center justify-center gap-2">
                 <div className="reviewImages flex items-center justify-center gap-2">
                   {/* Review images would be displayed here */}
                   <div className="h-18 w-18 border border-gray-300 rounded-lg overflow-hidden">

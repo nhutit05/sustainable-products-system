@@ -90,7 +90,7 @@ export default function CustomerLayout() {
         </Routes>
       </main>
 
-      <footer className="footer-cus">
+      <footer className="footer-cus w-full">
         <Footer />
       </footer>
 
