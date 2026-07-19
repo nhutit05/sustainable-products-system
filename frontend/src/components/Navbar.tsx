@@ -2,6 +2,7 @@ import { Bell, Heart, Leaf, Menu, Search, ShoppingCart, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import NavbarAccount from './NavbarAccount'
+import { useNotification } from '../context/useNotification'
 
 interface NavbarProps {
   NAV_LINKS: { label: string; to: string }[]
@@ -23,6 +24,8 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
   const token = localStorage.getItem('token')
 
   const [activeLink, setActiveLink] = useState<string>(location.pathname)
+
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     const handlerScroll = () => {
@@ -83,6 +86,20 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     closeNavbar()
   }, [location.pathname])
 
+  const handleHeartClick = () => {
+    if (!userExist) {
+      navigate('/login')
+      showNotification({
+        message: 'Vui lòng đăng nhập để xem danh sách yêu thích',
+        type: 'WARNING',
+        duration: 3000,
+      })
+      return
+    }
+
+    navigate('/profile/favorites')
+  }
+
   return (
     <nav
       className={`navbar-cus fixed top-0 left-0 right-0 z-50 bg-white shadow-md 
@@ -139,7 +156,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
               </span>
             </Link>
             <button className="hidden lg:flex relative p-2 rounded-lg text-green-700 hover:bg-green-100 transition-colors">
-              <Heart className="w-5 h-5" />
+              <Heart className="w-5 h-5" onClick={handleHeartClick} />
             </button>
             <button className="hidden lg:flex relative p-2 rounded-lg text-green-700 hover:bg-green-100 transition-colors">
               <Bell className="w-5 h-5" />
