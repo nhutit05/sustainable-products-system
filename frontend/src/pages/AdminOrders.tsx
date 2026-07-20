@@ -159,8 +159,8 @@ export default function AdminOrders() {
         orderStatusId: selectedOrderStatus,
         paymentStatusId: selectedPaymentStatus,
         paymentMethodId: selectedPaymentMethod,
-        startDate: dateRange?.[0]?.toDate(),
-        endDate: dateRange?.[1]?.toDate(),
+        startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
+        endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
       });
       if (!controller.signal.aborted) {
         setOrders(response.content);
@@ -175,7 +175,7 @@ export default function AdminOrders() {
   // ---- reset page on filter change ----
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedKeyword, selectedOrderStatus, selectedPaymentStatus, selectedPaymentMethod]);
+  }, [debouncedKeyword, selectedOrderStatus, selectedPaymentStatus, selectedPaymentMethod, dateRange]);
 
   // ---- trigger fetch ----
   useEffect(() => {
