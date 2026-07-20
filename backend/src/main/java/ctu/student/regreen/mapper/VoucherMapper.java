@@ -21,6 +21,8 @@ public class VoucherMapper {
         voucher.setExpiredAt(request.getExpiredAt());
         voucher.setQuantity(request.getQuantity());
         voucher.setIsActive(request.getIsActive());
+        voucher.setMinOrderValue(request.getMinOrderValue() != null ? request.getMinOrderValue() : 0f);
+        voucher.setMaxDiscountAmount(request.getMaxDiscountAmount() != null ? request.getMaxDiscountAmount() : 0f);
 
         return voucher;
     }
@@ -35,7 +37,9 @@ public class VoucherMapper {
                 voucher.getStartedAt(),
                 voucher.getExpiredAt(),
                 voucher.getQuantity(),
-                voucher.getIsActive());
+                voucher.getIsActive(),
+                voucher.getMinOrderValue(),
+                voucher.getMaxDiscountAmount());
     }
 
     public VoucherSummaryResponse toSummary(
@@ -46,9 +50,12 @@ public class VoucherMapper {
                 voucher.getCode(),
                 voucher.getDescription(),
                 voucher.getDiscountValue(),
+                voucher.getStartedAt(),
                 voucher.getQuantity(),
                 voucher.getExpiredAt(),
-                voucher.getIsActive());
+                voucher.getIsActive(),
+                voucher.getMinOrderValue(),
+                voucher.getMaxDiscountAmount());
     }
 
     public void update(Voucher voucher, VoucherRequest request) {
@@ -59,5 +66,7 @@ public class VoucherMapper {
         voucher.setExpiredAt(request.getExpiredAt());
         voucher.setQuantity(request.getQuantity());
         voucher.setIsActive(request.getIsActive());
+        voucher.setMinOrderValue(request.getMinOrderValue() != null ? request.getMinOrderValue() : 0f);
+        voucher.setMaxDiscountAmount(request.getMaxDiscountAmount() != null ? request.getMaxDiscountAmount() : 0f);
     }
 }

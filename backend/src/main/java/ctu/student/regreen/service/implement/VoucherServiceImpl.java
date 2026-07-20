@@ -117,6 +117,16 @@ public class VoucherServiceImpl
                         voucher.setIsActive(request.getIsActive());
                 }
 
+                // Min Order Value
+                if (request.getMinOrderValue() != null) {
+                        voucher.setMinOrderValue(request.getMinOrderValue());
+                }
+
+                // Max Discount Amount
+                if (request.getMaxDiscountAmount() != null) {
+                        voucher.setMaxDiscountAmount(request.getMaxDiscountAmount());
+                }
+
                 // Validate và cập nhật ngày
                 LocalDate startedAt = request.getStartedAt() != null
                                 ? request.getStartedAt()

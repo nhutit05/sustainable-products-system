@@ -24,4 +24,8 @@ public class VoucherResponse {
     private Integer quantity;
 
     private Boolean isActive;
+
+    private Float minOrderValue;
+
+    private Float maxDiscountAmount;
 }

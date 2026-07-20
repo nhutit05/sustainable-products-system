@@ -28,4 +28,10 @@ public class VoucherUpdateRequest {
     private Integer quantity;
 
     private Boolean isActive;
+
+    @PositiveOrZero
+    private Float minOrderValue;
+
+    @PositiveOrZero
+    private Float maxDiscountAmount;
 }

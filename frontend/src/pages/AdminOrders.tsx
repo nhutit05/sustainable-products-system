@@ -14,7 +14,7 @@ import {
   message,
 } from "antd";
 import type { Dayjs } from "dayjs";
-import { Eye } from "lucide-react";
+import { Eye, Printer } from "lucide-react";
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 
 import type {
@@ -159,8 +159,8 @@ export default function AdminOrders() {
         orderStatusId: selectedOrderStatus,
         paymentStatusId: selectedPaymentStatus,
         paymentMethodId: selectedPaymentMethod,
-        startDate: dateRange?.[0]?.toDate(),
-        endDate: dateRange?.[1]?.toDate(),
+        startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
+        endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
       });
       if (!controller.signal.aborted) {
         setOrders(response.content);
@@ -175,7 +175,7 @@ export default function AdminOrders() {
   // ---- reset page on filter change ----
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedKeyword, selectedOrderStatus, selectedPaymentStatus, selectedPaymentMethod]);
+  }, [debouncedKeyword, selectedOrderStatus, selectedPaymentStatus, selectedPaymentMethod, dateRange]);
 
   // ---- trigger fetch ----
   useEffect(() => {
@@ -265,6 +265,141 @@ export default function AdminOrders() {
     setDrawerOpen(false);
     setSelectedOrder(null);
   }, [actionLoading]);
+
+  const handlePrintInvoice = useCallback((order: orderResponse) => {
+    const isPaid = order.paymentStatusId === 3;
+    const itemsHtml = order.items
+      .map(
+        (item, i) => `
+        <tr style="border-bottom:1px solid #e5e7eb">
+          <td style="padding:10px 16px;color:#6b7280">${i + 1}</td>
+          <td style="padding:10px 16px;color:#111827">${item.productName}</td>
+          <td style="padding:10px 16px;text-align:center;color:#4b5563">${item.quantity}</td>
+          <td style="padding:10px 16px;text-align:right;color:#4b5563">${formatCurrency(item.purchasedPrice)}</td>
+          <td style="padding:10px 16px;text-align:right;font-weight:600;color:#111827">${formatCurrency(item.subTotal)}</td>
+        </tr>`
+      )
+      .join("");
+
+    const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hóa đơn #${order.orderId}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; color: #111827; }
+    .container { max-width: 800px; margin: 0 auto; padding: 32px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 24px; margin-bottom: 24px; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-box { width: 48px; height: 48px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .logo-box span { color: #fff; font-size: 20px; font-weight: 700; }
+    .brand { font-size: 24px; font-weight: 700; color: #111827; }
+    .brand em { color: #059669; font-style: normal; }
+    .subtitle { font-size: 14px; color: #6b7280; }
+    .invoice-title { text-align: right; }
+    .invoice-title h2 { font-size: 20px; font-weight: 700; color: #059669; margin-bottom: 4px; }
+    .invoice-title p { font-size: 14px; color: #6b7280; }
+    .invoice-title p span { font-weight: 600; color: #374151; }
+    .badge { display: inline-block; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700; margin-bottom: 20px; }
+    .badge.paid { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .badge.unpaid { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+    .info-section h3 { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .info-section p { font-size: 14px; margin-bottom: 4px; }
+    .info-section p span { color: #6b7280; }
+    .info-section p strong { color: #111827; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+    thead tr { background: #ecfdf5; border-top: 1px solid #a7f3d0; border-bottom: 1px solid #a7f3d0; }
+    th { padding: 12px 16px; font-size: 12px; font-weight: 700; color: #065f46; text-transform: uppercase; }
+    th:first-child { text-align: left; }
+    th:nth-child(2) { text-align: left; }
+    th:nth-child(3) { text-align: center; }
+    th:nth-child(4) { text-align: right; }
+    th:nth-child(5) { text-align: right; }
+    .total-section { display: flex; justify-content: flex-end; }
+    .total-box { width: 288px; }
+    .total-row { display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px solid #059669; }
+    .total-row .label { font-size: 18px; font-weight: 700; color: #111827; }
+    .total-row .value { font-size: 18px; font-weight: 700; color: #059669; }
+    .footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 14px; color: #9ca3af; }
+    @media print { @page { margin: 1cm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <div class="logo">
+          <div class="logo-box"><span>R</span></div>
+          <div>
+            <div class="brand">Re<em>Green</em></div>
+            <div class="subtitle">Sản phẩm bền vững</div>
+          </div>
+        </div>
+      </div>
+      <div class="invoice-title">
+        <h2>HÓA ĐƠN</h2>
+        <p>Mã hoá đơn: <span>INV-#${order.orderId}</span></p>
+        <p>Ngày: ${formatDateTime(order.orderedAt + "Z")}</p>
+      </div>
+    </div>
+
+    <div class="badge ${isPaid ? "paid" : "unpaid"}">${isPaid ? "ĐÃ THANH TOÁN" : "CHƯA THANH TOÁN"}</div>
+
+    <div class="info-grid">
+      <div class="info-section">
+        <h3>Thông tin đơn hàng</h3>
+        <p><span>Mã đơn:</span> <strong>#${order.orderId}</strong></p>
+        <p><span>Khách hàng:</span> <strong>${order.customerUsername}</strong></p>
+        <p><span>PTTT:</span> <strong>${order.paymentMethodName}</strong></p>
+      </div>
+      <div class="info-section">
+        <h3>Thông tin người nhận</h3>
+        <p><span>Họ tên:</span> <strong>${order.orderReceiver}</strong></p>
+        <p><span>SĐT:</span> <strong>${order.orderReceiverPhone}</strong></p>
+        <p><span>Địa chỉ:</span> <strong>${order.orderAddress}</strong></p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Sản phẩm</th>
+          <th>SL</th>
+          <th>Đơn giá</th>
+          <th>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>${itemsHtml}</tbody>
+    </table>
+
+    <div class="total-section">
+      <div class="total-box">
+        <div class="total-row">
+          <span class="label">Tổng cộng</span>
+          <span class="value">${formatCurrency(order.totalAmount)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Cảm ơn quý khách đã tin tưởng mua hàng tại ReGreen!</p>
+      <p style="margin-top:4px">Mọi thắc mắc vui lòng liên hệ: support@regreen.vn</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
+    }
+  }, []);
 
   // ---- derived ----
   const paginationInfo = useMemo(
@@ -546,6 +681,16 @@ export default function AdminOrders() {
               <section className="rounded-xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/30 p-4">
                 <h3 className="font-semibold text-lg bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent mb-3">Thao tác</h3>
                 <div className="flex flex-wrap justify-end gap-2">
+                  {selectedOrder &&
+                    (selectedOrder.paymentMethodId === 2 ||
+                      selectedOrder.paymentStatusId === 3) && (
+                      <Button
+                        icon={<Printer size={16} />}
+                        onClick={() => selectedOrder && handlePrintInvoice(selectedOrder)}
+                      >
+                        In hoá đơn
+                      </Button>
+                    )}
                   {selectedOrder?.orderStatusName === "PENDING" && (
                     <>
                       <Popconfirm title="Xác nhận đơn hàng?" onConfirm={() => handleOrderAction("confirm")} okText="Đồng ý" cancelText="Huỷ">

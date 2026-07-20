@@ -51,6 +51,12 @@ public class Voucher {
     @Column(nullable = false, name = "is_active")
     private Boolean isActive = true;
 
+    @Column(name = "min_order_value")
+    private Float minOrderValue = 0f;
+
+    @Column(name = "max_discount_amount")
+    private Float maxDiscountAmount = 0f;
+
     @AssertTrue(message = "Expired date must be after or equal started date")
     public boolean isDateValid() {
         if (startedAt == null || expiredAt == null) {

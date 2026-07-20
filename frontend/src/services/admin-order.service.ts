@@ -22,9 +22,9 @@ export interface GetOrdersParams {
 
   paymentMethodId?: number;
 
-  startDate?: Date,
+  startDate?: string,
 
-  endDate?: Date
+  endDate?: string
 }
 
 export async function getOrders(
@@ -54,13 +54,8 @@ export async function getOrders(
       paymentMethodId:
         params.paymentMethodId || undefined,
 
-        startDate: params.startDate
-          ? params.startDate.toISOString().slice(0, 10)
-          : undefined,
-
-        endDate: params.endDate
-          ? params.endDate.toISOString().slice(0, 10)
-          : undefined
+        startDate: params.startDate || undefined,
+        endDate: params.endDate || undefined
     },
   });
 
