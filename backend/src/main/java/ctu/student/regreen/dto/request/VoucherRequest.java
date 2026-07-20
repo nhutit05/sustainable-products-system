@@ -37,4 +37,10 @@ public class VoucherRequest {
 
     @NotNull
     private Boolean isActive;
+
+    @PositiveOrZero
+    private Float minOrderValue;
+
+    @PositiveOrZero
+    private Float maxDiscountAmount;
 }

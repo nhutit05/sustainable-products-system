@@ -17,9 +17,15 @@ public class VoucherSummaryResponse {
 
     private Float discountValue;
 
+    private LocalDate startedAt;
+
     private Integer quantity;
 
     private LocalDate expiredAt;
 
     private Boolean isActive;
+
+    private Float minOrderValue;
+
+    private Float maxDiscountAmount;
 }

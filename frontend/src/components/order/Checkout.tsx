@@ -7,16 +7,7 @@ import { useNotification } from '../../context/useNotification'
 import type { Addressresponse } from '../../model/address.model'
 import AddNewAddress from '../admin/AddNewAddress'
 const PayOSEmbedded = lazy(() => import('./PayOSEmbedded'))
-import {
-  Modal,
-  Typography,
-  Input,
-  Button,
-  Select,
-  Tag,
-  Divider,
-  Radio,
-} from 'antd'
+import { Modal, Typography, Input, Button, Select, Tag, Divider, Radio } from 'antd'
 import {
   UserOutlined,
   PhoneOutlined,
@@ -75,13 +66,21 @@ export default function Checkout({
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
 
   const [vouchers, setVouchers] = useState<
-    { voucherId: number; code: string; discountValue: number }[]
+    {
+      voucherId: number
+      code: string
+      discountValue: number
+      minOrderValue: number
+      maxDiscountAmount: number
+    }[]
   >([])
 
   const [selectedVoucher, setSelectedVoucher] = useState<{
     voucherId: number
     code: string
     discountValue: number
+    minOrderValue: number
+    maxDiscountAmount: number
   } | null>(null)
 
   const [valueSale, setValueSale] = useState(0)
@@ -114,8 +113,12 @@ export default function Checkout({
   }
 
   useEffect(() => {
-    if (selectedVoucher) {
-      setValueSale((selectedVoucher.discountValue / 100) * totalPrice)
+    if (selectedVoucher && totalPrice >= selectedVoucher.minOrderValue) {
+      let sale = (selectedVoucher.discountValue / 100) * totalPrice
+      if (selectedVoucher.maxDiscountAmount > 0) {
+        sale = Math.min(sale, selectedVoucher.maxDiscountAmount)
+      }
+      setValueSale(sale)
     } else {
       setValueSale(0)
     }
@@ -138,6 +141,8 @@ export default function Checkout({
               voucherId: voucher.voucherId,
               code: voucher.code,
               discountValue: voucher.discountValue,
+              minOrderValue: voucher.minOrderValue ?? 0,
+              maxDiscountAmount: voucher.maxDiscountAmount ?? 0,
             }))
           )
         }
@@ -366,7 +371,10 @@ export default function Checkout({
                               <Text strong className="text-sm">
                                 {address.addressName}
                               </Text>
-                              <Tag color="green" style={{ fontSize: 11, padding: '0 6px', lineHeight: '18px' }}>
+                              <Tag
+                                color="green"
+                                style={{ fontSize: 11, padding: '0 6px', lineHeight: '18px' }}
+                              >
                                 Mặc định
                               </Tag>
                             </div>
@@ -489,11 +497,32 @@ export default function Checkout({
                       setSelectedVoucher(selected ?? null)
                     }}
                   >
-                    {vouchers.map((v) => (
-                      <Select.Option key={v.voucherId} value={v.voucherId}>
-                        {v.code} - Giảm {v.discountValue}%
-                      </Select.Option>
-                    ))}
+                    {vouchers.map((v) => {
+                      const eligible = totalPrice >= v.minOrderValue
+                      const label =
+                        v.maxDiscountAmount > 0
+                          ? `${v.code} - Giảm ${v.discountValue}% (tối đa ${formatCurrency(v.maxDiscountAmount)})`
+                          : `${v.code} - Giảm ${v.discountValue}%`
+                      return (
+                        <Select.Option
+                          key={v.voucherId}
+                          value={v.voucherId}
+                          disabled={!eligible}
+                          title={
+                            eligible ? undefined : `Đơn tối thiểu ${formatCurrency(v.minOrderValue)}`
+                          }
+                        >
+                          <span className={eligible ? '' : 'text-gray-400 line-through'}>
+                            {label}
+                          </span>
+                          {!eligible && (
+                            <span className="ml-1 text-xs text-gray-400">
+                              (Đơn tối thiểu {formatCurrency(v.minOrderValue)})
+                            </span>
+                          )}
+                        </Select.Option>
+                      )
+                    })}
                   </Select>
                   {valueSale > 0 && (
                     <Tag color="red" style={{ fontSize: 14, padding: '4px 12px', borderRadius: 8 }}>
