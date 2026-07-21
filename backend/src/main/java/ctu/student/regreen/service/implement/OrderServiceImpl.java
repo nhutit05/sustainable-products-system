@@ -87,8 +87,10 @@ public class OrderServiceImpl implements OrderService {
                                                                                                 .getDiscountValue()
                                                                                                 / 100.0);
                                 total = total - reducedPrice;
+                        } else {
+                                total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
                         }
-                        total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+                        
                 }
                 return total;
         }
