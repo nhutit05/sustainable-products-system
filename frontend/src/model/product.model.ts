@@ -75,6 +75,7 @@ export type ProductResponse = {
   materials: ProductMaterial[]
   productImage: string
   imageUrls: string[]
+  updatedAt: string
 }
 
 // CATEGORIES

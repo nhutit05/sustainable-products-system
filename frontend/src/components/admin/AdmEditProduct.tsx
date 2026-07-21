@@ -1,4 +1,4 @@
-import { CloudUploadOutlined, EditOutlined } from '@ant-design/icons'
+import { CloudUploadOutlined, EditOutlined, PlusOutlined, MinusOutlined, InboxOutlined } from '@ant-design/icons'
 import type {
   CategoryResponse,
   Material,
@@ -44,6 +44,8 @@ export default function AdmEditProduct({
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
   const [percentages, setPercentages] = useState<Record<number, number>>({})
   const [fileList, setFileList] = useState<UploadFile[]>([])
+  const [stockQuantity, setStockQuantity] = useState<number>(1)
+  const [stockLoading, setStockLoading] = useState(false)
   const { showNotification } = useNotification()
 
   // Initialize form and materials when modal opens
@@ -108,6 +110,75 @@ export default function AdmEditProduct({
       delete next[materialId]
       return next
     })
+  }
+
+  const handleStockUpdate = async (type: 'in' | 'out') => {
+    if (!stockQuantity || stockQuantity <= 0) {
+      showNotification({ message: 'Vui lòng nhập số lượng hợp lệ', type: 'ERROR', duration: 3000 })
+      return
+    }
+
+    const currentInventory = selectedProduct.inventory
+    let newInventory: number
+
+    if (type === 'in') {
+      newInventory = currentInventory + stockQuantity
+    } else {
+      if (stockQuantity > currentInventory) {
+        showNotification({ message: 'Số lượng trừ vượt quá tồn kho hiện tại', type: 'ERROR', duration: 3000 })
+        return
+      }
+      newInventory = currentInventory - stockQuantity
+    }
+
+    try {
+      setStockLoading(true)
+      const formData = new FormData()
+      const request = {
+        ...selectedProduct,
+        inventory: newInventory,
+        materialIds: selectedProduct.materials.map((m) => m.materialId),
+        percentageMaterialIds: selectedProduct.materials.map((m) => m.percentage),
+      }
+      formData.append(
+        'request',
+        new Blob([JSON.stringify(request)], { type: 'application/json' })
+      )
+
+      const res = await fetch(
+        `http://localhost:8080/api/admin/products/${selectedProduct.productId}`,
+        {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          body: formData,
+        }
+      )
+
+      if (res.ok) {
+        const updated: ProductResponse = await res.json()
+        showNotification({
+          message: type === 'in' ? 'Nhập kho thành công!' : 'Xuất kho thành công!',
+          type: 'SUCCESS',
+          duration: 3000,
+        })
+        setStockQuantity(1)
+        onSaved(updated)
+      } else {
+        showNotification({
+          message: type === 'in' ? 'Nhập kho thất bại!' : 'Xuất kho thất bại!',
+          type: 'ERROR',
+          duration: 3000,
+        })
+      }
+    } catch {
+      showNotification({
+        message: 'Có lỗi xảy ra khi cập nhật kho',
+        type: 'ERROR',
+        duration: 3000,
+      })
+    } finally {
+      setStockLoading(false)
+    }
   }
 
   const handleSubmit = async () => {
@@ -246,10 +317,9 @@ export default function AdmEditProduct({
 
             <Form.Item
               name="inventory"
-              label="Số lượng tồn kho"
-              rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+              hidden
             >
-              <InputNumber className="w-full" min={0} />
+              <InputNumber />
             </Form.Item>
 
             <Form.Item name="productCarbonIndex" label="Chỉ số Carbon (kg CO₂e)">
@@ -320,6 +390,50 @@ export default function AdmEditProduct({
                 </Select.Option>
               ))}
           </Select>
+
+          {/* Stock Management */}
+          <Divider titlePlacement="left" orientationMargin={0} className="!text-sm !font-semibold">
+            <span className="flex items-center gap-1.5">
+              <InboxOutlined className="text-blue-500" />
+              Quản lý kho
+            </span>
+          </Divider>
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-600">Tồn kho hiện tại:</span>
+              <span className={`text-lg font-bold ${selectedProduct.inventory <= 10 ? 'text-red-500' : 'text-emerald-600'}`}>
+                {selectedProduct.inventory}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <InputNumber
+                className="flex-1"
+                min={1}
+                value={stockQuantity}
+                onChange={(v) => setStockQuantity(v || 1)}
+                placeholder="Số lượng"
+                disabled={stockLoading}
+              />
+              <button
+                type="button"
+                onClick={() => handleStockUpdate('in')}
+                disabled={stockLoading}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 active:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <PlusOutlined className="text-xs" />
+                Nhập kho
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStockUpdate('out')}
+                disabled={stockLoading}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <MinusOutlined className="text-xs" />
+                Trừ kho
+              </button>
+            </div>
+          </div>
 
           {/* Upload new images */}
           <Divider titlePlacement="left" orientationMargin={0} className="!text-sm !font-semibold">

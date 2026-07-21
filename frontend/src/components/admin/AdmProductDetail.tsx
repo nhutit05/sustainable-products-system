@@ -154,6 +154,13 @@ export default function AdmProductDetail({ product, open, onClose }: ProductDeta
                 </span>
               </Descriptions.Item>
 
+              <Descriptions.Item label="Cập nhật lần cuối" span={2}>
+                <span className="flex items-center gap-1">
+                  <CalendarOutlined className="text-gray-400" />
+                  {product.updatedAt ? new Date(product.updatedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Chưa có thông tin'}
+                </span>
+              </Descriptions.Item>
+
               {/* Materials */}
               <Descriptions.Item label="Nguyên liệu" span={2}>
                 {product.materials.length > 0 ? (
