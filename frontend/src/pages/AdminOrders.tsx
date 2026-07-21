@@ -53,6 +53,52 @@ const formatDateTime = (dateString: string) =>
 const formatCurrency = (value: number) =>
   Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
 
+const numberToWords = (amount: number): string => {
+  if (amount === 0) return "Không đồng";
+  const ones = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+  const tens = ["", "mười", "hai mươi", "ba mươi", "bốn mươi", "năm mươi", "sáu mươi", "bảy mươi", "tám mươi", "chín mươi"];
+  const readBlock = (n: number, showZeroHundred: boolean): string => {
+    if (n === 0) return showZeroHundred ? "không trăm " : "";
+    const h = Math.floor(n / 100);
+    const t = Math.floor((n % 100) / 10);
+    const o = n % 10;
+    let r = "";
+    if (h > 0) r += ones[h] + " trăm ";
+    else if (showZeroHundred) r += "không trăm ";
+    if (t > 1) {
+      r += tens[t] + " ";
+      if (o === 1) r += "mốt ";
+      else if (o === 4) r += "tư ";
+      else if (o === 5) r += "lăm ";
+      else if (o > 0) r += ones[o] + " ";
+    } else if (t === 1) {
+      if (o === 0) r += "mười ";
+      else if (o === 5) r += "mười lăm ";
+      else r += "mười " + ones[o] + " ";
+    } else {
+      if (h > 0 && o > 0) r += "linh " + ones[o] + " ";
+      else if (o > 0) r += ones[o] + " ";
+    }
+    return r;
+  };
+  const units = ["", "nghìn", "triệu", "tỷ"];
+  const blocks: number[] = [];
+  let remaining = amount;
+  while (remaining > 0) {
+    blocks.push(remaining % 1000);
+    remaining = Math.floor(remaining / 1000);
+  }
+  let result = "";
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const block = blocks[i];
+    if (block > 0) {
+      const blockStr = readBlock(block, i < blocks.length - 1);
+      if (blockStr) result += blockStr + units[i] + " ";
+    }
+  }
+  return result.charAt(0).toUpperCase() + result.slice(1).trim() + " đồng";
+};
+
 const statusBadge = (id: number, name: string) => {
   const map: Record<number, string> = {
     1: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60",
@@ -88,6 +134,146 @@ const methodBadge = (id: number) => (
 );
 
 // ==========================
+// INVOICE PREVIEW PAGE
+// ==========================
+
+function InvoicePreviewPage({
+  order,
+  onPrint,
+  onBack,
+}: {
+  order: orderResponse;
+  onPrint: () => void;
+  onBack: () => void;
+}) {
+  const isPaid = order.paymentStatusId === 3;
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Action bar */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+        >
+          ← Quay lại
+        </button>
+        <button
+          onClick={onPrint}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-700 cursor-pointer"
+        >
+          <Printer size={16} /> In hoá đơn
+        </button>
+      </div>
+
+      {/* Invoice paper */}
+      <div
+        className="max-w-[800px] mx-auto py-8 px-6"
+        style={{ fontFamily: "'Times New Roman', Times, serif" }}
+      >
+        {/* Company header */}
+        <div className="text-center mb-6">
+          <h2 className="text-base font-bold uppercase">CÔNG TY TNHH ReGREEN</h2>
+          <p className="text-sm">MST: 0312345678</p>
+          <p className="text-sm">123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</p>
+          <p className="text-sm">Điện thoại: (028) 3822 1234 &nbsp;|&nbsp; Email: info@regreen.vn</p>
+        </div>
+
+        <hr className="border-t border-gray-800 my-4" />
+
+        {/* Invoice title */}
+        <div className="text-center my-6">
+          <h1 className="text-2xl font-bold uppercase tracking-[2px]">HÓA ĐƠN BÁN HÀNG</h1>
+          <p className="text-sm mt-1">
+            Ngày {formatDate(order.orderedAt + "Z")} - Số: INV-{String(order.orderId).padStart(5, "0")}
+          </p>
+        </div>
+
+        {/* Customer info */}
+        <div className="border border-gray-800 p-3 mb-6">
+          <p><span className="font-semibold">Khách hàng:</span> {order.customerUsername}</p>
+          <p><span className="font-semibold">Người nhận:</span> {order.orderReceiver}</p>
+          <p><span className="font-semibold">SĐT:</span> {order.orderReceiverPhone}</p>
+          <p><span className="font-semibold">Địa chỉ:</span> {order.orderAddress}</p>
+          <p>
+            <span className="font-semibold">PTTT:</span> {order.paymentMethodName}
+            {isPaid ? " - Đã thanh toán" : " - Chưa thanh toán"}
+          </p>
+        </div>
+
+        {/* Items table */}
+        <table className="w-full border-collapse mb-6 text-sm">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border border-gray-800 p-2 text-center font-bold" style={{ width: 40 }}>STT</th>
+              <th className="border border-gray-800 p-2 text-left font-bold">Tên sản phẩm</th>
+              <th className="border border-gray-800 p-2 text-center font-bold" style={{ width: 50 }}>ĐVT</th>
+              <th className="border border-gray-800 p-2 text-center font-bold" style={{ width: 60 }}>Số lượng</th>
+              <th className="border border-gray-800 p-2 text-right font-bold" style={{ width: 100 }}>Đơn giá</th>
+              <th className="border border-gray-800 p-2 text-right font-bold" style={{ width: 120 }}>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            {order.items.map((item, i) => (
+              <tr key={item.productId}>
+                <td className="border border-gray-800 p-2 text-center">{i + 1}</td>
+                <td className="border border-gray-800 p-2">{item.productName}</td>
+                <td className="border border-gray-800 p-2 text-center">Cái</td>
+                <td className="border border-gray-800 p-2 text-center">{item.quantity}</td>
+                <td className="border border-gray-800 p-2 text-right">{formatCurrency(item.purchasedPrice)}</td>
+                <td className="border border-gray-800 p-2 text-right font-semibold">{formatCurrency(item.subTotal)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Totals */}
+        <div className="ml-auto" style={{ width: 320 }}>
+          <div className="flex justify-between py-1">
+            <span>Tổng tiền hàng:</span>
+            <span>{formatCurrency(order.totalAmount)}</span>
+          </div>
+          <div className="flex justify-between py-1">
+            <span>Chiết khấu:</span>
+            <span>0 đ</span>
+          </div>
+          <div className="flex justify-between py-1.5 font-bold border-t-2 border-gray-800 mt-1">
+            <span>Tổng thanh toán:</span>
+            <span>{formatCurrency(order.totalAmount)}</span>
+          </div>
+        </div>
+
+        {/* Amount in words */}
+        <p className="italic mt-4 mb-6">
+          <span className="font-bold not-italic">Số tiền bằng chữ:</span> {numberToWords(order.totalAmount)}
+        </p>
+
+        {/* Signatures */}
+        <div className="flex justify-between text-center mt-10">
+          <div className="w-[45%]">
+            <p className="font-semibold">NGƯỜI MUA HÀNG</p>
+            <div className="h-12" />
+            <p className="text-sm text-gray-400">(Ký, ghi rõ họ tên)</p>
+          </div>
+          <div className="w-[45%]">
+            <p className="font-semibold">NGƯỜI BÁN HÀNG</p>
+            <div className="h-12" />
+            <p className="text-sm text-gray-400">(Ký, ghi rõ họ tên)</p>
+          </div>
+        </div>
+
+        <hr className="border-t border-gray-300 my-6" />
+
+        {/* Footer */}
+        <div className="text-center text-sm text-gray-400">
+          <p>Cảm ơn quý khách đã tin tưởng mua hàng tại ReGreen!</p>
+          <p>Mọi thắc mắc vui lòng liên hệ: (028) 3822 1234 - info@regreen.vn</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================
 // COMPONENT
 // ==========================
 
@@ -119,6 +305,7 @@ export default function AdminOrders() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<orderResponse | null>(null);
+  const [invoiceView, setInvoiceView] = useState(false);
 
   // ---- fetch filters (once) ----
   useEffect(() => {
@@ -266,132 +453,118 @@ export default function AdminOrders() {
     setSelectedOrder(null);
   }, [actionLoading]);
 
-  const handlePrintInvoice = useCallback((order: orderResponse) => {
+  const handlePrintInvoice = useCallback(() => {
+    setDrawerOpen(false);
+    setInvoiceView(true);
+  }, []);
+
+  const handlePrintDocument = useCallback(() => {
+    if (!selectedOrder) return;
+    const order = selectedOrder;
     const isPaid = order.paymentStatusId === 3;
     const itemsHtml = order.items
       .map(
         (item, i) => `
-        <tr style="border-bottom:1px solid #e5e7eb">
-          <td style="padding:10px 16px;color:#6b7280">${i + 1}</td>
-          <td style="padding:10px 16px;color:#111827">${item.productName}</td>
-          <td style="padding:10px 16px;text-align:center;color:#4b5563">${item.quantity}</td>
-          <td style="padding:10px 16px;text-align:right;color:#4b5563">${formatCurrency(item.purchasedPrice)}</td>
-          <td style="padding:10px 16px;text-align:right;font-weight:600;color:#111827">${formatCurrency(item.subTotal)}</td>
+        <tr>
+          <td style="padding:8px 12px;text-align:center;border:1px solid #d1d5db">${i + 1}</td>
+          <td style="padding:8px 12px;border:1px solid #d1d5db">${item.productName}</td>
+          <td style="padding:8px 12px;text-align:center;border:1px solid #d1d5db">Cái</td>
+          <td style="padding:8px 12px;text-align:center;border:1px solid #d1d5db">${item.quantity}</td>
+          <td style="padding:8px 12px;text-align:right;border:1px solid #d1d5db">${formatCurrency(item.purchasedPrice)}</td>
+          <td style="padding:8px 12px;text-align:right;border:1px solid #d1d5db;font-weight:600">${formatCurrency(item.subTotal)}</td>
         </tr>`
       )
       .join("");
-
     const html = `<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <title>Hóa đơn #${order.orderId}</title>
   <style>
+    @page { margin: 1.5cm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #fff; color: #111827; }
-    .container { max-width: 800px; margin: 0 auto; padding: 32px; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #059669; padding-bottom: 24px; margin-bottom: 24px; }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-box { width: 48px; height: 48px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-    .logo-box span { color: #fff; font-size: 20px; font-weight: 700; }
-    .brand { font-size: 24px; font-weight: 700; color: #111827; }
-    .brand em { color: #059669; font-style: normal; }
-    .subtitle { font-size: 14px; color: #6b7280; }
-    .invoice-title { text-align: right; }
-    .invoice-title h2 { font-size: 20px; font-weight: 700; color: #059669; margin-bottom: 4px; }
-    .invoice-title p { font-size: 14px; color: #6b7280; }
-    .invoice-title p span { font-weight: 600; color: #374151; }
-    .badge { display: inline-block; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700; margin-bottom: 20px; }
-    .badge.paid { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
-    .badge.unpaid { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
-    .info-section h3 { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .info-section p { font-size: 14px; margin-bottom: 4px; }
-    .info-section p span { color: #6b7280; }
-    .info-section p strong { color: #111827; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-    thead tr { background: #ecfdf5; border-top: 1px solid #a7f3d0; border-bottom: 1px solid #a7f3d0; }
-    th { padding: 12px 16px; font-size: 12px; font-weight: 700; color: #065f46; text-transform: uppercase; }
-    th:first-child { text-align: left; }
-    th:nth-child(2) { text-align: left; }
-    th:nth-child(3) { text-align: center; }
-    th:nth-child(4) { text-align: right; }
-    th:nth-child(5) { text-align: right; }
-    .total-section { display: flex; justify-content: flex-end; }
-    .total-box { width: 288px; }
-    .total-row { display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px solid #059669; }
-    .total-row .label { font-size: 18px; font-weight: 700; color: #111827; }
-    .total-row .value { font-size: 18px; font-weight: 700; color: #059669; }
-    .footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 14px; color: #9ca3af; }
-    @media print { @page { margin: 1cm; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    body { font-family: 'Times New Roman', Times, serif; color: #000; font-size: 13px; line-height: 1.5; }
+    .invoice { max-width: 700px; margin: 0 auto; padding: 10px 0; }
+    .company-info { text-align: center; margin-bottom: 20px; }
+    .company-info h2 { font-size: 16px; font-weight: 700; text-transform: uppercase; }
+    .company-info p { font-size: 12px; }
+    hr { border: none; border-top: 1.5px solid #000; margin: 10px 0; }
+    .invoice-title { text-align: center; margin: 15px 0; }
+    .invoice-title h1 { font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+    .invoice-meta { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 15px; }
+    .customer-box { border: 1px solid #000; padding: 10px; margin-bottom: 15px; }
+    .customer-box p { margin: 2px 0; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th, td { border: 1px solid #000; padding: 6px 8px; font-size: 12px; }
+    th { background: #e5e7eb; font-weight: 700; text-align: center; }
+    .totals { margin-left: auto; width: 320px; }
+    .totals p { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+    .totals .final { font-weight: 700; font-size: 15px; border-top: 2px solid #000; padding-top: 6px; margin-top: 4px; }
+    .words { font-style: italic; margin: 10px 0 20px; font-size: 13px; }
+    .signatures { display: flex; justify-content: space-between; text-align: center; margin-top: 40px; }
+    .signatures div { width: 45%; }
+    .signatures .line { margin-top: 40px; }
+    .signatures .label { font-weight: 600; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div>
-        <div class="logo">
-          <div class="logo-box"><span>R</span></div>
-          <div>
-            <div class="brand">Re<em>Green</em></div>
-            <div class="subtitle">Sản phẩm bền vững</div>
-          </div>
-        </div>
-      </div>
-      <div class="invoice-title">
-        <h2>HÓA ĐƠN</h2>
-        <p>Mã hoá đơn: <span>INV-#${order.orderId}</span></p>
-        <p>Ngày: ${formatDateTime(order.orderedAt + "Z")}</p>
-      </div>
+  <div class="invoice">
+    <div class="company-info">
+      <h2>CÔNG TY TNHH ReGREEN</h2>
+      <p>MST: 0312345678</p>
+      <p>123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh</p>
+      <p>Điện thoại: (028) 3822 1234 &nbsp;|&nbsp; Email: info@regreen.vn</p>
     </div>
-
-    <div class="badge ${isPaid ? "paid" : "unpaid"}">${isPaid ? "ĐÃ THANH TOÁN" : "CHƯA THANH TOÁN"}</div>
-
-    <div class="info-grid">
-      <div class="info-section">
-        <h3>Thông tin đơn hàng</h3>
-        <p><span>Mã đơn:</span> <strong>#${order.orderId}</strong></p>
-        <p><span>Khách hàng:</span> <strong>${order.customerUsername}</strong></p>
-        <p><span>PTTT:</span> <strong>${order.paymentMethodName}</strong></p>
-      </div>
-      <div class="info-section">
-        <h3>Thông tin người nhận</h3>
-        <p><span>Họ tên:</span> <strong>${order.orderReceiver}</strong></p>
-        <p><span>SĐT:</span> <strong>${order.orderReceiverPhone}</strong></p>
-        <p><span>Địa chỉ:</span> <strong>${order.orderAddress}</strong></p>
-      </div>
+    <hr />
+    <div class="invoice-title">
+      <h1>HÓA ĐƠN BÁN HÀNG</h1>
+      <p>Ngày ${formatDate(order.orderedAt + "Z")} - Số: INV-${String(order.orderId).padStart(5, "0")}</p>
     </div>
-
+    <div class="customer-box">
+      <p><strong>Khách hàng:</strong> ${order.customerUsername}</p>
+      <p><strong>Người nhận:</strong> ${order.orderReceiver}</p>
+      <p><strong>SĐT:</strong> ${order.orderReceiverPhone}</p>
+      <p><strong>Địa chỉ:</strong> ${order.orderAddress}</p>
+      <p><strong>PTTT:</strong> ${order.paymentMethodName} ${isPaid ? "- Đã thanh toán" : "- Chưa thanh toán"}</p>
+    </div>
     <table>
       <thead>
         <tr>
-          <th>STT</th>
-          <th>Sản phẩm</th>
-          <th>SL</th>
-          <th>Đơn giá</th>
-          <th>Thành tiền</th>
+          <th style="width:40px">STT</th>
+          <th style="width:220px">Tên sản phẩm</th>
+          <th style="width:60px">ĐVT</th>
+          <th style="width:60px">Số lượng</th>
+          <th style="width:100px">Đơn giá</th>
+          <th style="width:120px">Thành tiền</th>
         </tr>
       </thead>
       <tbody>${itemsHtml}</tbody>
     </table>
-
-    <div class="total-section">
-      <div class="total-box">
-        <div class="total-row">
-          <span class="label">Tổng cộng</span>
-          <span class="value">${formatCurrency(order.totalAmount)}</span>
-        </div>
+    <div class="totals">
+      <p><span>Tổng tiền hàng:</span> <span>${formatCurrency(order.totalAmount)}</span></p>
+      <p><span>Chiết khấu:</span> <span>0 đ</span></p>
+      <p class="final"><span>Tổng thanh toán:</span> <span>${formatCurrency(order.totalAmount)}</span></p>
+    </div>
+    <p class="words"><strong>Số tiền bằng chữ:</strong> ${numberToWords(order.totalAmount)}</p>
+    <div class="signatures">
+      <div>
+        <p class="label">NGƯỜI MUA HÀNG</p>
+        <p class="line">(Ký, ghi rõ họ tên)</p>
+      </div>
+      <div>
+        <p class="label">NGƯỜI BÁN HÀNG</p>
+        <p class="line">(Ký, ghi rõ họ tên)</p>
       </div>
     </div>
-
+    <hr />
     <div class="footer">
       <p>Cảm ơn quý khách đã tin tưởng mua hàng tại ReGreen!</p>
-      <p style="margin-top:4px">Mọi thắc mắc vui lòng liên hệ: support@regreen.vn</p>
+      <p>Mọi thắc mắc vui lòng liên hệ: (028) 3822 1234 - info@regreen.vn</p>
     </div>
   </div>
 </body>
 </html>`;
-
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(html);
@@ -399,7 +572,7 @@ export default function AdminOrders() {
       printWindow.focus();
       setTimeout(() => printWindow.print(), 500);
     }
-  }, []);
+  }, [selectedOrder]);
 
   // ---- derived ----
   const paginationInfo = useMemo(
@@ -413,7 +586,14 @@ export default function AdminOrders() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-5 lg:space-y-6">
+      {invoiceView && selectedOrder ? (
+        <InvoicePreviewPage
+          order={selectedOrder}
+          onPrint={handlePrintDocument}
+          onBack={() => setInvoiceView(false)}
+        />
+      ) : (
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-5 lg:space-y-6">
 
         {/* ================= HEADER ================= */}
         <header className="bg-white rounded-2xl shadow-sm border border-gray-100 px-5 py-4 sm:px-6 sm:py-5 relative overflow-hidden">
@@ -686,7 +866,7 @@ export default function AdminOrders() {
                       selectedOrder.paymentStatusId === 3) && (
                       <Button
                         icon={<Printer size={16} />}
-                        onClick={() => selectedOrder && handlePrintInvoice(selectedOrder)}
+                        onClick={handlePrintInvoice}
                       >
                         In hoá đơn
                       </Button>
@@ -739,7 +919,8 @@ export default function AdminOrders() {
             </div>
           )}
         </Drawer>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

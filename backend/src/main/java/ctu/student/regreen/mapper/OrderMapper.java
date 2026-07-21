@@ -34,7 +34,11 @@ public class OrderMapper {
         }
 
         if (order.getVoucher() != null) {
-            total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+            long reducedPrice = Math.round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
+                    .round(order.getVoucher().getMaxDiscountAmount())
+                            ? Math.round(order.getVoucher().getMaxDiscountAmount())
+                            : Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+            total = total - reducedPrice;
         }
 
         return new OrderResponse(
