@@ -1,5 +1,5 @@
-import { EllipsisVertical, Star } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { EllipsisVertical, Star, ChevronDown, ChevronUp } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
 import type { ReviewResponse } from '../../model/review.model'
 import AddNewReviewModal from '../admin/AddNewReviewModal'
 import { useCustomer } from '../../context/useCustomer'
@@ -10,12 +10,18 @@ interface ProductReviewProps {
   productId: number
 }
 
+// Số lượng review hiển thị ban đầu & mỗi lần bấm "Xem thêm"
+const REVIEWS_PER_PAGE = 3
+
 export default function ProductReview({ productId }: ProductReviewProps) {
   const { showNotification } = useNotification()
   const { token, customerData } = useCustomer()
 
   const [reviews, setReviews] = useState<ReviewResponse[]>([])
   const [countReviews, setCountReviews] = useState<number>(0)
+
+  // State quản lý số lượng đánh giá hiển thị trên giao diện
+  const [visibleCount, setVisibleCount] = useState<number>(REVIEWS_PER_PAGE)
 
   // State quản lý review ID đang được thực hiện xóa (để hiện loading)
   const [deletingId, setDeletingId] = useState<number | null>(null)
@@ -48,8 +54,8 @@ export default function ProductReview({ productId }: ProductReviewProps) {
     setShowEditReviewForm(false)
   }
 
-  // Fetch reviews
-  const fetchReviews = async () => {
+  // Fetch reviews - Dùng useCallback & useEffect để tránh lỗi re-render vô tận
+  const fetchReviews = useCallback(async () => {
     try {
       const response = await fetch(`http://localhost:8080/api/products/${productId}/reviews`)
       if (response.ok) {
@@ -60,9 +66,11 @@ export default function ProductReview({ productId }: ProductReviewProps) {
     } catch (error) {
       console.error('Error fetching reviews:', error)
     }
-  }
+  }, [productId])
 
-  fetchReviews()
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   // Xử lý Xóa Review
   const handleRemoveReview = async (reviewId: number) => {
@@ -85,7 +93,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
           duration: 3000,
         })
 
-        // Cập nhật state nội bộ ngay lập tức thay vì reload toàn bộ trang
+        // Cập nhật state nội bộ ngay lập tức
         setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId))
         setCountReviews((prev) => prev - 1)
       } else {
@@ -107,6 +115,19 @@ export default function ProductReview({ productId }: ProductReviewProps) {
     }
   }
 
+  // Xử lý hành động Xem thêm / Thu gọn
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + REVIEWS_PER_PAGE)
+  }
+
+  const handleCollapse = () => {
+    setVisibleCount(REVIEWS_PER_PAGE)
+  }
+
+  // Cắt danh sách đánh giá hiển thị theo `visibleCount`
+  const visibleReviews = reviews.slice(0, visibleCount)
+  const hasMoreReviews = visibleCount < reviews.length
+
   return (
     <div className="reviews bg-white p-6 shadow-sm rounded-2xl border border-gray-100">
       {/* TỔNG QUAN ĐÁNH GIÁ */}
@@ -121,8 +142,8 @@ export default function ProductReview({ productId }: ProductReviewProps) {
 
       {/* DANH SÁCH REVIEW */}
       <div className="reviews-list space-y-4">
-        {reviews.length > 0 ? (
-          reviews.map((review) => {
+        {visibleReviews.length > 0 ? (
+          visibleReviews.map((review) => {
             const isDeleting = deletingId === review.reviewId
 
             return (
@@ -214,7 +235,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
 
                     {/* POPUP MENU */}
                     {showEditReview.index === review.reviewId && showEditReview.isOpen && (
-                      <div className="absolute top-8 right-0 bg-white p-1.5 rounded-xl shadow-xl border border-gray-100 min-w-37.5 z-30">
+                      <div className="absolute top-8 right-0 bg-white p-1.5 rounded-xl shadow-xl border border-gray-100 min-w-[150px] z-30">
                         <button
                           type="button"
                           className="w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors"
@@ -248,33 +269,62 @@ export default function ProductReview({ productId }: ProductReviewProps) {
         )}
       </div>
 
-      {/* CÁC NÚT HÀNH ĐỘNG PHÍA DƯỚI */}
-      <div className="flex items-center justify-center gap-4 mt-6">
-        <button
-          type="button"
-          className="bg-white border border-emerald-500 px-5 py-2.5 rounded-xl text-emerald-600 font-medium 
-                     hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
-        >
-          Xem thêm đánh giá
-        </button>
-        <button
-          type="button"
-          onClick={handleAddReview}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium 
-                     active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
-        >
-          Thêm đánh giá
-        </button>
+      {/* KHU VỰC THÔNG TIN & CÁC NÚT HÀNH ĐỘNG PHÍA DƯỚI */}
+      <div className="mt-8 flex flex-col items-center gap-3">
+        {/* Chỉ số đếm số lượng đang xem */}
+        {reviews.length > 0 && (
+          <span className="text-xs font-medium text-gray-400 tracking-wide">
+            Đang hiển thị {Math.min(visibleCount, reviews.length)} / {reviews.length} đánh giá
+          </span>
+        )}
+
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          {/* NÚT XEM THÊM / THU GỌN */}
+          {hasMoreReviews ? (
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              className="inline-flex items-center gap-2 bg-white border border-emerald-500 px-5 py-2.5 rounded-xl text-emerald-600 font-medium 
+                         hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
+            >
+              <span>Xem thêm đánh giá</span>
+              <ChevronDown size={16} />
+            </button>
+          ) : reviews.length > REVIEWS_PER_PAGE ? (
+            <button
+              type="button"
+              onClick={handleCollapse}
+              className="inline-flex items-center gap-2 bg-gray-50 border border-gray-300 px-5 py-2.5 rounded-xl text-gray-600 font-medium 
+                         hover:bg-gray-100 active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
+            >
+              <span>Thu gọn</span>
+              <ChevronUp size={16} />
+            </button>
+          ) : null}
+
+          {/* NÚT THÊM ĐÁNH GIÁ */}
+          <button
+            type="button"
+            onClick={handleAddReview}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium 
+                       active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
+          >
+            Thêm đánh giá
+          </button>
+        </div>
       </div>
 
-      {/* MODAL THÊM / SỬA ĐÁNH GIÁ */}
+      {/* MODAL THÊM / SỬA ĐÁNH GIÁ (Căn giữa viewport) */}
       {isOpenModal && (
-        <div className="relative z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop mờ nền */}
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
             onClick={() => setIsOpenModal(false)}
           />
-          <div className="fixed inset-0 max-w-4xl top-10 mx-auto px-4 z-50">
+
+          {/* Container bọc Modal */}
+          <div className="relative w-full max-w-xl z-50">
             {showAddReviewForm && (
               <AddNewReviewModal
                 onClose={onCloseAdd}
@@ -283,7 +333,11 @@ export default function ProductReview({ productId }: ProductReviewProps) {
               />
             )}
             {showEditReviewForm && selectedReview && (
-              <EditReviewModal onClose={onCloseEdit} review={selectedReview} />
+              <EditReviewModal
+                onClose={onCloseEdit}
+                review={selectedReview}
+                onSuccess={fetchReviews}
+              />
             )}
           </div>
         </div>
