@@ -1,5 +1,10 @@
 import { CloudUploadOutlined, PlusOutlined } from '@ant-design/icons'
-import type { CategoryResponse, Material, ProductRequest, ProductResponse } from '../../model/product.model'
+import type {
+  CategoryResponse,
+  Material,
+  ProductRequest,
+  ProductResponse,
+} from '../../model/product.model'
 import { useEffect, useState } from 'react'
 import {
   Modal,
