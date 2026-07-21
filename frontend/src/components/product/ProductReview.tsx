@@ -4,7 +4,6 @@ import type { ReviewResponse } from '../../model/review.model'
 import AddNewReviewModal from '../admin/AddNewReviewModal'
 import { useCustomer } from '../../context/useCustomer'
 import EditReviewModal from './EditReviewModal'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { useNotification } from '../../context/useNotification'
 
 interface ProductReviewProps {
@@ -12,19 +11,25 @@ interface ProductReviewProps {
 }
 
 export default function ProductReview({ productId }: ProductReviewProps) {
-  const location = useLocation()
-  const navigate = useNavigate()
   const { showNotification } = useNotification()
+  const { token, customerData } = useCustomer()
+
   const [reviews, setReviews] = useState<ReviewResponse[]>([])
   const [countReviews, setCountReviews] = useState<number>(0)
 
-  const { token, customerData } = useCustomer()
+  // State quản lý review ID đang được thực hiện xóa (để hiện loading)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
+  // Modal State
   const [isOpenModal, setIsOpenModal] = useState(false)
   const [showAddReviewForm, setShowAddReviewForm] = useState(false)
   const [showEditReviewForm, setShowEditReviewForm] = useState(false)
 
-  const [showEditReview, setShowEditReview] = useState({ index: -1, isOpen: false })
+  // Menu Dropdown State
+  const [showEditReview, setShowEditReview] = useState<{ index: number; isOpen: boolean }>({
+    index: -1,
+    isOpen: false,
+  })
 
   const [selectedReview, setSelectedReview] = useState<ReviewResponse | null>(null)
 
@@ -43,29 +48,27 @@ export default function ProductReview({ productId }: ProductReviewProps) {
     setShowEditReviewForm(false)
   }
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/api/products/${productId}/reviews`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        if (response.ok) {
-          const reviewData = await response.json()
-          setReviews(reviewData)
-          setCountReviews(reviewData.length)
-        }
-      } catch (error) {
-        console.error('Error fetching reviews:', error)
+  // Fetch reviews
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/products/${productId}/reviews`)
+      if (response.ok) {
+        const reviewData = await response.json()
+        setReviews(reviewData)
+        setCountReviews(reviewData.length)
       }
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
     }
+  }
 
-    fetchReviews()
-  }, [productId])
+  fetchReviews()
 
+  // Xử lý Xóa Review
   const handleRemoveReview = async (reviewId: number) => {
+    setShowEditReview({ index: -1, isOpen: false }) // Đóng popup menu
+    setDeletingId(reviewId) // Bật hiệu ứng loading cho card review này
+
     try {
       const response = await fetch(`http://localhost:8080/api/reviews/${reviewId}`, {
         method: 'DELETE',
@@ -74,15 +77,17 @@ export default function ProductReview({ productId }: ProductReviewProps) {
           Authorization: `Bearer ${token}`,
         },
       })
+
       if (response.ok) {
         showNotification({
           message: 'Xóa đánh giá thành công',
           type: 'SUCCESS',
           duration: 3000,
         })
-        setTimeout(() => {
-          window.location.reload() // Refresh the current page
-        }, 3000) // Delay for 3 seconds before refreshing
+
+        // Cập nhật state nội bộ ngay lập tức thay vì reload toàn bộ trang
+        setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId))
+        setCountReviews((prev) => prev - 1)
       } else {
         showNotification({
           message: 'Xóa đánh giá thất bại',
@@ -93,121 +98,193 @@ export default function ProductReview({ productId }: ProductReviewProps) {
     } catch (error) {
       console.error('Error deleting review:', error)
       showNotification({
-        message: 'Xóa đánh giá thất bại',
+        message: 'Có lỗi xảy ra khi xóa đánh giá',
         type: 'ERROR',
         duration: 3000,
       })
+    } finally {
+      setDeletingId(null) // Tắt loading
     }
   }
 
   return (
-    <div className="reviews bg-white p-4 shadow rounded-2xl">
-      <div className="review_summary bg-teal-50 rounded-2xl p-4 mb-4 flex items-start lg:items-center lg:justify-between lg:flex-row flex-col gap-3">
-        <h2 className="text-green-900 text-lg font-semibold mb-4 uppercase">Tổng quan đánh giá</h2>
-        <p className="text-gray-700 mb-2">Số lượng đánh giá: {countReviews}</p>
+    <div className="reviews bg-white p-6 shadow-sm rounded-2xl border border-gray-100">
+      {/* TỔNG QUAN ĐÁNH GIÁ */}
+      <div className="review_summary bg-teal-50/60 border border-teal-100 rounded-2xl p-4 mb-6 flex items-center justify-between">
+        <h2 className="text-green-900 text-base font-bold uppercase tracking-wide">
+          Tổng quan đánh giá
+        </h2>
+        <span className="text-teal-800 font-medium bg-teal-100/80 px-3 py-1 rounded-full text-sm">
+          Số lượng: {countReviews}
+        </span>
       </div>
-      <div className="reviews-list">
+
+      {/* DANH SÁCH REVIEW */}
+      <div className="reviews-list space-y-4">
         {reviews.length > 0 ? (
-          reviews.map((review) => (
-            <div
-              key={review.reviewId}
-              className="review-item relative grid grid-cols-3 mb-4 border-l-4 border-emerald-500 p-3 rounded-2xl shadow"
-            >
-              <div className="col-span-2">
-                <div className="review-header flex items-center mb-2">
-                  <span className="review-customer font-semibold mr-2">{review.customerName}</span>
-                </div>
-                <div className="review-rating flex items-center mb-2">
-                  {Array.from({ length: review.reviewRating }, (_, index) => (
-                    <Star key={index} className="text-yellow-500 w-4 h-4" size={14} />
-                  ))}
-                </div>
-                <p className="review-content text-gray-700">{review.reviewContent}</p>
-              </div>
+          reviews.map((review) => {
+            const isDeleting = deletingId === review.reviewId
 
-              <div className="col-span-1 hidden lg:flex flex-col items-center justify-center gap-2">
-                <div className="reviewImages flex items-center justify-center gap-2">
-                  {/* Review images would be displayed here */}
-                  <div className="h-18 w-18 border border-gray-300 rounded-lg overflow-hidden">
-                    <img src="/eco_friendly.jpg" alt="" className="w-full h-full object-contain" />
+            return (
+              <div
+                key={review.reviewId}
+                className={`review-item relative grid grid-cols-3 border-l-4 border-emerald-500 p-4 rounded-2xl shadow-sm bg-white transition-all duration-300 ${
+                  isDeleting ? 'opacity-60 pointer-events-none' : 'hover:shadow-md'
+                }`}
+              >
+                {/* HIỆU ỨNG LOADING KHI XÓA REVIEW NÀY */}
+                {isDeleting && (
+                  <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] rounded-2xl z-20 flex items-center justify-center gap-2 text-emerald-800 font-medium">
+                    <svg
+                      className="animate-spin h-5 w-5 text-emerald-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Đang xóa đánh giá...</span>
                   </div>
-                  <div className="h-18 w-18 border border-gray-300 rounded-lg overflow-hidden">
-                    <img src="/eco_friendly.jpg" alt="" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="h-18 w-18 border border-gray-300 rounded-lg overflow-hidden">
-                    <img src="/eco_friendly.jpg" alt="" className="w-full h-full object-contain" />
-                  </div>
-                </div>
-              </div>
+                )}
 
-              {/* OPTIONS*/}
-              {customerData?.userId === review.customerId && (
-                <div className="review-options col-span-3 mt-2 absolute top-2 right-2 flex justify-end gap-2 hover:text-gray-800 hover:cursor-pointer">
-                  <EllipsisVertical
-                    className="text-gray-500 hover:cursor-pointer hover:text-gray-700"
-                    size={20}
-                    onClick={() => setShowEditReview({ index: 1, isOpen: true })}
-                  />
-                  {showEditReview.index === 1 && showEditReview.isOpen && (
-                    <div className="absolute top-5 right-0 bg-white p-2 rounded-lg shadow-lg min-w-3xs z-10">
-                      <div
-                        className="p-2 rounded-xl hover:bg-gray-100 hover:cursor-pointer"
-                        onClick={() => {
-                          console.log('Selected review:', review)
-                          setIsOpenModal(true)
-                          setSelectedReview(review)
-                          setShowEditReviewForm(true)
-                        }}
-                      >
-                        Chỉnh sửa đánh giá
-                      </div>
-                      <div
-                        className="p-2 rounded-xl hover:bg-gray-100 hover:cursor-pointer"
-                        onClick={() => {
-                          setShowEditReview({ index: review.reviewId, isOpen: false })
-                          handleRemoveReview(review.reviewId)
-                        }}
-                      >
-                        Xóa đánh giá
-                      </div>
-                    </div>
-                  )}
+                {/* THÔNG TIN NỘI DUNG */}
+                <div className="col-span-2">
+                  <div className="review-header flex items-center mb-1">
+                    <span className="review-customer font-semibold text-gray-800 mr-2">
+                      {review.customerName}
+                    </span>
+                  </div>
+                  <div className="review-rating flex items-center mb-2">
+                    {Array.from({ length: review.reviewRating }, (_, index) => (
+                      <Star
+                        key={index}
+                        className="text-yellow-400 fill-yellow-400 w-4 h-4 mr-0.5"
+                      />
+                    ))}
+                  </div>
+                  <p className="review-content text-gray-600 text-sm leading-relaxed">
+                    {review.reviewContent}
+                  </p>
                 </div>
-              )}
-            </div>
-          ))
+
+                {/* HÌNH ẢNH REVIEW */}
+                <div className="col-span-1 hidden lg:flex flex-col items-end justify-center pr-6">
+                  <div className="reviewImages flex items-center justify-center gap-2">
+                    {review.reviewImages &&
+                      review.reviewImages.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt="Review attachment"
+                          className="h-16 w-16 border border-emerald-100 rounded-xl object-cover shadow-sm"
+                        />
+                      ))}
+                  </div>
+                </div>
+
+                {/* TÙY CHỌN (CHỈ DÀNH CHO CHỦ ĐÁNH GIÁ) */}
+                {customerData?.userId === review.customerId && (
+                  <div className="review-options absolute top-3 right-3 z-10">
+                    <button
+                      type="button"
+                      className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                      onClick={() =>
+                        setShowEditReview({
+                          index: review.reviewId,
+                          isOpen:
+                            showEditReview.index === review.reviewId
+                              ? !showEditReview.isOpen
+                              : true,
+                        })
+                      }
+                    >
+                      <EllipsisVertical size={18} />
+                    </button>
+
+                    {/* POPUP MENU */}
+                    {showEditReview.index === review.reviewId && showEditReview.isOpen && (
+                      <div className="absolute top-8 right-0 bg-white p-1.5 rounded-xl shadow-xl border border-gray-100 min-w-37.5 z-30">
+                        <button
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 flex items-center gap-2 cursor-pointer transition-colors"
+                          onClick={() => {
+                            setShowEditReview({ index: -1, isOpen: false })
+                            setIsOpenModal(true)
+                            setSelectedReview(review)
+                            setShowEditReviewForm(true)
+                          }}
+                        >
+                          Chỉnh sửa
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 flex items-center gap-2 cursor-pointer transition-colors"
+                          onClick={() => handleRemoveReview(review.reviewId)}
+                        >
+                          Xóa đánh giá
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })
         ) : (
-          <p className="text-gray-700">Chưa có đánh giá nào cho sản phẩm này.</p>
+          <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+            Chưa có đánh giá nào cho sản phẩm này.
+          </div>
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-5 mt-4">
+      {/* CÁC NÚT HÀNH ĐỘNG PHÍA DƯỚI */}
+      <div className="flex items-center justify-center gap-4 mt-6">
         <button
-          className="bg-white border px-3 py-2 hover:cursor-pointer hover:scale-101
-         border-emerald-500 rounded-xl shadow-emerald-500 text-emerald-500 text-lg"
+          type="button"
+          className="bg-white border border-emerald-500 px-5 py-2.5 rounded-xl text-emerald-600 font-medium 
+                     hover:bg-emerald-50 active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
         >
           Xem thêm đánh giá
         </button>
         <button
+          type="button"
           onClick={handleAddReview}
-          className="bg-primary border px-3 py-2 hover:cursor-pointer hover:scale-101
-         rounded-xl shadow-emerald-500 text-white text-lg"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium 
+                     active:scale-95 transition-all cursor-pointer shadow-sm text-sm"
         >
           Thêm đánh giá
         </button>
       </div>
 
-      {/* ADD REVIEW FORM */}
+      {/* MODAL THÊM / SỬA ĐÁNH GIÁ */}
       {isOpenModal && (
-        <div className="">
-          <div className="fixed inset-0 bg-gray-300/50 blur-lg z-50"></div>
-          <div className="fixed inset-0 max-w-4xl top-10  mx-auto z-51">
-            {showAddReviewForm ? (
-              <AddNewReviewModal onClose={onCloseAdd} productId={productId} />
-            ) : null}
-            {showEditReviewForm && selectedReview ? (
+        <div className="relative z-50">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsOpenModal(false)}
+          />
+          <div className="fixed inset-0 max-w-4xl top-10 mx-auto px-4 z-50">
+            {showAddReviewForm && (
+              <AddNewReviewModal
+                onClose={onCloseAdd}
+                productId={productId}
+                onSuccess={fetchReviews}
+              />
+            )}
+            {showEditReviewForm && selectedReview && (
               <EditReviewModal onClose={onCloseEdit} review={selectedReview} />
-            ) : null}
+            )}
           </div>
         </div>
       )}
