@@ -40,4 +40,6 @@ public class CustomerRequest {
     @PositiveOrZero
     private Integer accumulatedEcoPoints =  0;
 
+    private Boolean isActive;
+
 }

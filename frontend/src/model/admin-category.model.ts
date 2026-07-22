@@ -28,6 +28,7 @@ export interface CustomerAdminResponse {
   numberPhone: string
   nationalId: string
   accumulatedEcoPoints: number
+  isActive: boolean
 }
 
 export interface BankAdminResponse {

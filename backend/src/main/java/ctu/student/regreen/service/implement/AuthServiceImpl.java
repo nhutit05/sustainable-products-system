@@ -74,6 +74,10 @@ public AuthResponse register(RegisterRequest request) {
             throw new ResourceNotFoundException(ErrorCode.PASSWORD_INCORRECT);
         }
 
+        customerRepository.findByUsername(user.getUsername())
+                .filter(c -> Boolean.FALSE.equals(c.getIsActive()))
+                .ifPresent(c -> { throw new ResourceNotFoundException(ErrorCode.ACCOUNT_LOCKED); });
+
         String token = jwtService.generateToken(
                 user);
 

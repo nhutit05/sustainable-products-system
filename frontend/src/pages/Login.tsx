@@ -127,6 +127,12 @@ export default function Login() {
           type: 'ERROR',
           duration: 3000,
         })
+      } else if (data.code == 'USR_010') {
+        showNotification({
+          message: 'Tài khoản đã bị khoá. Vui lòng liên hệ quản trị viên',
+          type: 'ERROR',
+          duration: 3000,
+        })
       }
     }
 

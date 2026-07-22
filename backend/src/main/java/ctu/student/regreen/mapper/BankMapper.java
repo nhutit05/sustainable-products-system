@@ -26,6 +26,7 @@ public class BankMapper {
 
     public void update(Bank bank, BankRequest request) {
         bank.setBankId(request.getBankId());
+        bank.setBankShortName(request.getBankShortName());
         bank.setBankName(request.getBankName());
     }
 }

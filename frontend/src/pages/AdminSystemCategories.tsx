@@ -518,22 +518,25 @@ export default function AdminSystemCategories() {
         return (
           <>
             <Form.Item name="username" label="Username" rules={[{ required: true, message: "Vui lòng nhập username" }]}>
-              <Input placeholder="Username" />
+              <Input placeholder="Username" disabled={!!editingId} />
             </Form.Item>
             <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Vui lòng nhập email hợp lệ" }]}>
-              <Input placeholder="Email" />
+              <Input placeholder="Email" disabled={!!editingId} />
             </Form.Item>
             <Form.Item name="numberPhone" label="Số điện thoại" rules={[{ required: true, pattern: /^[0-9]{10}$/, message: "10 chữ số" }]}>
               <Input placeholder="Số điện thoại" />
             </Form.Item>
             <Form.Item name="password" label="Mật khẩu" rules={[{ required: !editingId, pattern: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,255}$/, message: "Chữ hoa, chữ thường và số, tối thiểu 8 ký tự" }]}>
-              <Input.Password placeholder="Mật khẩu" />
+              <Input.Password placeholder={editingId ? "Để trống nếu không đổi" : "Mật khẩu"} />
             </Form.Item>
             <Form.Item name="nationalId" label="CCCD">
-              <Input placeholder="12 chữ số" maxLength={12} />
+              <Input placeholder="12 chữ số" maxLength={12} disabled={!!editingId} />
             </Form.Item>
             <Form.Item name="accumulatedEcoPoints" label="Điểm eco" initialValue={0}>
-              <InputNumber min={0} className="w-full" />
+              <InputNumber min={0} className="w-full" disabled={!!editingId} />
+            </Form.Item>
+            <Form.Item name="isActive" label="Kích hoạt" valuePropName="checked" initialValue={true}>
+              <Switch />
             </Form.Item>
           </>
         )
@@ -653,7 +656,7 @@ export default function AdminSystemCategories() {
   const renderTableHeader = () => {
     switch (activeTab) {
       case "customers":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Username</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">SĐT</th><th className="px-4 py-3">Điểm eco</th><th className="px-4 py-3 text-center">Thao tác</th></>
+        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Username</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">SĐT</th><th className="px-4 py-3">Điểm eco</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
       case "banks":
         return <><th className="px-4 py-3">Mã NH</th><th className="px-4 py-3">Tên viết tắt</th><th className="px-4 py-3">Tên đầy đủ</th><th className="px-4 py-3 text-center">Thao tác</th></>
       case "categories":
@@ -677,7 +680,7 @@ export default function AdminSystemCategories() {
 
   const renderTableBody = () => {
     if (paginatedData.length === 0) {
-      const colCount = activeTab === "villages" ? 5 : activeTab === "customers" ? 6 : activeTab === "banks" || activeTab === "cities" || activeTab === "paymentMethods" ? 4 : activeTab === "materials" ? 4 : 3
+      const colCount = activeTab === "villages" ? 5 : activeTab === "customers" ? 7 : activeTab === "banks" || activeTab === "cities" || activeTab === "paymentMethods" ? 4 : activeTab === "materials" ? 4 : 3
       return <tr><td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">Không tìm thấy dữ liệu</td></tr>
     }
 
@@ -692,6 +695,13 @@ export default function AdminSystemCategories() {
               <td className="px-4 py-3">{item.email as string}</td>
               <td className="px-4 py-3">{item.numberPhone as string}</td>
               <td className="px-4 py-3">{item.accumulatedEcoPoints as number}</td>
+              <td className="px-4 py-3">
+                {item.isActive ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Hoạt động</span>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Bị khoá</span>
+                )}
+              </td>
             </>
           )}
           {activeTab === "banks" && (

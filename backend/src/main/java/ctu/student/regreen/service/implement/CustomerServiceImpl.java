@@ -64,6 +64,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         Customer customer = customerMapper.toEntity(request);
+        customer.setIsActive(true);
 
         Cart cart = new Cart();
         cart.setCustomer(customer);
@@ -83,8 +84,10 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new RuntimeException("Customer not found by id: " + id));
 
         customerMapper.update(customer, request);
-        customer.setPassword(
-                passwordEncoder.encode(request.getPassword()));
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
 
         customer = customerRepository.save(customer);
 
