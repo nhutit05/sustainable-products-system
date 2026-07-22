@@ -100,6 +100,10 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
     navigate('/profile/favorites')
   }
 
+  const handleSearchClick = () => {
+    navigate('/products')
+  }
+
   return (
     <nav
       className={`navbar-cus fixed top-0 left-0 right-0 z-50 bg-white shadow-md 
@@ -141,7 +145,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
 
           <div className="flex items-center gap-2">
             <button className="hidden lg:flex p-2 rounded-lg text-green-700 hover:bg-green-100 transition-colors">
-              <Search className="w-4.5 h-4.5" />
+              <Search className="w-4.5 h-4.5" onClick={handleSearchClick} />
             </button>
             <Link
               to="/cart"

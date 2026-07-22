@@ -1,4 +1,6 @@
+import { Popconfirm } from 'antd'
 import { SquareArrowDownRight } from 'lucide-react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 interface NavbarItem {
@@ -7,6 +9,8 @@ interface NavbarItem {
 
 export default function NavbarProfile({ NAV_LINKS }: NavbarItem) {
   const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(false)
+  const [confirmed, setConfirmed] = useState(false)
 
   const location = useLocation()
 
@@ -24,7 +28,6 @@ export default function NavbarProfile({ NAV_LINKS }: NavbarItem) {
   const activeItem = activeIndex !== -1 ? activeIndex : null
 
   const handleSignOut = () => {
-    const confirmed = window.confirm('Bạn có chắc chắn muốn đăng xuất không?')
     if (confirmed) {
       // Perform sign out logic here (e.g., clear user session, redirect to login page)
       console.log('User signed out')
@@ -52,10 +55,24 @@ export default function NavbarProfile({ NAV_LINKS }: NavbarItem) {
         <li
           key={-1}
           className={`flex items-center text-red-500 gap-2 p-3 rounded-2xl hover:bg-red-50 cursor-pointer `}
-          onClick={handleSignOut}
+          onClick={() => setIsOpen(true)}
         >
           <SquareArrowDownRight className="w-5 h-5" />
           <span>Đăng xuất</span>
+          <Popconfirm
+            title="Bạn có chắc chắn muốn đăng xuất?"
+            open={isOpen}
+            onConfirm={() => {
+              setConfirmed(true)
+              handleSignOut()
+              setIsOpen(false)
+            }}
+            onCancel={() => {
+              setIsOpen(false)
+            }}
+            okText="Đăng xuất"
+            cancelText="Hủy"
+          />
         </li>
       </ul>
     </nav>

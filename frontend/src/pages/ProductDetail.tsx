@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { ProductDetail, ProductImage, ProductResponse } from '../model/product.model'
+import type { ProductDetail, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
 import ProductReview from '../components/product/ProductReview'
+import type { paymentMethodResponse } from '../model/paymentMethod'
+import { Modal } from 'antd'
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -20,6 +22,13 @@ export default function ProductDetail() {
   const [listImage, setListImage] = useState<string[]>(product?.imageUrls || [])
 
   const [activeImg, setActiveImg] = useState(0)
+
+  // Mo modal chon phuong thuc thanh toan
+  const [isOpenModalPayment, setIsOpenModalPayment] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<paymentMethodResponse[]>([])
+
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>()
+  const [isOpenCheckout, setIsOpenCheckout] = useState(false)
 
   const countReviews = 0
 
@@ -113,8 +122,24 @@ export default function ProductDetail() {
       }
     }
 
+    const fetchPaymentMethods = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/payment-methods', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status === 200) {
+          const data = await response.json()
+          setPaymentMethods(data)
+        }
+      } catch (error) {
+        console.error('Error fetching payment methods:', error)
+      }
+    }
+
     fetchProduct()
-    // fetchImageProduct()
+    fetchPaymentMethods()
     checkFavoriteProduct(Number(productId))
 
     // fetch tam toan bo product de goi y
@@ -242,6 +267,23 @@ export default function ProductDetail() {
     }
   }
 
+  // BUY NOW
+  const showModalPayment = () => {
+    setIsOpenModalPayment(true)
+  }
+
+  const closeModalPayment = () => {
+    setIsOpenModalPayment(false)
+  }
+
+  const showCheckout = () => {
+    setIsOpenCheckout(true)
+  }
+
+  const closeCheckout = () => {
+    setIsOpenCheckout(false)
+  }
+
   return (
     <div className="page-cus_product-detail mt-14 min-h-screen bg-[#F8FFF4] text-left overflow-x-hidden">
       {/* Breadcrumb */}
@@ -279,7 +321,7 @@ export default function ProductDetail() {
                     className="w-full h-full object-cover transition-all duration-300"
                   />
                 </div>
-
+                {/* PRODUCT IMAGES */}
                 <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                   {product.imageUrls?.map((url, index) => (
                     <button
@@ -319,7 +361,7 @@ export default function ProductDetail() {
 
               {/* Product Name */}
               <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-green-900 break-words">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-green-900 wrap-break-word">
                   {product.productName}
                 </h1>
 
@@ -387,7 +429,7 @@ export default function ProductDetail() {
             Thông tin sản phẩm
           </h2>
           <div className="product_infor--plus bg-white border border-emerald-100 rounded-2xl p-4 mb-5">
-            <p className="text-gray-500 text-sm sm:text-base leading-relaxed mt-2 break-words">
+            <p className="text-gray-500 text-sm sm:text-base leading-relaxed mt-2 wrap-break-word">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed blanditiis, optio, porro
               rem quaerat labore quas quibusdam voluptates harum eveniet, aut velit? Omnis aliquam
               id quidem tempora aut dolore facilis?
@@ -412,6 +454,9 @@ export default function ProductDetail() {
       ) : (
         <p className="text-green-700 text-sm px-4">Sản phẩm không tồn tại</p>
       )}
+
+      {/* MODAL */}
+      {isOpenCheckout && <Modal></Modal>}
     </div>
   )
 }

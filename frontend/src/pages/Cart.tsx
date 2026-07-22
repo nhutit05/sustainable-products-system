@@ -1,6 +1,6 @@
 import { Leaf, Plus } from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import type { CartItemResponse, Cart } from '../model/cart.model'
 import CartItem from '../components/order/CartItem'
 import type { paymentMethodResponse } from '../model/paymentMethod.model'
