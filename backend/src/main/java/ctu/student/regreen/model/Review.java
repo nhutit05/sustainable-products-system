@@ -37,6 +37,9 @@ public class Review {
     @Column(name = "review_rating")
     private Integer reviewRating;
 
+    @Column(nullable = false, name = "is_hidden")
+    private Boolean isHidden = false;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private Customer customer;

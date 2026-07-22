@@ -38,7 +38,8 @@ public class ReviewMapper {
                 review.getReviewRating(),
                 review.getCustomer().getUserId(),
                 review.getCustomer().getUsername(),
-                review.getProduct().getProductId()
+                review.getProduct().getProductId(),
+                review.getIsHidden()
         );
     }
 

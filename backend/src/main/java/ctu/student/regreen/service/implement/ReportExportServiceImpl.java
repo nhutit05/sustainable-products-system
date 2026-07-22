@@ -14,9 +14,6 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -31,9 +28,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ctu.student.regreen.dto.response.CarbonIndexStatsResponse;
+import ctu.student.regreen.dto.response.InventoryDetailResponse;
+import ctu.student.regreen.dto.response.InventoryOverviewResponse;
+import ctu.student.regreen.dto.response.NewCustomerStatsResponse;
 import ctu.student.regreen.dto.response.OrderStatusDistributionResponse;
 import ctu.student.regreen.dto.response.RefundStatsResponse;
 import ctu.student.regreen.dto.response.RevenueByCategoryResponse;
+import ctu.student.regreen.dto.response.RevenueByPeriodResponse;
 import ctu.student.regreen.dto.response.ReviewStatsResponse;
 import ctu.student.regreen.dto.response.TopCustomerResponse;
 import ctu.student.regreen.dto.response.TopProductResponse;
@@ -52,6 +53,7 @@ public class ReportExportServiceImpl implements ReportExportService {
     private final StatisticsService statisticsService;
 
     private static final String[] REVENUE_HEADERS = {"STT", "Danh muc", "Doanh thu (VND)", "So don", "Ty le (%)"};
+    private static final String[] REVENUE_PERIOD_HEADERS = {"Thoi gian", "Doanh thu (VND)", "So don"};
     private static final String[] TOP_PRODUCT_HEADERS = {"STT", "San pham", "Danh muc", "So luong ban", "Doanh thu (VND)"};
     private static final String[] ORDER_STATUS_HEADERS = {"Trang thai", "So luong", "Ty le (%)"};
     private static final String[] REVIEW_HEADERS = {"Rating", "So luong"};
@@ -59,23 +61,28 @@ public class ReportExportServiceImpl implements ReportExportService {
     private static final String[] VOUCHER_HEADERS = {"Ma voucher", "Giam gia (VND)", "Luot su dung", "Tong giam (VND)", "Trang thai"};
     private static final String[] CARBON_HEADERS = {"Muc carbon", "So san pham"};
     private static final String[] TOP_CUSTOMER_HEADERS = {"STT", "Khach hang", "So don", "Tong chi tieu (VND)", "TB/don (VND)"};
+    private static final String[] INVENTORY_HEADERS = {"STT", "San pham", "Danh muc", "Ton kho", "Gia (VND)"};
+    private static final String[] NEW_CUSTOMER_HEADERS = {"Thang", "So KH moi"};
 
     private static final String REPORT_TITLE = "ReGreen - Bao cao thong ke";
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Override
-    public byte[] exportExcel(String reportType) {
+    public byte[] exportExcel(String reportType, String startDate, String endDate) {
         try (Workbook workbook = new XSSFWorkbook()) {
             switch (reportType) {
-                case "revenue-by-category" -> writeRevenueByCategorySheet(workbook);
-                case "top-products" -> writeTopProductsSheet(workbook);
-                case "order-status" -> writeOrderStatusSheet(workbook);
+                case "revenue-by-category" -> writeRevenueByCategorySheet(workbook, startDate, endDate);
+                case "revenue-by-period" -> writeRevenueByPeriodSheet(workbook, startDate, endDate);
+                case "top-products" -> writeTopProductsSheet(workbook, startDate, endDate);
+                case "order-status" -> writeOrderStatusSheet(workbook, startDate, endDate);
                 case "reviews" -> writeReviewSheet(workbook);
-                case "refunds" -> writeRefundSheet(workbook);
-                case "vouchers" -> writeVoucherSheet(workbook);
+                case "refunds" -> writeRefundSheet(workbook, startDate, endDate);
+                case "vouchers" -> writeVoucherSheet(workbook, startDate, endDate);
                 case "carbon" -> writeCarbonSheet(workbook);
-                case "top-customers" -> writeTopCustomerSheet(workbook);
-                default -> writeAllExcel(workbook);
+                case "top-customers" -> writeTopCustomerSheet(workbook, startDate, endDate);
+                case "inventory-overview" -> writeInventorySheet(workbook);
+                case "new-customers" -> writeNewCustomerSheet(workbook, startDate, endDate);
+                default -> writeAllExcel(workbook, startDate, endDate);
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
@@ -86,20 +93,23 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     @Override
-    public byte[] exportPdf(String reportType) {
+    public byte[] exportPdf(String reportType, String startDate, String endDate) {
         try (PDDocument document = new PDDocument()) {
             PDFont font = loadFont(document);
 
             switch (reportType) {
-                case "revenue-by-category" -> writeRevenueByCategoryPdf(document, font);
-                case "top-products" -> writeTopProductsPdf(document, font);
-                case "order-status" -> writeOrderStatusPdf(document, font);
+                case "revenue-by-category" -> writeRevenueByCategoryPdf(document, font, startDate, endDate);
+                case "revenue-by-period" -> writeRevenueByPeriodPdf(document, font, startDate, endDate);
+                case "top-products" -> writeTopProductsPdf(document, font, startDate, endDate);
+                case "order-status" -> writeOrderStatusPdf(document, font, startDate, endDate);
                 case "reviews" -> writeReviewPdf(document, font);
-                case "refunds" -> writeRefundPdf(document, font);
-                case "vouchers" -> writeVoucherPdf(document, font);
+                case "refunds" -> writeRefundPdf(document, font, startDate, endDate);
+                case "vouchers" -> writeVoucherPdf(document, font, startDate, endDate);
                 case "carbon" -> writeCarbonPdf(document, font);
-                case "top-customers" -> writeTopCustomerPdf(document, font);
-                default -> writeAllPdf(document, font);
+                case "top-customers" -> writeTopCustomerPdf(document, font, startDate, endDate);
+                case "inventory-overview" -> writeInventoryPdf(document, font);
+                case "new-customers" -> writeNewCustomerPdf(document, font, startDate, endDate);
+                default -> writeAllPdf(document, font, startDate, endDate);
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             document.save(out);
@@ -113,8 +123,8 @@ public class ReportExportServiceImpl implements ReportExportService {
         try {
             return PDType0Font.load(document, new java.io.File("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"));
         } catch (IOException e) {
-            log.warn("Khong tim thấy DejaVu Sans font, su dung Helvetica (khong ho tro dau Tieng Viet)");
-           return new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+            log.warn("Khong tim thay DejaVu Sans font, su dung Helvetica (khong ho tro dau Tieng Viet)");
+            return new PDType1Font(Standard14Fonts.FontName.HELVETICA);
         }
     }
 
@@ -165,14 +175,13 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== EXCEL: Revenue By Category ====================
-    private void writeRevenueByCategorySheet(Workbook workbook) {
+    private void writeRevenueByCategorySheet(Workbook workbook, String startDate, String endDate) {
         Sheet sheet = workbook.createSheet("Doanh thu theo danh muc");
         CellStyle headerStyle = createHeaderStyle(workbook);
-        CellStyle dataStyle = createDataStyle(workbook);
         CellStyle currencyStyle = createCurrencyStyle(workbook);
 
         writeHeaderRow(sheet, REVENUE_HEADERS, headerStyle);
-        List<RevenueByCategoryResponse> data = statisticsService.getRevenueByCategory();
+        List<RevenueByCategoryResponse> data = statisticsService.getRevenueByCategory(startDate, endDate);
 
         int rowNum = 1;
         for (int i = 0; i < data.size(); i++) {
@@ -186,19 +195,40 @@ public class ReportExportServiceImpl implements ReportExportService {
             row.createCell(3).setCellValue(r.getOrderCount());
             var pctCell = row.createCell(4);
             pctCell.setCellValue(r.getPercentage() != null ? r.getPercentage() : 0.0);
-            pctCell.setCellStyle(dataStyle);
+            pctCell.setCellStyle(createDataStyle(workbook));
         }
         autoSizeColumns(sheet, REVENUE_HEADERS.length);
     }
 
+    // ==================== EXCEL: Revenue By Period ====================
+    private void writeRevenueByPeriodSheet(Workbook workbook, String startDate, String endDate) {
+        Sheet sheet = workbook.createSheet("Doanh thu theo thoi gian");
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle currencyStyle = createCurrencyStyle(workbook);
+
+        writeHeaderRow(sheet, REVENUE_PERIOD_HEADERS, headerStyle);
+        List<RevenueByPeriodResponse> data = statisticsService.getRevenueByPeriod(startDate, endDate, "day");
+
+        int rowNum = 1;
+        for (RevenueByPeriodResponse r : data) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(r.getPeriod());
+            var revenueCell = row.createCell(1);
+            revenueCell.setCellValue(r.getRevenue());
+            revenueCell.setCellStyle(currencyStyle);
+            row.createCell(2).setCellValue(r.getOrderCount());
+        }
+        autoSizeColumns(sheet, REVENUE_PERIOD_HEADERS.length);
+    }
+
     // ==================== EXCEL: Top Products ====================
-    private void writeTopProductsSheet(Workbook workbook) {
+    private void writeTopProductsSheet(Workbook workbook, String startDate, String endDate) {
         Sheet sheet = workbook.createSheet("San pham ban chay");
         CellStyle headerStyle = createHeaderStyle(workbook);
         CellStyle currencyStyle = createCurrencyStyle(workbook);
 
         writeHeaderRow(sheet, TOP_PRODUCT_HEADERS, headerStyle);
-        List<TopProductResponse> data = statisticsService.getTopProducts(50);
+        List<TopProductResponse> data = statisticsService.getTopProducts(50, startDate, endDate);
 
         int rowNum = 1;
         for (int i = 0; i < data.size(); i++) {
@@ -216,13 +246,13 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== EXCEL: Order Status ====================
-    private void writeOrderStatusSheet(Workbook workbook) {
+    private void writeOrderStatusSheet(Workbook workbook, String startDate, String endDate) {
         Sheet sheet = workbook.createSheet("Trang thai don hang");
         CellStyle headerStyle = createHeaderStyle(workbook);
         CellStyle dataStyle = createDataStyle(workbook);
 
         writeHeaderRow(sheet, ORDER_STATUS_HEADERS, headerStyle);
-        List<OrderStatusDistributionResponse> data = statisticsService.getOrderStatusDistribution();
+        List<OrderStatusDistributionResponse> data = statisticsService.getOrderStatusDistribution(startDate, endDate);
 
         int rowNum = 1;
         for (OrderStatusDistributionResponse r : data) {
@@ -264,12 +294,12 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== EXCEL: Refunds ====================
-    private void writeRefundSheet(Workbook workbook) {
+    private void writeRefundSheet(Workbook workbook, String startDate, String endDate) {
         Sheet sheet = workbook.createSheet("Hoan tien");
         CellStyle headerStyle = createHeaderStyle(workbook);
 
         writeHeaderRow(sheet, REFUND_HEADERS, headerStyle);
-        RefundStatsResponse stats = statisticsService.getRefundStats();
+        RefundStatsResponse stats = statisticsService.getRefundStats(startDate, endDate);
 
         Row r1 = sheet.createRow(1);
         r1.createCell(0).setCellValue("PENDING");
@@ -288,13 +318,13 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== EXCEL: Vouchers ====================
-    private void writeVoucherSheet(Workbook workbook) {
+    private void writeVoucherSheet(Workbook workbook, String startDate, String endDate) {
         Sheet sheet = workbook.createSheet("Voucher");
         CellStyle headerStyle = createHeaderStyle(workbook);
         CellStyle currencyStyle = createCurrencyStyle(workbook);
 
         writeHeaderRow(sheet, VOUCHER_HEADERS, headerStyle);
-        List<VoucherStatsResponse> data = statisticsService.getVoucherStats();
+        List<VoucherStatsResponse> data = statisticsService.getVoucherStats(startDate, endDate);
 
         int rowNum = 1;
         for (VoucherStatsResponse v : data) {
@@ -334,13 +364,13 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== EXCEL: Top Customers ====================
-    private void writeTopCustomerSheet(Workbook workbook) {
+    private void writeTopCustomerSheet(Workbook workbook, String startDate, String endDate) {
         Sheet sheet = workbook.createSheet("Khach hang");
         CellStyle headerStyle = createHeaderStyle(workbook);
         CellStyle currencyStyle = createCurrencyStyle(workbook);
 
         writeHeaderRow(sheet, TOP_CUSTOMER_HEADERS, headerStyle);
-        List<TopCustomerResponse> data = statisticsService.getTopCustomers(50);
+        List<TopCustomerResponse> data = statisticsService.getTopCustomers(50, startDate, endDate);
 
         int rowNum = 1;
         for (int i = 0; i < data.size(); i++) {
@@ -359,16 +389,61 @@ public class ReportExportServiceImpl implements ReportExportService {
         autoSizeColumns(sheet, TOP_CUSTOMER_HEADERS.length);
     }
 
+    // ==================== EXCEL: Inventory ====================
+    private void writeInventorySheet(Workbook workbook) {
+        Sheet sheet = workbook.createSheet("Hang ton kho");
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle currencyStyle = createCurrencyStyle(workbook);
+
+        writeHeaderRow(sheet, INVENTORY_HEADERS, headerStyle);
+        InventoryOverviewResponse overview = statisticsService.getInventoryOverview();
+        List<InventoryDetailResponse> data = overview.getDetails();
+
+        int rowNum = 1;
+        for (int i = 0; i < data.size(); i++) {
+            InventoryDetailResponse d = data.get(i);
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(i + 1);
+            row.createCell(1).setCellValue(d.getProductName());
+            row.createCell(2).setCellValue(d.getCategoryName());
+            row.createCell(3).setCellValue(d.getInventory());
+            var priceCell = row.createCell(4);
+            priceCell.setCellValue(d.getPrice() != null ? d.getPrice() : 0.0);
+            priceCell.setCellStyle(currencyStyle);
+        }
+        autoSizeColumns(sheet, INVENTORY_HEADERS.length);
+    }
+
+    // ==================== EXCEL: New Customers ====================
+    private void writeNewCustomerSheet(Workbook workbook, String startDate, String endDate) {
+        Sheet sheet = workbook.createSheet("Khach hang moi");
+        CellStyle headerStyle = createHeaderStyle(workbook);
+
+        writeHeaderRow(sheet, NEW_CUSTOMER_HEADERS, headerStyle);
+        List<NewCustomerStatsResponse> data = statisticsService.getNewCustomerStats(startDate, endDate);
+
+        int rowNum = 1;
+        for (NewCustomerStatsResponse s : data) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(s.getPeriod());
+            row.createCell(1).setCellValue(s.getCount());
+        }
+        autoSizeColumns(sheet, NEW_CUSTOMER_HEADERS.length);
+    }
+
     // ==================== EXCEL: All ====================
-    private void writeAllExcel(Workbook workbook) {
-        writeRevenueByCategorySheet(workbook);
-        writeTopProductsSheet(workbook);
-        writeOrderStatusSheet(workbook);
+    private void writeAllExcel(Workbook workbook, String startDate, String endDate) {
+        writeRevenueByCategorySheet(workbook, startDate, endDate);
+        writeRevenueByPeriodSheet(workbook, startDate, endDate);
+        writeTopProductsSheet(workbook, startDate, endDate);
+        writeOrderStatusSheet(workbook, startDate, endDate);
         writeReviewSheet(workbook);
-        writeRefundSheet(workbook);
-        writeVoucherSheet(workbook);
+        writeRefundSheet(workbook, startDate, endDate);
+        writeVoucherSheet(workbook, startDate, endDate);
         writeCarbonSheet(workbook);
-        writeTopCustomerSheet(workbook);
+        writeTopCustomerSheet(workbook, startDate, endDate);
+        writeInventorySheet(workbook);
+        writeNewCustomerSheet(workbook, startDate, endDate);
     }
 
     // ==================== PDF HELPERS ====================
@@ -432,7 +507,7 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== PDF: Revenue By Category ====================
-    private void writeRevenueByCategoryPdf(PDDocument document, PDFont font) throws IOException {
+    private void writeRevenueByCategoryPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         PDPageContentStream cs = new PDPageContentStream(document, page);
@@ -442,7 +517,7 @@ public class ReportExportServiceImpl implements ReportExportService {
         float[] widths = {30, 160, 120, 80, 80};
         y = writePdfTableHeader(cs, font, y, REVENUE_HEADERS, widths);
 
-        List<RevenueByCategoryResponse> data = statisticsService.getRevenueByCategory();
+        List<RevenueByCategoryResponse> data = statisticsService.getRevenueByCategory(startDate, endDate);
         for (int i = 0; i < data.size(); i++) {
             if (y < 50) {
                 writePdfFooter(cs, font, document.getNumberOfPages());
@@ -466,8 +541,40 @@ public class ReportExportServiceImpl implements ReportExportService {
         cs.close();
     }
 
+    // ==================== PDF: Revenue By Period ====================
+    private void writeRevenueByPeriodPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+        PDPageContentStream cs = new PDPageContentStream(document, page);
+
+        writePdfTitle(cs, font, "Bao cao doanh thu theo thoi gian");
+        float y = PDRectangle.A4.getHeight() - 100;
+        float[] widths = {160, 160, 100};
+        y = writePdfTableHeader(cs, font, y, REVENUE_PERIOD_HEADERS, widths);
+
+        List<RevenueByPeriodResponse> data = statisticsService.getRevenueByPeriod(startDate, endDate, "day");
+        for (RevenueByPeriodResponse r : data) {
+            if (y < 50) {
+                writePdfFooter(cs, font, document.getNumberOfPages());
+                cs.close();
+                page = new PDPage(PDRectangle.A4);
+                document.addPage(page);
+                cs = new PDPageContentStream(document, page);
+                y = PDRectangle.A4.getHeight() - 50;
+                y = writePdfTableHeader(cs, font, y, REVENUE_PERIOD_HEADERS, widths);
+            }
+            y = writePdfTableRow(cs, font, y, new String[]{
+                    r.getPeriod(),
+                    String.valueOf(r.getRevenue()),
+                    String.valueOf(r.getOrderCount())
+            }, widths);
+        }
+        writePdfFooter(cs, font, document.getNumberOfPages());
+        cs.close();
+    }
+
     // ==================== PDF: Top Products ====================
-    private void writeTopProductsPdf(PDDocument document, PDFont font) throws IOException {
+    private void writeTopProductsPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         PDPageContentStream cs = new PDPageContentStream(document, page);
@@ -477,7 +584,7 @@ public class ReportExportServiceImpl implements ReportExportService {
         float[] widths = {30, 180, 120, 80, 120};
         y = writePdfTableHeader(cs, font, y, TOP_PRODUCT_HEADERS, widths);
 
-        List<TopProductResponse> data = statisticsService.getTopProducts(20);
+        List<TopProductResponse> data = statisticsService.getTopProducts(20, startDate, endDate);
         for (int i = 0; i < data.size(); i++) {
             if (y < 50) {
                 writePdfFooter(cs, font, document.getNumberOfPages());
@@ -502,7 +609,7 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== PDF: Order Status ====================
-    private void writeOrderStatusPdf(PDDocument document, PDFont font) throws IOException {
+    private void writeOrderStatusPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         PDPageContentStream cs = new PDPageContentStream(document, page);
@@ -512,7 +619,7 @@ public class ReportExportServiceImpl implements ReportExportService {
         float[] widths = {160, 120, 120};
         y = writePdfTableHeader(cs, font, y, ORDER_STATUS_HEADERS, widths);
 
-        List<OrderStatusDistributionResponse> data = statisticsService.getOrderStatusDistribution();
+        List<OrderStatusDistributionResponse> data = statisticsService.getOrderStatusDistribution(startDate, endDate);
         for (OrderStatusDistributionResponse r : data) {
             y = writePdfTableRow(cs, font, y, new String[]{
                     r.getStatusName(),
@@ -561,14 +668,14 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== PDF: Refunds ====================
-    private void writeRefundPdf(PDDocument document, PDFont font) throws IOException {
+    private void writeRefundPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         PDPageContentStream cs = new PDPageContentStream(document, page);
 
         writePdfTitle(cs, font, "Bao cao hoan tien");
         float y = PDRectangle.A4.getHeight() - 100;
-        RefundStatsResponse stats = statisticsService.getRefundStats();
+        RefundStatsResponse stats = statisticsService.getRefundStats(startDate, endDate);
 
         cs.beginText();
         cs.setFont(font, 12);
@@ -596,7 +703,7 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== PDF: Vouchers ====================
-    private void writeVoucherPdf(PDDocument document, PDFont font) throws IOException {
+    private void writeVoucherPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         PDPageContentStream cs = new PDPageContentStream(document, page);
@@ -606,7 +713,7 @@ public class ReportExportServiceImpl implements ReportExportService {
         float[] widths = {80, 100, 80, 120, 100};
         y = writePdfTableHeader(cs, font, y, VOUCHER_HEADERS, widths);
 
-        List<VoucherStatsResponse> data = statisticsService.getVoucherStats();
+        List<VoucherStatsResponse> data = statisticsService.getVoucherStats(startDate, endDate);
         for (VoucherStatsResponse v : data) {
             if (y < 50) {
                 writePdfFooter(cs, font, document.getNumberOfPages());
@@ -657,7 +764,7 @@ public class ReportExportServiceImpl implements ReportExportService {
     }
 
     // ==================== PDF: Top Customers ====================
-    private void writeTopCustomerPdf(PDDocument document, PDFont font) throws IOException {
+    private void writeTopCustomerPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         PDPageContentStream cs = new PDPageContentStream(document, page);
@@ -667,7 +774,7 @@ public class ReportExportServiceImpl implements ReportExportService {
         float[] widths = {30, 140, 80, 120, 120};
         y = writePdfTableHeader(cs, font, y, TOP_CUSTOMER_HEADERS, widths);
 
-        List<TopCustomerResponse> data = statisticsService.getTopCustomers(20);
+        List<TopCustomerResponse> data = statisticsService.getTopCustomers(20, startDate, endDate);
         for (int i = 0; i < data.size(); i++) {
             if (y < 50) {
                 writePdfFooter(cs, font, document.getNumberOfPages());
@@ -691,15 +798,76 @@ public class ReportExportServiceImpl implements ReportExportService {
         cs.close();
     }
 
+    // ==================== PDF: Inventory ====================
+    private void writeInventoryPdf(PDDocument document, PDFont font) throws IOException {
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+        PDPageContentStream cs = new PDPageContentStream(document, page);
+
+        writePdfTitle(cs, font, "Bao cao hang ton kho");
+        float y = PDRectangle.A4.getHeight() - 100;
+        float[] widths = {30, 160, 120, 80, 100};
+        y = writePdfTableHeader(cs, font, y, INVENTORY_HEADERS, widths);
+
+        InventoryOverviewResponse overview = statisticsService.getInventoryOverview();
+        List<InventoryDetailResponse> data = overview.getDetails();
+        for (int i = 0; i < data.size(); i++) {
+            if (y < 50) {
+                writePdfFooter(cs, font, document.getNumberOfPages());
+                cs.close();
+                page = new PDPage(PDRectangle.A4);
+                document.addPage(page);
+                cs = new PDPageContentStream(document, page);
+                y = PDRectangle.A4.getHeight() - 50;
+                y = writePdfTableHeader(cs, font, y, INVENTORY_HEADERS, widths);
+            }
+            InventoryDetailResponse d = data.get(i);
+            y = writePdfTableRow(cs, font, y, new String[]{
+                    String.valueOf(i + 1),
+                    d.getProductName(),
+                    d.getCategoryName(),
+                    String.valueOf(d.getInventory()),
+                    d.getPrice() != null ? String.valueOf(d.getPrice()) : "0"
+            }, widths);
+        }
+        writePdfFooter(cs, font, document.getNumberOfPages());
+        cs.close();
+    }
+
+    // ==================== PDF: New Customers ====================
+    private void writeNewCustomerPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+        PDPageContentStream cs = new PDPageContentStream(document, page);
+
+        writePdfTitle(cs, font, "Bao cao khach hang moi");
+        float y = PDRectangle.A4.getHeight() - 100;
+        float[] widths = {200, 200};
+        y = writePdfTableHeader(cs, font, y, NEW_CUSTOMER_HEADERS, widths);
+
+        List<NewCustomerStatsResponse> data = statisticsService.getNewCustomerStats(startDate, endDate);
+        for (NewCustomerStatsResponse s : data) {
+            y = writePdfTableRow(cs, font, y, new String[]{
+                    s.getPeriod(),
+                    String.valueOf(s.getCount())
+            }, widths);
+        }
+        writePdfFooter(cs, font, document.getNumberOfPages());
+        cs.close();
+    }
+
     // ==================== PDF: All ====================
-    private void writeAllPdf(PDDocument document, PDFont font) throws IOException {
-        writeRevenueByCategoryPdf(document, font);
-        writeTopProductsPdf(document, font);
-        writeOrderStatusPdf(document, font);
+    private void writeAllPdf(PDDocument document, PDFont font, String startDate, String endDate) throws IOException {
+        writeRevenueByCategoryPdf(document, font, startDate, endDate);
+        writeRevenueByPeriodPdf(document, font, startDate, endDate);
+        writeTopProductsPdf(document, font, startDate, endDate);
+        writeOrderStatusPdf(document, font, startDate, endDate);
         writeReviewPdf(document, font);
-        writeRefundPdf(document, font);
-        writeVoucherPdf(document, font);
+        writeRefundPdf(document, font, startDate, endDate);
+        writeVoucherPdf(document, font, startDate, endDate);
         writeCarbonPdf(document, font);
-        writeTopCustomerPdf(document, font);
+        writeTopCustomerPdf(document, font, startDate, endDate);
+        writeInventoryPdf(document, font);
+        writeNewCustomerPdf(document, font, startDate, endDate);
     }
 }
