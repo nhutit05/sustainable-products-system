@@ -5,6 +5,7 @@ import ctu.student.regreen.dto.response.ReviewResponse;
 import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,7 +32,9 @@ public class ReviewController {
     @PutMapping("/api/reviews/{reviewId}")
     public ReviewResponse update(
             @PathVariable Integer reviewId,
-            @RequestBody ReviewRequest request) {
+            @RequestPart("request") ReviewRequest request,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        request.setReviewImages(images);
         return service.update(reviewId, request);
     }
 
@@ -40,7 +43,6 @@ public class ReviewController {
         return service.delete(reviewId);
     }
 
-    // Find review by product
 
     // [GET/ /api/products/{productId}/reviews
     @GetMapping("/api/products/{productId}/reviews")
@@ -48,20 +50,14 @@ public class ReviewController {
         return service.getAllByProductId(productId);
     }
 
-//    // [GET] /api/products/{productId}/reviews/count
-//    @GetMapping("/api/products/{productId}/reviews/count")
-//    public Integer countByProductId(@PathVariable Integer productId) {
-//        return service.getCountByProductId(productId);
-//    }
 
     // [POST] /api/products/{productId}/reviews
     @PostMapping("/api/products/{productId}/reviews")
     public ReviewResponse createByProductId(
             @PathVariable Integer productId,
-            @RequestBody ReviewRequest request) {
+            @RequestPart("request") ReviewRequest request,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        request.setReviewImages(images);
         return service.create(request, productId);
     }
-
-
-
 }

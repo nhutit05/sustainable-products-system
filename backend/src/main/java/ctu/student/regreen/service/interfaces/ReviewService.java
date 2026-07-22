@@ -2,6 +2,7 @@ package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.request.ReviewRequest;
 import ctu.student.regreen.dto.response.ReviewResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface ReviewService {
 //    List<ReviewResponse> getAllByRating(Integer rating);
     ReviewResponse getById(Integer reviewId);
 
-    ReviewResponse create(ReviewRequest request,Integer productId);
+    ReviewResponse create(ReviewRequest request, Integer productId);
     ReviewResponse update(Integer reviewId, ReviewRequest request);
 
     Boolean delete(Integer id);

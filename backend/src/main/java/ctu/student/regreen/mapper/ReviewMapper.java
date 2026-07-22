@@ -7,24 +7,28 @@ import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.Review;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.ProductRepository;
+import ctu.student.regreen.service.interfaces.ReviewImageService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Component
 @RequiredArgsConstructor
 public class ReviewMapper {
 
-
-    private final CustomerRepository customerRepository;
-    private final ProductRepository productRepository;
-
-    public Review toEntity(ReviewRequest request, Customer customer, Product product) {
+    public Review toEntity(ReviewRequest request,
+                           List<String> reviewImageUrls,
+                           Customer customer,
+                           Product product) {
         Review review = new Review();
 
         review.setReviewContent(request.getReviewContent());
         review.setReviewRating(request.getReviewRating());
+        review.setReviewImages(reviewImageUrls);
         review.setProduct(product);
         review.setCustomer(customer);
 
@@ -32,19 +36,24 @@ public class ReviewMapper {
     }
 
     public ReviewResponse toResponse(Review review) {
+
         return new ReviewResponse(
                 review.getReviewId(),
                 review.getReviewContent(),
                 review.getReviewRating(),
+                review.getReviewImages(),
                 review.getCustomer().getUserId(),
                 review.getCustomer().getUsername(),
-                review.getProduct().getProductId()
+                review.getProduct().getProductId(),
+                review.getProduct().getProductName()
         );
     }
 
-    public void update(Review review, ReviewRequest request) {
+    public void update(Review review,
+                       ReviewRequest request,
+                       List<String> reviewImageUrls) {
         review.setReviewRating(request.getReviewRating());
         review.setReviewContent(request.getReviewContent());
-
+        review.setReviewImages(reviewImageUrls);
     }
 }

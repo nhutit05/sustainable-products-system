@@ -11,5 +11,5 @@ public class ReviewImageResponse {
 
     private String reviewImageUrl;
 
-    private ReviewResponse review;
+//    private ReviewResponse review;
 }

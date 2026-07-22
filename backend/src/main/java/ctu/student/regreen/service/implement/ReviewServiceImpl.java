@@ -9,11 +9,15 @@ import ctu.student.regreen.model.Review;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.repository.ReviewRepository;
+import ctu.student.regreen.service.interfaces.CloudinaryService;
+import ctu.student.regreen.service.interfaces.ReviewImageService;
 import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,6 +28,10 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper mapper;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+
+    private final ReviewImageService reviewImageService;
+
+    private final CloudinaryService cloudinaryService;
 
     private Customer getCurrentCustomer() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -38,19 +46,6 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(mapper::toResponse)
                 .toList();
     }
-
-//    public List<ReviewResponse> getAllByCustomerAndProduct(
-//            Integer customerId,
-//            Integer productId) {
-//
-//        return repository
-//                .findByCustomerUserIdAndProductProductId(
-//                        customerId,
-//                        productId)
-//                .stream()
-//                .map(mapper::toResponse)
-//                .toList();
-//    }
 
     public List<ReviewResponse> getAllByProductId(Integer productId) {
         return repository.findByProductProductId(productId)
@@ -90,7 +85,15 @@ public class ReviewServiceImpl implements ReviewService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        Review review = mapper.toEntity(request, customer, product);
+        // Tao hinh anh danh gia truoc khi tao review
+        List<String> reviewImageUrls = new ArrayList<>();
+        if (request.getReviewImages() != null && !request.getReviewImages().isEmpty()) {
+            for (MultipartFile image : request.getReviewImages()) {
+                String url = reviewImageService.create(image);
+                reviewImageUrls.add(url);
+            }
+        }
+        Review review = mapper.toEntity(request, reviewImageUrls, customer, product);
         return mapper.toResponse(repository.save(review));
     }
 
@@ -99,7 +102,15 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() ->
                         new RuntimeException("Review not found"));
 
-        mapper.update(review, request);
+        List<String> reviewImageUrls = review.getReviewImages();
+        if (!request.getReviewImages().isEmpty()) {
+            for (MultipartFile image : request.getReviewImages()) {
+                String url = reviewImageService.create(image);
+                reviewImageUrls.add(url);
+            }
+        }
+
+        mapper.update(review, request, reviewImageUrls);
 
         return mapper.toResponse(repository.save(review));
     }
