@@ -18,4 +18,6 @@ public class ReviewResponse {
 
     private Integer productId;
 
+    private Boolean isHidden;
+
 }

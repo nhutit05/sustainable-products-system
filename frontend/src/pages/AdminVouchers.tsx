@@ -120,7 +120,7 @@ function VoucherForm({
             size="large"
             formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
             parser={(val) =>
-              Number(`${val}`.replace(/\./g, '').replace(/[^0-9]/g, '')) as unknown as number
+              Number(`${val}`.replace(/\./g, '').replace(/[^0-9]/g, '')) as unknown as 0
             }
             prefix={<ShoppingOutlined className="text-emerald-500" />}
           />
@@ -133,7 +133,7 @@ function VoucherForm({
             size="large"
             formatter={(val) => `${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
             parser={(val) =>
-              Number(`${val}`.replace(/\./g, '').replace(/[^0-9]/g, '')) as unknown as number
+              Number(`${val}`.replace(/\./g, '').replace(/[^0-9]/g, '')) as unknown as 0
             }
             prefix={<DollarOutlined className="text-emerald-500" />}
           />

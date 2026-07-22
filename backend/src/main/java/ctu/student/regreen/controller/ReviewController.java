@@ -1,6 +1,7 @@
 package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.request.ReviewRequest;
+import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.dto.response.ReviewResponse;
 import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -48,12 +49,6 @@ public class ReviewController {
         return service.getAllByProductId(productId);
     }
 
-//    // [GET] /api/products/{productId}/reviews/count
-//    @GetMapping("/api/products/{productId}/reviews/count")
-//    public Integer countByProductId(@PathVariable Integer productId) {
-//        return service.getCountByProductId(productId);
-//    }
-
     // [POST] /api/products/{productId}/reviews
     @PostMapping("/api/products/{productId}/reviews")
     public ReviewResponse createByProductId(
@@ -62,6 +57,19 @@ public class ReviewController {
         return service.create(request, productId);
     }
 
+    // [GET] /api/admin/reviews
+    @GetMapping("/api/admin/reviews")
+    public PageResponse<ReviewResponse> getAllAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
+        return service.getAllPaginated(page, size, keyword);
+    }
 
+    // [PATCH] /api/admin/reviews/{reviewId}/toggle-hidden
+    @PatchMapping("/api/admin/reviews/{reviewId}/toggle-hidden")
+    public ReviewResponse toggleHidden(@PathVariable Integer reviewId) {
+        return service.toggleHidden(reviewId);
+    }
 
 }

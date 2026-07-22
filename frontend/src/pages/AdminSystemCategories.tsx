@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { Pagination, Spin, Button, Modal, Form, Input, InputNumber, Select, Switch, message, Popconfirm } from "antd"
-import { Search, Plus, Pencil, Trash2 } from "lucide-react"
+import { Search, Plus, Pencil, Trash2, EyeOff, Eye } from "lucide-react"
 
 import type {
   CityAdminResponse,
@@ -13,6 +13,7 @@ import type {
   PaymentStatusAdminResponse,
   PaymentMethodAdminResponse,
 } from "../model/admin-category.model"
+import type { ReviewResponse } from "../model/review.model"
 
 import {
   getCitiesPaginated,
@@ -52,6 +53,8 @@ import {
   createPaymentMethod,
   updatePaymentMethod,
   deletePaymentMethod,
+  getReviewsPaginated,
+  toggleReviewHidden,
 } from "../services/admin-category.service"
 
 type TabKey =
@@ -64,6 +67,7 @@ type TabKey =
   | "orderStatuses"
   | "paymentStatuses"
   | "paymentMethods"
+  | "reviews"
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "customers", label: "Khách hàng" },
@@ -75,6 +79,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "orderStatuses", label: "Trạng thái ĐH" },
   { key: "paymentStatuses", label: "Trạng thái TT" },
   { key: "paymentMethods", label: "Phương thức TT" },
+  { key: "reviews", label: "Đánh giá" },
 ]
 
 const PAGE_SIZE = 10
@@ -108,6 +113,8 @@ export default function AdminSystemCategories() {
   const [orderStatuses, setOrderStatuses] = useState<OrderStatusAdminResponse[]>([])
   const [paymentStatuses, setPaymentStatuses] = useState<PaymentStatusAdminResponse[]>([])
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodAdminResponse[]>([])
+  const [reviews, setReviews] = useState<ReviewResponse[]>([])
+  const [reviewsPaginated, setReviewsPaginated] = useState<{ content: ReviewResponse[]; totalElements: number; totalPages: number } | null>(null)
   const [allCities, setAllCities] = useState<CityAdminResponse[]>([])
 
   // Debounced keyword
@@ -212,6 +219,16 @@ export default function AdminSystemCategories() {
     } catch { /* empty */ } finally { setLoading(false) }
   }, [token])
 
+  const fetchReviews = useCallback(async () => {
+    if (!token) return
+    setLoading(true)
+    try {
+      const data = await getReviewsPaginated(token, currentPage - 1, PAGE_SIZE, debouncedKeyword)
+      setReviewsPaginated(data)
+      setReviews(data.content)
+    } catch { setReviewsPaginated(null) } finally { setLoading(false) }
+  }, [token, currentPage, debouncedKeyword])
+
   // ─── Main fetch dispatch ───────────────────────────────
 
   useEffect(() => {
@@ -225,8 +242,9 @@ export default function AdminSystemCategories() {
       case "orderStatuses": fetchOrderStatuses(); break
       case "paymentStatuses": fetchPaymentStatuses(); break
       case "paymentMethods": fetchPaymentMethods(); break
+      case "reviews": fetchReviews(); break
     }
-  }, [activeTab, fetchCustomers, fetchBanks, fetchCategories, fetchCitiesPaginated, fetchVillagesPaginated, fetchMaterials, fetchOrderStatuses, fetchPaymentStatuses, fetchPaymentMethods])
+  }, [activeTab, fetchCustomers, fetchBanks, fetchCategories, fetchCitiesPaginated, fetchVillagesPaginated, fetchMaterials, fetchOrderStatuses, fetchPaymentStatuses, fetchPaymentMethods, fetchReviews])
 
   // Fetch all cities for village form
   useEffect(() => {
@@ -431,11 +449,12 @@ export default function AdminSystemCategories() {
     orderStatuses: "Tìm kiếm trạng thái đơn hàng...",
     paymentStatuses: "Tìm kiếm trạng thái thanh toán...",
     paymentMethods: "Tìm kiếm phương thức thanh toán...",
+    reviews: "Tìm kiếm đánh giá...",
   }
 
   // ─── Get current data & pagination info ────────────────
 
-  const isPaginated = activeTab === "cities" || activeTab === "villages"
+  const isPaginated = activeTab === "cities" || activeTab === "villages" || activeTab === "reviews"
   let displayData: Record<string, unknown>[] = []
   let totalElements = 0
 
@@ -476,10 +495,14 @@ export default function AdminSystemCategories() {
       displayData = clientFilter(paymentMethods as unknown as Record<string, unknown>[], ["paymentMethodName"])
       totalElements = displayData.length
       break
+    case "reviews":
+      displayData = reviews as unknown as Record<string, unknown>[]
+      totalElements = reviewsPaginated?.totalElements ?? 0
+      break
   }
 
   const totalPages = isPaginated
-    ? (activeTab === "cities" ? citiesPaginated?.totalPages ?? 0 : villagesPaginated?.totalPages ?? 0)
+    ? (activeTab === "cities" ? citiesPaginated?.totalPages ?? 0 : activeTab === "villages" ? villagesPaginated?.totalPages ?? 0 : reviewsPaginated?.totalPages ?? 0)
     : Math.ceil(totalElements / PAGE_SIZE)
 
   const paginatedData = isPaginated
@@ -505,6 +528,7 @@ export default function AdminSystemCategories() {
       case "orderStatuses": fetchOrderStatuses(); break
       case "paymentStatuses": fetchPaymentStatuses(); break
       case "paymentMethods": fetchPaymentMethods(); break
+      case "reviews": fetchReviews(); break
     }
   }
 
@@ -518,22 +542,25 @@ export default function AdminSystemCategories() {
         return (
           <>
             <Form.Item name="username" label="Username" rules={[{ required: true, message: "Vui lòng nhập username" }]}>
-              <Input placeholder="Username" />
+              <Input placeholder="Username" disabled={!!editingId} />
             </Form.Item>
             <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Vui lòng nhập email hợp lệ" }]}>
-              <Input placeholder="Email" />
+              <Input placeholder="Email" disabled={!!editingId} />
             </Form.Item>
             <Form.Item name="numberPhone" label="Số điện thoại" rules={[{ required: true, pattern: /^[0-9]{10}$/, message: "10 chữ số" }]}>
               <Input placeholder="Số điện thoại" />
             </Form.Item>
             <Form.Item name="password" label="Mật khẩu" rules={[{ required: !editingId, pattern: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,255}$/, message: "Chữ hoa, chữ thường và số, tối thiểu 8 ký tự" }]}>
-              <Input.Password placeholder="Mật khẩu" />
+              <Input.Password placeholder={editingId ? "Để trống nếu không đổi" : "Mật khẩu"} />
             </Form.Item>
             <Form.Item name="nationalId" label="CCCD">
-              <Input placeholder="12 chữ số" maxLength={12} />
+              <Input placeholder="12 chữ số" maxLength={12} disabled={!!editingId} />
             </Form.Item>
             <Form.Item name="accumulatedEcoPoints" label="Điểm eco" initialValue={0}>
-              <InputNumber min={0} className="w-full" />
+              <InputNumber min={0} className="w-full" disabled={!!editingId} />
+            </Form.Item>
+            <Form.Item name="isActive" label="Kích hoạt" valuePropName="checked" initialValue={true}>
+              <Switch />
             </Form.Item>
           </>
         )
@@ -646,6 +673,7 @@ export default function AdminSystemCategories() {
       case "orderStatuses": return item.orderStatusId as number
       case "paymentStatuses": return item.paymentStatusId as number
       case "paymentMethods": return item.paymentMethodId as number
+      case "reviews": return item.reviewId as number
       default: return 0
     }
   }
@@ -653,7 +681,7 @@ export default function AdminSystemCategories() {
   const renderTableHeader = () => {
     switch (activeTab) {
       case "customers":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Username</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">SĐT</th><th className="px-4 py-3">Điểm eco</th><th className="px-4 py-3 text-center">Thao tác</th></>
+        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Username</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">SĐT</th><th className="px-4 py-3">Điểm eco</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
       case "banks":
         return <><th className="px-4 py-3">Mã NH</th><th className="px-4 py-3">Tên viết tắt</th><th className="px-4 py-3">Tên đầy đủ</th><th className="px-4 py-3 text-center">Thao tác</th></>
       case "categories":
@@ -670,6 +698,8 @@ export default function AdminSystemCategories() {
         return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
       case "paymentMethods":
         return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên phương thức</th><th className="px-4 py-3">Online</th><th className="px-4 py-3 text-center">Thao tác</th></>
+      case "reviews":
+        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Khách hàng</th><th className="px-4 py-3">Sản phẩm</th><th className="px-4 py-3">Đánh giá</th><th className="px-4 py-3">Nội dung</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
       default:
         return null
     }
@@ -677,7 +707,7 @@ export default function AdminSystemCategories() {
 
   const renderTableBody = () => {
     if (paginatedData.length === 0) {
-      const colCount = activeTab === "villages" ? 5 : activeTab === "customers" ? 6 : activeTab === "banks" || activeTab === "cities" || activeTab === "paymentMethods" ? 4 : activeTab === "materials" ? 4 : 3
+      const colCount = activeTab === "villages" ? 5 : activeTab === "customers" ? 7 : activeTab === "reviews" ? 7 : activeTab === "banks" || activeTab === "cities" || activeTab === "paymentMethods" ? 4 : activeTab === "materials" ? 4 : 3
       return <tr><td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">Không tìm thấy dữ liệu</td></tr>
     }
 
@@ -692,6 +722,13 @@ export default function AdminSystemCategories() {
               <td className="px-4 py-3">{item.email as string}</td>
               <td className="px-4 py-3">{item.numberPhone as string}</td>
               <td className="px-4 py-3">{item.accumulatedEcoPoints as number}</td>
+              <td className="px-4 py-3">
+                {item.isActive ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Hoạt động</span>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Bị khoá</span>
+                )}
+              </td>
             </>
           )}
           {activeTab === "banks" && (
@@ -748,19 +785,51 @@ export default function AdminSystemCategories() {
               <td className="px-4 py-3">{item.online ? "✓" : "✗"}</td>
             </>
           )}
+          {activeTab === "reviews" && (
+            <>
+              <td className="px-4 py-3">{item.reviewId as number}</td>
+              <td className="px-4 py-3">{item.customerName as string}</td>
+              <td className="px-4 py-3">{item.productId as number}</td>
+              <td className="px-4 py-3">{"★".repeat(item.reviewRating as number)}{"☆".repeat(5 - (item.reviewRating as number))}</td>
+              <td className="px-4 py-3 max-w-[200px] truncate" title={item.reviewContent as string}>{item.reviewContent as string}</td>
+              <td className="px-4 py-3">
+                {item.isHidden ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Đã ẩn</span>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Hiện</span>
+                )}
+              </td>
+            </>
+          )}
           <td className="px-4 py-3">
             <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={() => openEditModal(id, item)}
-                className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                title="Chỉnh sửa"
-              >
-                <Pencil size={15} />
-              </button>
-              <Popconfirm
-                title="Xác nhận xóa?"
-                onConfirm={() => handleDelete(id)}
-                okText="Xóa"
+              {activeTab === "reviews" ? (
+                <button
+                  onClick={async () => {
+                    try {
+                      await toggleReviewHidden(token, id as number)
+                      fetchReviews()
+                      message.success(item.isHidden ? "Đã hiện đánh giá" : "Đã ẩn đánh giá")
+                    } catch { message.error("Thao tác thất bại") }
+                  }}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${item.isHidden ? "text-green-600 hover:bg-green-50" : "text-red-600 hover:bg-red-50"}`}
+                  title={item.isHidden ? "Hiện đánh giá" : "Ẩn đánh giá"}
+                >
+                  {item.isHidden ? <Eye size={15} /> : <EyeOff size={15} />}
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => openEditModal(id, item)}
+                    className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                    title="Chỉnh sửa"
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  <Popconfirm
+                    title="Xác nhận xóa?"
+                    onConfirm={() => handleDelete(id)}
+                    okText="Xóa"
                 cancelText="Hủy"
                 okButtonProps={{ danger: true }}
               >
@@ -771,6 +840,8 @@ export default function AdminSystemCategories() {
                   <Trash2 size={15} />
                 </button>
               </Popconfirm>
+                </>
+              )}
             </div>
           </td>
         </tr>
@@ -815,13 +886,15 @@ export default function AdminSystemCategories() {
               </button>
             ))}
           </div>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-700 text-white text-sm font-medium hover:bg-green-800 transition-colors cursor-pointer"
-          >
-            <Plus size={16} />
-            Thêm mới
-          </button>
+          {activeTab !== "reviews" && (
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-700 text-white text-sm font-medium hover:bg-green-800 transition-colors cursor-pointer"
+            >
+              <Plus size={16} />
+              Thêm mới
+            </button>
+          )}
         </div>
 
         {/* TABLE */}

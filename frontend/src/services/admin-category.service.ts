@@ -11,6 +11,7 @@ import type {
   PaymentStatusAdminResponse,
   PaymentMethodAdminResponse,
 } from "../model/admin-category.model"
+import type { ReviewResponse } from "../model/review.model"
 
 const API_URL = "http://localhost:8080/api"
 
@@ -362,4 +363,29 @@ export async function deletePaymentMethod(token: string, id: number): Promise<vo
   await axios.delete(`${API_URL}/admin/payment-methods/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
+}
+
+// ─── Reviews ─────────────────────────────────────────────
+
+export async function getReviewsPaginated(
+  token: string,
+  page: number,
+  size: number,
+  keyword?: string
+): Promise<PageResponse<ReviewResponse>> {
+  const response = await axios.get<PageResponse<ReviewResponse>>(
+    `${API_URL}/admin/reviews`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { page, size, keyword: keyword || undefined },
+    }
+  )
+  return response.data
+}
+
+export async function toggleReviewHidden(token: string, reviewId: number): Promise<ReviewResponse> {
+  const response = await axios.patch<ReviewResponse>(`${API_URL}/admin/reviews/${reviewId}/toggle-hidden`, null, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return response.data
 }

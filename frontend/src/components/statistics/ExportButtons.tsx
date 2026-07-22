@@ -6,31 +6,32 @@ import type { ReportType, ExportFormat } from '../../model/statistics.model'
 
 interface Props {
   activeTab: ReportType
+  startDate?: string
+  endDate?: string
 }
 
 const TAB_TO_REPORT: Record<string, ReportType> = {
-  overview: 'all',
-  revenue: 'revenue-by-category',
-  products: 'top-products',
-  customers: 'top-customers',
-  reviews: 'reviews',
-  vouchers: 'vouchers',
+  revenue: 'revenue-by-period',
+  inventory: 'inventory-overview',
+  orders: 'order-status',
+  'top-products': 'top-products',
+  'new-users': 'new-customers',
 }
 
-export default function ExportButtons({ activeTab }: Props) {
+export default function ExportButtons({ activeTab, startDate, endDate }: Props) {
   const [loading, setLoading] = useState(false)
 
   const handleExport = async (format: ExportFormat) => {
     const token = localStorage.getItem('token') ?? ''
     if (!token) {
-      message.error('Phiên đăng nhập đã hết hạn.')
+      message.error('Phien dang nhap da het han.')
       return
     }
 
     const report = TAB_TO_REPORT[activeTab] ?? 'all'
     setLoading(true)
     try {
-      const blob = await exportReport(token, format, report)
+      const blob = await exportReport(token, format, report, startDate, endDate)
       const url = window.URL.createObjectURL(new Blob([blob]))
       const link = document.createElement('a')
       link.href = url
@@ -40,9 +41,9 @@ export default function ExportButtons({ activeTab }: Props) {
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
-      message.success(`Xuất báo cáo ${format.toUpperCase()} thành công!`)
+      message.success(`Xuat bao cao ${format.toUpperCase()} thanh cong!`)
     } catch {
-      message.error('Không thể xuất báo cáo. Vui lòng thử lại.')
+      message.error('Khong the xuat bao cao. Vui long thu lai.')
     } finally {
       setLoading(false)
     }

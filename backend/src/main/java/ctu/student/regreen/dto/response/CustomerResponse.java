@@ -19,4 +19,6 @@ public class CustomerResponse {
 
     private Integer accumulatedEcoPoints;
 
+    private Boolean isActive;
+
 }
