@@ -17,13 +17,7 @@ public class OrderMapper {
 
     private final OrderItemMapper itemMapper;
 
-    public OrderResponse toResponse(Order order) {
-
-        List<OrderItemResponse> items = order.getOrderItems()
-                .stream()
-                .map(itemMapper::toResponse)
-                .toList();
-
+    public float calculatePayableAmount(Order order) {
         float total = 0;
 
         for (OrderItem item : order.getOrderItems()) {
@@ -33,9 +27,29 @@ public class OrderMapper {
             total += price * item.getQuantity();
         }
 
-        if (order.getVoucher() != null) {
-            total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+         if (order.getVoucher() != null) {
+            if (order.getVoucher().getMaxDiscountAmount() != null) {
+                long reducedPrice = Math.round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
+                    .round(order.getVoucher().getMaxDiscountAmount())
+                            ? Math.round(order.getVoucher().getMaxDiscountAmount())
+                            : Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+            total = total - reducedPrice;
+            } else {
+                total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+            }
+            
         }
+        return total;
+    }
+
+    public OrderResponse toResponse(Order order) {
+
+        List<OrderItemResponse> items = order.getOrderItems()
+                .stream()
+                .map(itemMapper::toResponse)
+                .toList();
+
+        float total = calculatePayableAmount(order);
 
         return new OrderResponse(
                 order.getOrderId(),
@@ -67,18 +81,7 @@ public class OrderMapper {
 
     public OrderSummaryResponse toSummary(Order order) {
 
-        float total = 0;
-
-        for (OrderItem item : order.getOrderItems()) {
-
-            long price = Math.round(item.getPurchasedPrice());
-
-            total += price * item.getQuantity();
-        }
-
-        if (order.getVoucher() != null) {
-            total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
-        }
+        float total = calculatePayableAmount(order);
 
         return new OrderSummaryResponse(
 

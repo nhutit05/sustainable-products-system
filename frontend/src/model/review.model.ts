@@ -6,6 +6,7 @@ export type ReviewResponse = {
   customerId: number
   customerName: string
   productId: number
+  isHidden: boolean
 }
 
 export type ReviewRequest = {

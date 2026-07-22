@@ -21,4 +21,6 @@ public class ReviewResponse {
     private String productName;
 
 
+    private Boolean isHidden;
+
 }

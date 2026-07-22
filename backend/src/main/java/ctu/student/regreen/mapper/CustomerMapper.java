@@ -20,6 +20,9 @@ public class CustomerMapper {
         entity.setNumberPhone(request.getNumberPhone());
         entity.setNationalId(request.getNationalId());
         entity.setAccumulatedEcoPoints(request.getAccumulatedEcoPoints());
+        if (request.getIsActive() != null) {
+            entity.setIsActive(request.getIsActive());
+        }
 
         return entity;
     }
@@ -31,7 +34,8 @@ public class CustomerMapper {
                 customer.getEmail(),
                 customer.getNumberPhone(),
                 customer.getNationalId(),
-                customer.getAccumulatedEcoPoints()
+                customer.getAccumulatedEcoPoints(),
+                customer.getIsActive()
         );
     }
 
@@ -41,5 +45,8 @@ public class CustomerMapper {
         customer.setNumberPhone(request.getNumberPhone());
         customer.setNationalId(request.getNationalId());
         customer.setAccumulatedEcoPoints(request.getAccumulatedEcoPoints());
+        if (request.getIsActive() != null) {
+            customer.setIsActive(request.getIsActive());
+        }
     }
 }

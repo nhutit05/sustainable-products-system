@@ -66,8 +66,7 @@ public class OrderServiceImpl implements OrderService {
 
         private final PayOSService payOSService;
 
-        private long calculatePayableAmount(Order order) {
-
+        public long calculatePayableAmount(Order order) {
                 long total = 0;
 
                 for (OrderItem item : order.getOrderItems()) {
@@ -78,9 +77,21 @@ public class OrderServiceImpl implements OrderService {
                 }
 
                 if (order.getVoucher() != null) {
-                        total = total - Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+                        if (order.getVoucher().getMaxDiscountAmount() != null) {
+                                long reducedPrice = Math
+                                                .round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
+                                                                .round(order.getVoucher().getMaxDiscountAmount())
+                                                                                ? Math.round(order.getVoucher()
+                                                                                                .getMaxDiscountAmount())
+                                                                                : Math.round(total * order.getVoucher()
+                                                                                                .getDiscountValue()
+                                                                                                / 100.0);
+                                total = total - reducedPrice;
+                        } else {
+                                total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
+                        }
+                        
                 }
-
                 return total;
         }
 

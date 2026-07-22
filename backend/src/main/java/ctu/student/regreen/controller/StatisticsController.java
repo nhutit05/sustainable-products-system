@@ -10,9 +10,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ctu.student.regreen.dto.response.CarbonIndexStatsResponse;
+import ctu.student.regreen.dto.response.InventoryOverviewResponse;
+import ctu.student.regreen.dto.response.NewCustomerStatsResponse;
 import ctu.student.regreen.dto.response.OrderStatusDistributionResponse;
 import ctu.student.regreen.dto.response.RefundStatsResponse;
 import ctu.student.regreen.dto.response.RevenueByCategoryResponse;
+import ctu.student.regreen.dto.response.RevenueByPeriodResponse;
 import ctu.student.regreen.dto.response.ReviewStatsResponse;
 import ctu.student.regreen.dto.response.TopCustomerResponse;
 import ctu.student.regreen.dto.response.TopProductResponse;
@@ -31,19 +34,33 @@ public class StatisticsController {
     private final ReportExportService reportExportService;
 
     @GetMapping("/revenue-by-category")
-    public ResponseEntity<List<RevenueByCategoryResponse>> getRevenueByCategory() {
-        return ResponseEntity.ok(statisticsService.getRevenueByCategory());
+    public ResponseEntity<List<RevenueByCategoryResponse>> getRevenueByCategory(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getRevenueByCategory(startDate, endDate));
+    }
+
+    @GetMapping("/revenue-by-period")
+    public ResponseEntity<List<RevenueByPeriodResponse>> getRevenueByPeriod(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "month") String groupBy) {
+        return ResponseEntity.ok(statisticsService.getRevenueByPeriod(startDate, endDate, groupBy));
     }
 
     @GetMapping("/top-products")
     public ResponseEntity<List<TopProductResponse>> getTopProducts(
-            @RequestParam(defaultValue = "10") Integer limit) {
-        return ResponseEntity.ok(statisticsService.getTopProducts(limit));
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getTopProducts(limit, startDate, endDate));
     }
 
     @GetMapping("/order-status-distribution")
-    public ResponseEntity<List<OrderStatusDistributionResponse>> getOrderStatusDistribution() {
-        return ResponseEntity.ok(statisticsService.getOrderStatusDistribution());
+    public ResponseEntity<List<OrderStatusDistributionResponse>> getOrderStatusDistribution(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getOrderStatusDistribution(startDate, endDate));
     }
 
     @GetMapping("/review-stats")
@@ -52,13 +69,17 @@ public class StatisticsController {
     }
 
     @GetMapping("/refund-stats")
-    public ResponseEntity<RefundStatsResponse> getRefundStats() {
-        return ResponseEntity.ok(statisticsService.getRefundStats());
+    public ResponseEntity<RefundStatsResponse> getRefundStats(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getRefundStats(startDate, endDate));
     }
 
     @GetMapping("/voucher-stats")
-    public ResponseEntity<List<VoucherStatsResponse>> getVoucherStats() {
-        return ResponseEntity.ok(statisticsService.getVoucherStats());
+    public ResponseEntity<List<VoucherStatsResponse>> getVoucherStats(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getVoucherStats(startDate, endDate));
     }
 
     @GetMapping("/carbon-index-stats")
@@ -68,24 +89,40 @@ public class StatisticsController {
 
     @GetMapping("/top-customers")
     public ResponseEntity<List<TopCustomerResponse>> getTopCustomers(
-            @RequestParam(defaultValue = "10") Integer limit) {
-        return ResponseEntity.ok(statisticsService.getTopCustomers(limit));
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getTopCustomers(limit, startDate, endDate));
+    }
+
+    @GetMapping("/inventory-overview")
+    public ResponseEntity<InventoryOverviewResponse> getInventoryOverview() {
+        return ResponseEntity.ok(statisticsService.getInventoryOverview());
+    }
+
+    @GetMapping("/new-customers")
+    public ResponseEntity<List<NewCustomerStatsResponse>> getNewCustomerStats(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return ResponseEntity.ok(statisticsService.getNewCustomerStats(startDate, endDate));
     }
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportReport(
             @RequestParam(defaultValue = "excel") String type,
-            @RequestParam(defaultValue = "all") String report) {
+            @RequestParam(defaultValue = "all") String report,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
         byte[] data;
         String contentType;
         String filename;
 
         if ("pdf".equals(type)) {
-            data = reportExportService.exportPdf(report);
+            data = reportExportService.exportPdf(report, startDate, endDate);
             contentType = "application/pdf";
             filename = "bao-cao-re-green.pdf";
         } else {
-            data = reportExportService.exportExcel(report);
+            data = reportExportService.exportExcel(report, startDate, endDate);
             contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             filename = "bao-cao-re-green.xlsx";
         }

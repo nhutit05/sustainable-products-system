@@ -24,7 +24,9 @@ public enum ErrorCode {
     FILE_NOT_FOUND("USR_007", "File not found"),
     FILE_ALREADY_EXISTS("USR_008", "File already exists"),
 
-    IMAGE_UPLOAD_FAILED("USR_009", "Image upload failed");
+    IMAGE_UPLOAD_FAILED("USR_009", "Image upload failed"),
+
+    ACCOUNT_LOCKED("USR_010", "Tài khoản đã bị khoá");
 
     private final String code;
     private final String message;

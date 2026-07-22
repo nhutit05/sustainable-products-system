@@ -25,6 +25,9 @@ public class Customer extends User{
     @PositiveOrZero
     private Integer accumulatedEcoPoints =  0;
 
+    @Column(nullable = false, name = "is_active")
+    private Boolean isActive = true;
+
     @OneToOne(
         mappedBy = "customer",
         fetch = FetchType.LAZY,

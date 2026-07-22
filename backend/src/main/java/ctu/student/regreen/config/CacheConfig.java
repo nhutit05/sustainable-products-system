@@ -22,10 +22,11 @@ public class CacheConfig {
 
         manager.setCacheNames(List.of(
                 "embeddings", "retrievals", "rag-context", "rewrite-query",
-                "stats-revenue-by-category", "stats-top-products",
-                "stats-order-status", "stats-review",
+                "stats-revenue-by-category", "stats-revenue-by-period",
+                "stats-top-products", "stats-order-status", "stats-review",
                 "stats-refund", "stats-voucher",
-                "stats-carbon", "stats-top-customers"
+                "stats-carbon", "stats-top-customers",
+                "stats-inventory"
         ));
 
         manager.setCaffeine(
