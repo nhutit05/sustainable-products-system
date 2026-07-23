@@ -11,14 +11,13 @@ import ProductDetail from '../pages/ProductDetail'
 import Cart from '../pages/Cart'
 import { useEffect, useState } from 'react'
 import { CustomerProvider } from '../context/CustomerContext'
-import ProfileInfo from '../components/ProfileInfo'
-import ProfileAddress from '../components/ProfileAddress'
+import ProfileInfo from '../components/profile/ProfileInfo'
+import ProfileAddress from '../components/profile/ProfileAddress'
 import MyOrder from '../components/order/MyOrder'
 import Chatbot from '../components/Chatbot'
 import { Sparkles, X } from 'lucide-react'
-import ProfileFavorite from '../components/ProfileFavorite'
+import ProfileFavorite from '../components/profile/ProfileFavorite'
 import CarbonCalculator from '../pages/caculator/CarbonCaculator'
-// import NotificationProvider from '../context/notification.context'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [

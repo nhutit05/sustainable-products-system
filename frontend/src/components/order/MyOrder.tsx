@@ -4,6 +4,8 @@ import type { OrderResponse } from '../../model/checkout.model'
 import { OrderStatusColor, OrderStatusIcon, OrderStatusName } from '../../enum/OrderStatus.enum'
 import { ArrowRight, Download, PackageSearch, ChevronLeft, ChevronRight } from 'lucide-react'
 import OrderDetail from './OrderDetail'
+import InvoiceModal from '../profile/InvoiceOrder'
+import RefundSlip from './RefundSlip'
 
 const PAGE_SIZE = 3
 
@@ -15,8 +17,14 @@ export default function MyOrder() {
   const [selectedStatus, setSelectedStatus] = useState<number>(-1)
   const [currentPage, setCurrentPage] = useState<number>(1)
 
+  // RECEIPT
+  const [onCloseReceipt, setOnCloseReceipt] = useState<boolean>(true)
+
   const [onClose, setOnClose] = useState<boolean>(false)
   const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null)
+
+  // REFUND
+  const [isOpenRefund, setIsOpenRefund] = useState<boolean>(false)
 
   const orderStatus = [
     { index: -1, id: 'ALL', name: 'Tất cả' },
@@ -73,34 +81,42 @@ export default function MyOrder() {
     return orders.filter((order) => order.orderStatusId === selectedStatus)
   }, [orders, selectedStatus])
 
-  // Tổng số trang được suy ra từ danh sách đã lọc đầy đủ
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(resultFilter.length / PAGE_SIZE)),
     [resultFilter]
   )
 
-  // Danh sách đơn hàng hiển thị ở trang hiện tại
   const filteredOrders = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE
     return resultFilter.slice(startIndex, startIndex + PAGE_SIZE)
   }, [resultFilter, currentPage])
 
-  // Reset về trang 1 khi đổi bộ lọc trạng thái
   useEffect(() => {
     setCurrentPage(1)
   }, [selectedStatus])
 
-  // Nếu currentPage vượt quá totalPages mới (vd sau khi orders thay đổi) thì kéo về trang hợp lệ
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages)
     }
   }, [totalPages, currentPage])
 
+  const showReceipt = (order: OrderResponse) => {
+    setSelectedOrder(order)
+    setOnCloseReceipt(true)
+  }
+
   // SHOW DETAIL
   const handleShowDetail = (order: OrderResponse) => {
     setSelectedOrder(order)
+    setOnCloseReceipt(false)
     setOnClose(true)
+  }
+
+  const handleShowRefund = (order: OrderResponse) => {
+    setSelectedOrder(order)
+    setIsOpenRefund(true)
+    setOnClose(false)
   }
 
   return (
@@ -216,6 +232,7 @@ export default function MyOrder() {
                   </button>
 
                   <button
+                    onClick={() => showReceipt(order)}
                     className="flex items-center gap-1 border border-emerald-400 text-xs cursor-pointer
                     rounded-xl px-4 py-2 bg-white text-emerald-600 font-semibold
                     hover:bg-emerald-50 hover:scale-102 active:scale-97 transition-all duration-200"
@@ -285,7 +302,24 @@ export default function MyOrder() {
       )}
 
       {/* MODAL SHOW DETAIL */}
-      {selectedOrder && onClose && <OrderDetail order={selectedOrder} setOnClose={setOnClose} />}
+      {selectedOrder && onClose && (
+        <OrderDetail
+          order={selectedOrder}
+          setOnClose={setOnClose}
+          setIsOpenRefund={setIsOpenRefund}
+          handleShowRefund={handleShowRefund}
+        />
+      )}
+
+      {/* MODAL SHOW RECEIPT */}
+      {selectedOrder && onCloseReceipt && (
+        <InvoiceModal order={selectedOrder} setOnClose={setOnCloseReceipt} />
+      )}
+
+      {/* MODAL REFUNDSLIP */}
+      {isOpenRefund && selectedOrder && (
+        <RefundSlip order={selectedOrder} setOnClose={setIsOpenRefund} />
+      )}
     </div>
   )
 }
