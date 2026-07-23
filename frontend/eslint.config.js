@@ -25,7 +25,8 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       'prettier/prettier': ['error', {}, { usePrettierrc: true }],
       '@typescript-eslint/no-unused-vars': ['warn'],
-      '@typescript-eslint/no-explicit-any': ['error'] // Cấm sử dụng kiểu dữ liệu 'any' lỏng lẻo
+      '@typescript-eslint/no-explicit-any': ['error'], // Cấm sử dụng kiểu dữ liệu 'any' lỏng lẻo
+      'react-hooks/set-state-in-effect': 'off',
     },
   }
 )

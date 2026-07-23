@@ -3,6 +3,7 @@ package ctu.student.regreen.service.interfaces;
 import ctu.student.regreen.dto.request.ReviewRequest;
 import ctu.student.regreen.dto.response.PageResponse;
 import ctu.student.regreen.dto.response.ReviewResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 

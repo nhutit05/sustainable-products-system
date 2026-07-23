@@ -10,5 +10,4 @@ public class ReviewImageRequest {
 
     @NotBlank
     private String reviewImageUrl;
-
 }

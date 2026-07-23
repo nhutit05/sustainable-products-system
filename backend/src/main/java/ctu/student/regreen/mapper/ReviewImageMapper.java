@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ReviewImageMapper {
     private final ReviewRepository repository;
-    private final ReviewMapper reviewMapper;
 
     public ReviewImage toEntity(Review review, ReviewImageRequest request) {
         ReviewImage entity = new ReviewImage();
@@ -22,13 +21,13 @@ public class ReviewImageMapper {
         return entity;
     }
 
-    public ReviewImageResponse toResponse(ReviewImage entity) {
-        return new ReviewImageResponse(
-                entity.getReviewImageId(),
-                entity.getReviewImageUrl(),
-                reviewMapper.toResponse(entity.getReview())
-        );
-    }
+//    public ReviewImageResponse toResponse(ReviewImage entity) {
+//        return new ReviewImageResponse(
+//                entity.getReviewImageId(),
+//                entity.getReviewImageUrl(),
+//                reviewMapper.toResponse(entity.getReview())
+//        );
+//    }
 
     public void update(Integer reviewId,
                        ReviewImage entity,

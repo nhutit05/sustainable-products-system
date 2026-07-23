@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { ProductDetail, ProductImage, ProductResponse } from '../model/product.model'
+import type { ProductDetail, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
-import type { Cart } from '../model/cart.model'
+import type { Cart, CartItemResponse } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
 import ProductReview from '../components/product/ProductReview'
+import type { paymentMethodResponse } from '../model/paymentMethod'
+import { Modal, Radio, Space } from 'antd'
+import Checkout from '../components/order/Checkout'
+import { useCart } from '../context/CartContext'
 export default function ProductDetail() {
   const location = useLocation()
 
   const navigate = useNavigate()
+
+  const { refreshCartCount } = useCart()
 
   const productId = location.pathname.split('/').pop() // Lấy productId từ URL
 
@@ -17,9 +23,18 @@ export default function ProductDetail() {
 
   const [product, setProduct] = useState<ProductResponse | null>(null)
 
-  const [listImage, setListImage] = useState<string[]>(product?.imageUrls || [])
-
   const [activeImg, setActiveImg] = useState(0)
+
+  // Mo modal chon phuong thuc thanh toan
+  const [isOpenModalPayment, setIsOpenModalPayment] = useState(false)
+  const [paymentMethods, setPaymentMethods] = useState<paymentMethodResponse[]>([])
+  const [confirmLoading, setConfirmLoading] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>()
+  const [isOpenCheckout, setIsOpenCheckout] = useState(false)
+
+  // Cap nhat cartItem khi mua ngay
+  const [cartItem, setCartItem] = useState<CartItemResponse | null>(null)
+  const [cartId, setCartId] = useState<number>()
 
   const countReviews = 0
 
@@ -113,9 +128,42 @@ export default function ProductDetail() {
       }
     }
 
+    const fetchPaymentMethods = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/payment-methods', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status === 200) {
+          const data = await response.json()
+          setPaymentMethods(data)
+        }
+      } catch (error) {
+        console.error('Error fetching payment methods:', error)
+      }
+    }
+
+    const fetchMyCart = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/cart', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (response.status === 200) {
+          const data = await response.json()
+          setCartId(data.cartId)
+        }
+      } catch (error) {
+        console.error('Error fetching payment methods:', error)
+      }
+    }
+
     fetchProduct()
-    // fetchImageProduct()
+    fetchPaymentMethods()
     checkFavoriteProduct(Number(productId))
+    fetchMyCart()
 
     // fetch tam toan bo product de goi y
     fetchSuggestProducts()
@@ -155,6 +203,8 @@ export default function ProductDetail() {
             type: 'SUCCESS',
             duration: 3000,
           })
+
+          refreshCartCount() // Cập nhật lại số lượng sản phẩm trong giỏ hàng
         } else {
           showNotification({
             message: 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.',
@@ -242,6 +292,52 @@ export default function ProductDetail() {
     }
   }
 
+  // BUY NOW
+  const showModalPayment = () => {
+    setIsOpenModalPayment(true)
+  }
+
+  const closeModalPayment = () => {
+    setIsOpenModalPayment(false)
+    setSelectedPaymentMethod(undefined)
+  }
+
+  const handleShowCheckout = () => {
+    setIsOpenCheckout(true)
+    closeModalPayment()
+
+    // Cap nhat lai du lieu truyen props
+    if (product && cartId && selectedPaymentMethod) {
+      const cartItemData: CartItemResponse = {
+        cartId: cartId,
+        productId: product.productId,
+        productName: product.productName,
+        productPrice: product.productPrice,
+        quantity: 1,
+        subtotal: product.productPrice,
+      }
+      setCartItem(cartItemData)
+
+      // Tao 1 cartItem moi trong database
+      const createCartItem = async () => {
+        try {
+          const response = await fetch('http://localhost:8080/api/cart-items', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(cartItem),
+          })
+        } catch (error) {
+          console.error('Error creating cart item:', error)
+        }
+      }
+
+      createCartItem()
+    }
+  }
+
   return (
     <div className="page-cus_product-detail mt-14 min-h-screen bg-[#F8FFF4] text-left overflow-x-hidden">
       {/* Breadcrumb */}
@@ -279,7 +375,7 @@ export default function ProductDetail() {
                     className="w-full h-full object-cover transition-all duration-300"
                   />
                 </div>
-
+                {/* PRODUCT IMAGES */}
                 <div className="grid grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                   {product.imageUrls?.map((url, index) => (
                     <button
@@ -319,7 +415,7 @@ export default function ProductDetail() {
 
               {/* Product Name */}
               <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-green-900 break-words">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-green-900 wrap-break-word">
                   {product.productName}
                 </h1>
 
@@ -357,6 +453,7 @@ export default function ProductDetail() {
               {/* Buttons */}
               <div className="flex flex-col gap-4">
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                  {/* ADD TO CART */}
                   <button
                     onClick={() => addToCart(product.productId)}
                     className="flex w-full items-center justify-center rounded-2xl min-h-13 border border-emerald-400 bg-white px-4 text-sm sm:text-base font-semibold text-green-900 transition-all duration-300 hover:bg-emerald-500 hover:text-white"
@@ -365,6 +462,7 @@ export default function ProductDetail() {
                     Thêm vào giỏ hàng
                   </button>
 
+                  {/* ADD TO FAVORITE */}
                   <button
                     onClick={() => addFavoriteProduct(product.productId)}
                     className="flex w-full items-center justify-center min-h-13 rounded-2xl border border-emerald-400 bg-white px-4 text-sm sm:text-base font-semibold text-green-900 transition-all duration-300 hover:bg-emerald-500 hover:text-white"
@@ -374,7 +472,11 @@ export default function ProductDetail() {
                   </button>
                 </div>
 
-                <button className="flex w-full items-center min-h-13 justify-center rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 px-4 text-sm sm:text-base font-bold text-white transition-all duration-300 hover:from-emerald-500 hover:to-teal-700">
+                {/* BUY NOW */}
+                <button
+                  onClick={() => showModalPayment()}
+                  className="flex w-full items-center min-h-13 justify-center rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 px-4 text-sm sm:text-base font-bold text-white transition-all duration-300 hover:from-emerald-500 hover:to-teal-700"
+                >
                   <Zap className="mr-2 h-5 w-5 shrink-0" />
                   Mua ngay
                 </button>
@@ -387,7 +489,7 @@ export default function ProductDetail() {
             Thông tin sản phẩm
           </h2>
           <div className="product_infor--plus bg-white border border-emerald-100 rounded-2xl p-4 mb-5">
-            <p className="text-gray-500 text-sm sm:text-base leading-relaxed mt-2 break-words">
+            <p className="text-gray-500 text-sm sm:text-base leading-relaxed mt-2 wrap-break-word">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed blanditiis, optio, porro
               rem quaerat labore quas quibusdam voluptates harum eveniet, aut velit? Omnis aliquam
               id quidem tempora aut dolore facilis?
@@ -411,6 +513,98 @@ export default function ProductDetail() {
         </div>
       ) : (
         <p className="text-green-700 text-sm px-4">Sản phẩm không tồn tại</p>
+      )}
+
+      {/* MODAL */}
+      {isOpenModalPayment && (
+        <Modal
+          title={
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+              <div className="w-2.5 h-6 bg-emerald-500 rounded-full" />
+              <span className="text-lg font-bold text-gray-800 uppercase tracking-wide">
+                Chọn phương thức thanh toán
+              </span>
+            </div>
+          }
+          open={isOpenModalPayment}
+          onOk={handleShowCheckout}
+          onCancel={closeModalPayment}
+          confirmLoading={confirmLoading}
+          okText="Xác nhận đặt hàng"
+          cancelText="Hủy bỏ"
+          centered
+          width={480}
+          className="custom-payment-modal"
+          okButtonProps={{
+            className:
+              '!bg-emerald-600 hover:!bg-emerald-700 !text-white !font-semibold !h-11 !rounded-xl !border-none !shadow-md !shadow-emerald-600/20 active:!scale-95 !transition-all',
+          }}
+          cancelButtonProps={{
+            className:
+              '!h-11 !rounded-xl !font-medium !text-gray-600 hover:!text-gray-800 hover:!bg-gray-100 !border-gray-200 !transition-all',
+          }}
+        >
+          <div className="py-4">
+            <p className="text-xs font-medium text-gray-500 mb-3">
+              Vui lòng chọn 1 phương thức thanh toán bên dưới để tiếp tục:
+            </p>
+
+            <Radio.Group
+              onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+              value={selectedPaymentMethod}
+              className="w-full"
+            >
+              <Space direction="vertical" className="w-full gap-3">
+                {paymentMethods.map((method) => {
+                  const isSelected = selectedPaymentMethod === method.paymentMethodId
+
+                  return (
+                    <label
+                      key={method.paymentMethodId}
+                      htmlFor={`payment-${method.paymentMethodId}`}
+                      className={`relative flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50/40 shadow-sm'
+                          : 'border-gray-100 bg-gray-50/50 hover:border-emerald-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Radio
+                          id={`payment-${method.paymentMethodId}`}
+                          value={method.paymentMethodId}
+                          className="custom-emerald-radio"
+                        />
+                        <span
+                          className={`text-sm font-semibold transition-colors ${
+                            isSelected ? 'text-emerald-950' : 'text-gray-700'
+                          }`}
+                        >
+                          {method.paymentMethodName}
+                        </span>
+                      </div>
+
+                      {/* Huy hiệu Active nhỏ xinh */}
+                      {isSelected && (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          Đã chọn
+                        </span>
+                      )}
+                    </label>
+                  )
+                })}
+              </Space>
+            </Radio.Group>
+          </div>
+        </Modal>
+      )}
+
+      {isOpenCheckout && cartItem && (
+        <Checkout
+          cartItems={[cartItem]} // Cast cartItem to CartItemResponse
+          totalPrice={product?.productPrice || 0}
+          paymentMethodId={selectedPaymentMethod || 0}
+          setOnClose={() => setIsOpenCheckout(false)}
+        />
       )}
     </div>
   )

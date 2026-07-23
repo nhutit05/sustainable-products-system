@@ -7,13 +7,12 @@ import { useNotification } from '../../context/useNotification'
 import type { Addressresponse } from '../../model/address.model'
 import AddNewAddress from '../admin/AddNewAddress'
 const PayOSEmbedded = lazy(() => import('./PayOSEmbedded'))
-import { Modal, Typography, Input, Button, Select, Tag, Divider, Radio } from 'antd'
+import { Modal, Typography, Input, Button, Select, Tag, Divider } from 'antd'
 import {
   UserOutlined,
   PhoneOutlined,
   EnvironmentOutlined,
   ShopOutlined,
-  TagOutlined,
   CreditCardOutlined,
   CheckCircleOutlined,
   PlusOutlined,
@@ -509,7 +508,9 @@ export default function Checkout({
                           value={v.voucherId}
                           disabled={!eligible}
                           title={
-                            eligible ? undefined : `Đơn tối thiểu ${formatCurrency(v.minOrderValue)}`
+                            eligible
+                              ? undefined
+                              : `Đơn tối thiểu ${formatCurrency(v.minOrderValue)}`
                           }
                         >
                           <span className={eligible ? '' : 'text-gray-400 line-through'}>
