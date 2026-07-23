@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/reviews/**").permitAll()
                         .requestMatchers("/api/cloudinary/**").permitAll()
+                        .requestMatchers("/api/banners/**").permitAll()
 
                         .requestMatchers(
                                 "/swagger-ui/**",
