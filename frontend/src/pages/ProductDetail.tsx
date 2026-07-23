@@ -3,24 +3,25 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { ProductDetail, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
-import type { Cart, CartItemRequest, CartItemResponse } from '../model/cart.model'
+import type { Cart, CartItemResponse } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
 import ProductReview from '../components/product/ProductReview'
 import type { paymentMethodResponse } from '../model/paymentMethod'
 import { Modal, Radio, Space } from 'antd'
 import Checkout from '../components/order/Checkout'
+import { useCart } from '../context/CartContext'
 export default function ProductDetail() {
   const location = useLocation()
 
   const navigate = useNavigate()
+
+  const { refreshCartCount } = useCart()
 
   const productId = location.pathname.split('/').pop() // Lấy productId từ URL
 
   const [isFavorite, setIsFavorite] = useState(false)
 
   const [product, setProduct] = useState<ProductResponse | null>(null)
-
-  const [listImage, setListImage] = useState<string[]>(product?.imageUrls || [])
 
   const [activeImg, setActiveImg] = useState(0)
 
@@ -202,6 +203,8 @@ export default function ProductDetail() {
             type: 'SUCCESS',
             duration: 3000,
           })
+
+          refreshCartCount() // Cập nhật lại số lượng sản phẩm trong giỏ hàng
         } else {
           showNotification({
             message: 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.',

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import NavbarAccount from './NavbarAccount'
 import { useNotification } from '../context/useNotification'
+import { useCart } from '../context/CartContext'
 
 interface NavbarProps {
   NAV_LINKS: { label: string; to: string }[]
@@ -19,7 +20,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
 
   const [userExist, setUserExist] = useState<boolean>(false)
 
-  const [totalItems, setTotalItems] = useState<number>()
+  const { totalItems } = useCart()
 
   const token = localStorage.getItem('token')
 
@@ -41,29 +42,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
       }
     }
 
-    const totalItemsInCart = async () => {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        setTotalItems(0)
-        return
-      }
-      try {
-        const response = await fetch('http://localhost:8080/api/cart-items', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        const data = await response.json()
-        setTotalItems(data.length)
-      } catch (error) {
-        console.error('Error fetching total items in cart:', error)
-      }
-    }
-
     checkUserExist()
-    totalItemsInCart()
 
     return () => {
       window.removeEventListener('scroll', handlerScroll)

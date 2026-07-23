@@ -6,13 +6,13 @@ import { BrowserRouter } from 'react-router-dom'
 import { NotificationProvider } from './context/NotificationContext.tsx'
 import { CustomerProvider } from './context/CustomerContext.tsx'
 import { ConfigProvider } from 'antd'
+import { CartProvider } from './context/CartContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
   <CustomerProvider>
     <BrowserRouter>
       <NotificationProvider>
-
         <ConfigProvider
           theme={{
             token: {
@@ -20,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
             },
           }}
         >
-          <App />
+          <CartProvider>
+            <App />
+          </CartProvider>
         </ConfigProvider>
       </NotificationProvider>
     </BrowserRouter>
