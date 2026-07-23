@@ -3,6 +3,7 @@ import {
   ChartColumnBig,
   FileChartColumn,
   FolderTree,
+  Image,
   RotateCcw,
   ShoppingCart,
   Ticket,
@@ -21,6 +22,7 @@ import KnowledgePage from '../pages/knowledge/KnowledgePage'
 import AdminVouchers from '../pages/AdminVouchers'
 import AdminRefundSlip from '../pages/AdminRefundSlip'
 import StatisticPage from '../pages/StatisticPage'
+import AdminBanners from '../pages/AdminBanners'
 import { useNotification } from '../context/useNotification'
 
 export default function AdminLayout() {
@@ -69,6 +71,12 @@ export default function AdminLayout() {
           title: 'Quản lý kho hàng',
           to: '/admin/warehouses',
           icon: <Warehouse size={18} />,
+        },
+        {
+          label: 'Banner quảng cáo',
+          title: 'Quản lý banner quảng cáo',
+          to: '/admin/banners',
+          icon: <Image size={18} />,
         },
       ],
     },
@@ -207,6 +215,7 @@ export default function AdminLayout() {
             <Route path="categories" element={<AdminSystemCategories />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="warehouses" element={<h1>Warehouses</h1>} />
+            <Route path="banners" element={<AdminBanners />} />
             <Route path="refunds" element={<AdminRefundSlip />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="vouchers" element={<AdminVouchers />} />
