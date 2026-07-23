@@ -1,15 +1,17 @@
 import { Heart, Leaf, Sprout } from 'lucide-react'
 import type { ProductResponse } from '../../model/product.model'
 import { useNavigate } from 'react-router-dom'
-import { useCustomer } from '../../context/useCustomer'
 import { useNotification } from '../../context/useNotification'
 import { useEffect, useState } from 'react'
 
 interface ProductCardProps {
   product: ProductResponse
+  // Optional: truyền từ trang danh sách yêu thích để xoá card khỏi list ngay lập tức
+  // khi bỏ tim, không cần reload/refetch cả trang.
+  onUnfavorite?: (productId: number) => void
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onUnfavorite }: ProductCardProps) {
   const navigate = useNavigate()
 
   const [token, setToken] = useState<string | null>(null)
@@ -88,6 +90,10 @@ export default function ProductCard({ product }: ProductCardProps) {
             type: 'SUCCESS',
             duration: 3000,
           })
+
+          // Báo lên trang cha (ví dụ trang "Sản phẩm yêu thích") để xoá card này
+          // khỏi danh sách ngay, không cần load lại cả trang.
+          onUnfavorite?.(productId)
         }
       } catch (error) {
         console.error('Error removing favorite product:', error)

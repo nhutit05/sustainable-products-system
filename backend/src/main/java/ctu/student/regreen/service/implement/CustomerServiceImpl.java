@@ -26,6 +26,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerMapper customerMapper;
 
+    private Customer getCurrentCustomer() {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+        return customerRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+    }
+
     public List<CustomerResponse> getAll() {
         return customerRepository.findAll()
                 .stream()
@@ -69,8 +78,6 @@ public class CustomerServiceImpl implements CustomerService {
         Cart cart = new Cart();
         cart.setCustomer(customer);
 
-        customer.setPassword(
-                passwordEncoder.encode(request.getPassword()));
 
         customer = customerRepository.save(customer);
 
@@ -79,15 +86,9 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMapper.toResponse(customer);
     }
 
-    public CustomerResponse update(Integer id, CustomerRequest request) {
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found by id: " + id));
-
+    public CustomerResponse update(CustomerRequest request) {
+        Customer customer = getCurrentCustomer();
         customerMapper.update(customer, request);
-
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            customer.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
 
         customer = customerRepository.save(customer);
 

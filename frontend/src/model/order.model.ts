@@ -19,31 +19,31 @@ export type paymentMethodResponse = {
 // ================ ORDER ===============
 
 export interface orderResponse {
-  orderId: number;
-  orderedAt: string;
+  orderId: number
+  orderedAt: string
 
-  orderReceiver: string;
-  orderReceiverPhone: string;
-  orderAddress: string;
+  orderReceiver: string
+  orderReceiverPhone: string
+  orderAddress: string
 
-  customerId: number;
-  customerUsername: string;
+  customerId: number
+  customerUsername: string
 
-  paymentMethodId: number;
-  paymentMethodName: string;
+  paymentMethodId: number
+  paymentMethodName: string
 
-  paymentStatusId: number;
-  paymentStatusName: string;
+  paymentStatusId: number
+  paymentStatusName: string
 
-  voucherId: number | null;
-  voucherCode: string | null;
+  voucherId: number | null
+  voucherCode: string | null
 
-  orderStatusId: number;
-  orderStatusName: string;
+  orderStatusId: number
+  orderStatusName: string
 
-  totalAmount: number;
+  totalAmount: number
 
-  items: orderItemResponse[];
+  items: orderItemResponse[]
 }
 
 export type OrderRequest = {
@@ -65,46 +65,52 @@ export type orderItemResponse = {
   subTotal: number
 }
 
-
 export interface orderSummaryResponse {
+  orderId: number
 
-    orderId: number;
+  orderedAt: string
 
-    orderedAt: string;
+  totalAmount: number
 
-    totalAmount: number;
+  customerId: number
 
-    customerId: number;
+  customerUsername: string
 
-    customerUsername: string;
+  paymentMethodId: number
 
-    paymentMethodId: number;
+  paymentMethodName: string
 
-    paymentMethodName: string;
+  paymentStatusId: number
 
-    paymentStatusId: number;
+  paymentStatusName: string
 
-    paymentStatusName: string;
+  orderStatusId: number
 
-    orderStatusId: number;
-
-    orderStatusName: string;
-
+  orderStatusName: string
 }
 export interface PageResponse<T> {
-    content: T[];
+  content: T[]
 
-    totalElements: number;
+  totalElements: number
 
-    totalPages: number;
+  totalPages: number
 
-    size: number;
+  size: number
 
-    number: number;
+  number: number
 
-    first: boolean;
+  first: boolean
 
-    last: boolean;
+  last: boolean
 
-    empty: boolean;
+  empty: boolean
+}
+
+// ================= REFUND =================
+export interface RefundSlipRequest {
+  bankNumber: string
+  accountBankName: string
+  reason: string
+  orderId: number
+  bankId: string
 }

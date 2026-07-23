@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { customerResponse, meResponse } from '../model/customer'
 import { Heart, Leaf, MapPinIcon, Package, User } from 'lucide-react'
 import { CustomerTypeName, type CustomerTypeRoleKey } from '../enum/Customer.enum'
-import NavbarProfile from '../components/NavbarProfile'
+import NavbarProfile from '../components/profile/NavbarProfile'
 import { useCustomer } from '../context/useCustomer'
 
 export default function Profile() {

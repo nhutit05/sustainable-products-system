@@ -26,20 +26,10 @@ public class CustomerRequest {
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must contain exactly 10 digits")
     private String numberPhone;
 
-    @Column(nullable = false, name = "password")
-    @NotBlank(message = "Password không được để trống.")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,255}$", message = "Password phải chứa chữ hoa, chữ thường và số")
-    private String password;
-
     @Column(name = "national_id")
     @Pattern(regexp = "^$|^[0-9]{12}$", message = "CCCD phải gồm 12 chữ số")
     private String nationalId;
 
-    @NonNull
-    @Column(nullable = false, name = "accumulated_eco_points")
-    @PositiveOrZero
-    private Integer accumulatedEcoPoints =  0;
 
     private Boolean isActive;
-
 }

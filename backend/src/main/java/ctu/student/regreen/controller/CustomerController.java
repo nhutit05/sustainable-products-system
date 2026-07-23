@@ -33,22 +33,16 @@ public class CustomerController {
         return service.getById(id);
     }
 
-//    // [POST] /api/customers/auth
-//    @PostMapping("/auth")
-//    public CustomerResponse getCustomerByUsername(@RequestBody LoginRequest request) {
-//        return service.getByUsername(request.getUsername(), request.getPassword());
-//    }
-
     // [POST] /api/customers
     @PostMapping
     public CustomerResponse createCustomer(@RequestBody CustomerRequest request) {
         return service.create(request);
     }
 
-    // [PUT] /api/customers/{id}
-    @PutMapping("/{id}")
-    public CustomerResponse updateCustomer(@PathVariable Integer id, @RequestBody CustomerRequest customer) {
-        return service.update(id, customer);
+    // [PUT] /api/customers
+    @PutMapping
+    public CustomerResponse updateCustomer(@RequestBody CustomerRequest customer) {
+        return service.update(customer);
     }
 
     // [DELETE] /api/customers/{id}
