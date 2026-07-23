@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ProductResponse } from '../model/product.model'
 import ProductCard from '../components/product/ProductCard'
+import BannerCarousel from '../components/home/BannerCarousel'
 
 export default function Homepage() {
   const navigate = useNavigate()
@@ -158,6 +159,8 @@ export default function Homepage() {
             </svg>
           </div>
         </section>
+        {/* Section: Banner Carousel */}
+        <BannerCarousel />
         {/* Section 2:  Summary*/}
         <section
           id="summary"
