@@ -45,10 +45,10 @@ public class CustomerController {
         return service.create(request);
     }
 
-    // [PUT] /api/customers/{id}
-    @PutMapping("/{id}")
-    public CustomerResponse updateCustomer(@PathVariable Integer id, @RequestBody CustomerRequest customer) {
-        return service.update(id, customer);
+    // [PUT] /api/customers
+    @PutMapping
+    public CustomerResponse updateCustomer(@RequestBody CustomerRequest customer) {
+        return service.update(customer);
     }
 
     // [DELETE] /api/customers/{id}

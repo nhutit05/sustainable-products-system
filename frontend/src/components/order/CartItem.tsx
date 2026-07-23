@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState, useRef, useCallback } from 'react'
 import type { CartItemResponse } from '../../model/cart.model'
 import type { ProductIntroduce } from '../../model/product.model'
@@ -23,7 +22,6 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   const pendingQty = useRef<number>(localQty)
   const unitPrice = useRef<number>(item.quantity > 0 ? item.subtotal / item.quantity : 0)
 
-  // Sync localQty nếu prop thay đổi từ bên ngoài (ví dụ: parent re-fetch)
   useEffect(() => {
     setLocalQty(item.quantity)
     setLocalSubtotal(item.subtotal)
@@ -31,7 +29,6 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
     pendingQty.current = item.quantity
   }, [item.quantity, item.subtotal])
 
-  // Hàm gọi API thực sự — chỉ chạy sau debounce 500ms
   const syncQtyToServer = useCallback(
     async (newQty: number) => {
       setIsUpdating(true)

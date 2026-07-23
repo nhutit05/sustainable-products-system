@@ -14,7 +14,7 @@ public interface CustomerService {
 
     CustomerResponse getByUsername();
 
-    CustomerResponse update(Integer id, CustomerRequest request);
+    CustomerResponse update(CustomerRequest request);
 
     Boolean delete(Integer id);
 }
