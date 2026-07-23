@@ -33,12 +33,6 @@ public class CustomerController {
         return service.getById(id);
     }
 
-//    // [POST] /api/customers/auth
-//    @PostMapping("/auth")
-//    public CustomerResponse getCustomerByUsername(@RequestBody LoginRequest request) {
-//        return service.getByUsername(request.getUsername(), request.getPassword());
-//    }
-
     // [POST] /api/customers
     @PostMapping
     public CustomerResponse createCustomer(@RequestBody CustomerRequest request) {
