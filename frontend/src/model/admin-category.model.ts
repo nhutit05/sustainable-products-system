@@ -25,7 +25,7 @@ export interface CustomerAdminResponse {
   userId: number
   username: string
   email: string
-  numberPhone: string
+numberPhone: string
   nationalId: string
   accumulatedEcoPoints: number
   isActive: boolean

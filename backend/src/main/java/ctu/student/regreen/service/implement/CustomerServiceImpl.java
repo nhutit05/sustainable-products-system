@@ -73,10 +73,14 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         Customer customer = customerMapper.toEntity(request);
+        
         customer.setIsActive(true);
 
         Cart cart = new Cart();
         cart.setCustomer(customer);
+
+        customer.setPassword(
+                passwordEncoder.encode(request.getPassword()));
 
 
         customer = customerRepository.save(customer);
@@ -90,10 +94,25 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = getCurrentCustomer();
         customerMapper.update(customer, request);
 
+         if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
         customer = customerRepository.save(customer);
 
         return customerMapper.toResponse(customer);
     }
+
+    public CustomerResponse updateById(Integer id, CustomerRequest request) {
+    Customer customer = customerRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Customer not found"));
+    customerMapper.update(customer, request);
+     if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        }   
+    customer = customerRepository.save(customer);
+    return customerMapper.toResponse(customer);
+}
 
     public Boolean delete(Integer id) {
         if (!customerRepository.existsById(id)) {

@@ -1,7 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { UserRegister } from '../model/userRegister.model'
 import { useNavigate } from 'react-router-dom'
 import { useNotification } from '../context/useNotification'
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string
+            callback: (response: { credential: string }) => void
+          }) => void
+          renderButton: (
+            element: HTMLElement,
+            config: { theme: string; size: string; text: string }
+          ) => void
+        }
+      }
+    }
+  }
+}
 
 interface FormErrors {
   username?: string
@@ -51,6 +70,45 @@ export default function Signup() {
   }
 
   const { showNotification } = useNotification()
+
+  const handleGoogleCredential = useCallback(
+    async (response: { credential: string }) => {
+      const res = await fetch('http://localhost:8080/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        localStorage.setItem('token', data.token)
+        showNotification({ message: 'Đăng ký thành công', type: 'SUCCESS', duration: 3000 })
+        if (data.role === 'ROLE_CUSTOMER') navigate('/')
+        else if (data.role === 'ROLE_ADMIN') navigate('/admin')
+      } else {
+        showNotification({ message: 'Đăng ký Google thất bại', type: 'ERROR', duration: 3000 })
+      }
+    },
+    [navigate, showNotification]
+  )
+
+  useEffect(() => {
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+      })
+      const btn = document.getElementById('google-signup-btn')
+      if (btn) {
+        btn.innerHTML = ''
+        window.google.accounts.id.renderButton(btn, {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          width: btn.offsetWidth,
+        })
+      }
+    }
+  }, [handleGoogleCredential])
 
   const validateField = (field: string, value: string): string | undefined => {
     switch (field) {
@@ -219,10 +277,7 @@ export default function Signup() {
           <div className="max-w-md w-full">
             <h2 className="signup-form--title text-2xl font-bold text-green-900 mb-6">Đăng ký</h2>
             <div className="signup_google rounded-2xl bg-white p-2.5 mb-2 flex justify-center items-center cursor-pointer hover:shadow-lg transition-shadow duration-300 hover:scale-101 border border-green-200">
-              <button className="signup_google-btn flex items-center gap-2 text-green-900 ">
-                <img src="/google.svg" alt="" className="signup_google-icon h-6 w-6" />
-                Đăng ký với Google
-              </button>
+              <div id="google-signup-btn" className="w-full flex justify-center"></div>
             </div>
             <p className="text-sm text-green-900">or</p>
             <form className="signup-form mt-4 text-left" onSubmit={handleSubmit} noValidate>

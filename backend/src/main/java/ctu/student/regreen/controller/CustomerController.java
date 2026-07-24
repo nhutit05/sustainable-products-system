@@ -45,6 +45,11 @@ public class CustomerController {
         return service.update(customer);
     }
 
+@PutMapping("/{id}")
+public CustomerResponse updateCustomerById(@PathVariable Integer id, @RequestBody CustomerRequest request) {
+    return service.updateById(id, request);
+}
+
     // [DELETE] /api/customers/{id}
     @DeleteMapping("/{id}")
     public boolean deleteCustomer(@PathVariable Integer id) {
