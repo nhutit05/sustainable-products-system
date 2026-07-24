@@ -33,7 +33,7 @@ public final class ProductSpecification {
 
     public static Specification<Product> filter(
             String keyword,
-            Integer categoryId,
+            List<Integer> categoryIds,
             Boolean statusSale) {
 
         return (root, query, cb) -> {
@@ -57,13 +57,11 @@ public final class ProductSpecification {
                                 value));
             }
 
-            // category filter
-            if (categoryId != null) {
+            // category filter (supports parent/child hierarchy)
+            if (categoryIds != null && !categoryIds.isEmpty()) {
 
                 predicates.add(
-                        cb.equal(
-                                root.get("category").get("categoryId"),
-                                categoryId));
+                        root.get("category").get("categoryId").in(categoryIds));
             }
 
             // statusSale filter

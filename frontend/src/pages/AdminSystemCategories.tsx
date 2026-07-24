@@ -1,6 +1,18 @@
-import { useCallback, useEffect, useState } from "react"
-import { Pagination, Spin, Button, Modal, Form, Input, InputNumber, Select, Switch, message, Popconfirm } from "antd"
-import { Search, Plus, Pencil, Trash2, EyeOff, Eye } from "lucide-react"
+import { useCallback, useEffect, useState } from 'react'
+import {
+  Pagination,
+  Spin,
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Switch,
+  message,
+  Popconfirm,
+} from 'antd'
+import { Search, Plus, Pencil, Trash2, EyeOff, Eye } from 'lucide-react'
 
 import type {
   CityAdminResponse,
@@ -12,8 +24,8 @@ import type {
   OrderStatusAdminResponse,
   PaymentStatusAdminResponse,
   PaymentMethodAdminResponse,
-} from "../model/admin-category.model"
-import type { ReviewResponse } from "../model/review.model"
+} from '../model/admin-category.model'
+import type { ReviewResponse } from '../model/review.model'
 
 import {
   getCitiesPaginated,
@@ -34,6 +46,7 @@ import {
   updateBank,
   deleteBank,
   getAllCategories,
+  getCategoryTree,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -55,31 +68,31 @@ import {
   deletePaymentMethod,
   getReviewsPaginated,
   toggleReviewHidden,
-} from "../services/admin-category.service"
+} from '../services/admin-category.service'
 
 type TabKey =
-  | "customers"
-  | "banks"
-  | "categories"
-  | "cities"
-  | "villages"
-  | "materials"
-  | "orderStatuses"
-  | "paymentStatuses"
-  | "paymentMethods"
-  | "reviews"
+  | 'customers'
+  | 'banks'
+  | 'categories'
+  | 'cities'
+  | 'villages'
+  | 'materials'
+  | 'orderStatuses'
+  | 'paymentStatuses'
+  | 'paymentMethods'
+  | 'reviews'
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "customers", label: "Khách hàng" },
-  { key: "banks", label: "Ngân hàng" },
-  { key: "categories", label: "Danh mục SP" },
-  { key: "cities", label: "Tỉnh/TP" },
-  { key: "villages", label: "Xã/Phường" },
-  { key: "materials", label: "Nguyên liệu" },
-  { key: "orderStatuses", label: "Trạng thái ĐH" },
-  { key: "paymentStatuses", label: "Trạng thái TT" },
-  { key: "paymentMethods", label: "Phương thức TT" },
-  { key: "reviews", label: "Đánh giá" },
+  { key: 'customers', label: 'Khách hàng' },
+  { key: 'banks', label: 'Ngân hàng' },
+  { key: 'categories', label: 'Danh mục SP' },
+  { key: 'cities', label: 'Tỉnh/TP' },
+  { key: 'villages', label: 'Xã/Phường' },
+  { key: 'materials', label: 'Nguyên liệu' },
+  { key: 'orderStatuses', label: 'Trạng thái ĐH' },
+  { key: 'paymentStatuses', label: 'Trạng thái TT' },
+  { key: 'paymentMethods', label: 'Phương thức TT' },
+  { key: 'reviews', label: 'Đánh giá' },
 ]
 
 const PAGE_SIZE = 10
@@ -89,12 +102,12 @@ const PAGE_SIZE = 10
 // ================================
 
 export default function AdminSystemCategories() {
-  const token = localStorage.getItem("token") ?? ""
+  const token = localStorage.getItem('token') ?? ''
   const [form] = Form.useForm()
 
-  const [activeTab, setActiveTab] = useState<TabKey>("customers")
-  const [keyword, setKeyword] = useState("")
-  const [debouncedKeyword, setDebouncedKeyword] = useState("")
+  const [activeTab, setActiveTab] = useState<TabKey>('customers')
+  const [keyword, setKeyword] = useState('')
+  const [debouncedKeyword, setDebouncedKeyword] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
@@ -106,15 +119,27 @@ export default function AdminSystemCategories() {
   const [banks, setBanks] = useState<BankAdminResponse[]>([])
   const [categories, setCategories] = useState<CategoryAdminResponse[]>([])
   const [cities, setCities] = useState<CityAdminResponse[]>([])
-  const [citiesPaginated, setCitiesPaginated] = useState<{ content: CityAdminResponse[]; totalElements: number; totalPages: number } | null>(null)
+  const [citiesPaginated, setCitiesPaginated] = useState<{
+    content: CityAdminResponse[]
+    totalElements: number
+    totalPages: number
+  } | null>(null)
   const [villages, setVillages] = useState<VillageAdminResponse[]>([])
-  const [villagesPaginated, setVillagesPaginated] = useState<{ content: VillageAdminResponse[]; totalElements: number; totalPages: number } | null>(null)
+  const [villagesPaginated, setVillagesPaginated] = useState<{
+    content: VillageAdminResponse[]
+    totalElements: number
+    totalPages: number
+  } | null>(null)
   const [materials, setMaterials] = useState<MaterialAdminResponse[]>([])
   const [orderStatuses, setOrderStatuses] = useState<OrderStatusAdminResponse[]>([])
   const [paymentStatuses, setPaymentStatuses] = useState<PaymentStatusAdminResponse[]>([])
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodAdminResponse[]>([])
   const [reviews, setReviews] = useState<ReviewResponse[]>([])
-  const [reviewsPaginated, setReviewsPaginated] = useState<{ content: ReviewResponse[]; totalElements: number; totalPages: number } | null>(null)
+  const [reviewsPaginated, setReviewsPaginated] = useState<{
+    content: ReviewResponse[]
+    totalElements: number
+    totalPages: number
+  } | null>(null)
   const [allCities, setAllCities] = useState<CityAdminResponse[]>([])
 
   // Debounced keyword
@@ -134,7 +159,11 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllCustomers(token)
       setCustomers(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchBanks = useCallback(async () => {
@@ -143,16 +172,24 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllBanks(token)
       setBanks(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchCategories = useCallback(async () => {
     if (!token) return
     setLoading(true)
     try {
-      const data = await getAllCategories(token)
+      const data = await getCategoryTree(token)
       setCategories(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchCitiesPaginated = useCallback(async () => {
@@ -162,7 +199,11 @@ export default function AdminSystemCategories() {
       const data = await getCitiesPaginated(token, currentPage - 1, PAGE_SIZE, debouncedKeyword)
       setCitiesPaginated(data)
       setCities(data.content)
-    } catch { setCitiesPaginated(null) } finally { setLoading(false) }
+    } catch {
+      setCitiesPaginated(null)
+    } finally {
+      setLoading(false)
+    }
   }, [token, currentPage, debouncedKeyword])
 
   const fetchAllCities = useCallback(async () => {
@@ -170,17 +211,29 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllCities(token)
       setAllCities(data)
-    } catch { /* empty */ }
+    } catch {
+      /* empty */
+    }
   }, [token])
 
   const fetchVillagesPaginated = useCallback(async () => {
     if (!token) return
     setLoading(true)
     try {
-      const data = await getVillagesPaginated(token, currentPage - 1, PAGE_SIZE, undefined, debouncedKeyword)
+      const data = await getVillagesPaginated(
+        token,
+        currentPage - 1,
+        PAGE_SIZE,
+        undefined,
+        debouncedKeyword
+      )
       setVillagesPaginated(data)
       setVillages(data.content)
-    } catch { setVillagesPaginated(null) } finally { setLoading(false) }
+    } catch {
+      setVillagesPaginated(null)
+    } finally {
+      setLoading(false)
+    }
   }, [token, currentPage, debouncedKeyword])
 
   const fetchMaterials = useCallback(async () => {
@@ -189,7 +242,11 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllMaterials(token)
       setMaterials(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchOrderStatuses = useCallback(async () => {
@@ -198,7 +255,11 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllOrderStatuses(token)
       setOrderStatuses(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchPaymentStatuses = useCallback(async () => {
@@ -207,7 +268,11 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllPaymentStatuses(token)
       setPaymentStatuses(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchPaymentMethods = useCallback(async () => {
@@ -216,7 +281,11 @@ export default function AdminSystemCategories() {
     try {
       const data = await getAllPaymentMethods(token)
       setPaymentMethods(data)
-    } catch { /* empty */ } finally { setLoading(false) }
+    } catch {
+      /* empty */
+    } finally {
+      setLoading(false)
+    }
   }, [token])
 
   const fetchReviews = useCallback(async () => {
@@ -226,29 +295,65 @@ export default function AdminSystemCategories() {
       const data = await getReviewsPaginated(token, currentPage - 1, PAGE_SIZE, debouncedKeyword)
       setReviewsPaginated(data)
       setReviews(data.content)
-    } catch { setReviewsPaginated(null) } finally { setLoading(false) }
+    } catch {
+      setReviewsPaginated(null)
+    } finally {
+      setLoading(false)
+    }
   }, [token, currentPage, debouncedKeyword])
 
   // ─── Main fetch dispatch ───────────────────────────────
 
   useEffect(() => {
     switch (activeTab) {
-      case "customers": fetchCustomers(); break
-      case "banks": fetchBanks(); break
-      case "categories": fetchCategories(); break
-      case "cities": fetchCitiesPaginated(); break
-      case "villages": fetchVillagesPaginated(); break
-      case "materials": fetchMaterials(); break
-      case "orderStatuses": fetchOrderStatuses(); break
-      case "paymentStatuses": fetchPaymentStatuses(); break
-      case "paymentMethods": fetchPaymentMethods(); break
-      case "reviews": fetchReviews(); break
+      case 'customers':
+        fetchCustomers()
+        break
+      case 'banks':
+        fetchBanks()
+        break
+      case 'categories':
+        fetchCategories()
+        break
+      case 'cities':
+        fetchCitiesPaginated()
+        break
+      case 'villages':
+        fetchVillagesPaginated()
+        break
+      case 'materials':
+        fetchMaterials()
+        break
+      case 'orderStatuses':
+        fetchOrderStatuses()
+        break
+      case 'paymentStatuses':
+        fetchPaymentStatuses()
+        break
+      case 'paymentMethods':
+        fetchPaymentMethods()
+        break
+      case 'reviews':
+        fetchReviews()
+        break
     }
-  }, [activeTab, fetchCustomers, fetchBanks, fetchCategories, fetchCitiesPaginated, fetchVillagesPaginated, fetchMaterials, fetchOrderStatuses, fetchPaymentStatuses, fetchPaymentMethods, fetchReviews])
+  }, [
+    activeTab,
+    fetchCustomers,
+    fetchBanks,
+    fetchCategories,
+    fetchCitiesPaginated,
+    fetchVillagesPaginated,
+    fetchMaterials,
+    fetchOrderStatuses,
+    fetchPaymentStatuses,
+    fetchPaymentMethods,
+    fetchReviews,
+  ])
 
   // Fetch all cities for village form
   useEffect(() => {
-    if (modalOpen && activeTab === "villages") {
+    if (modalOpen && activeTab === 'villages') {
       fetchAllCities()
     }
   }, [modalOpen, activeTab, fetchAllCities])
@@ -257,8 +362,8 @@ export default function AdminSystemCategories() {
 
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab)
-    setKeyword("")
-    setDebouncedKeyword("")
+    setKeyword('')
+    setDebouncedKeyword('')
     setCurrentPage(1)
     setEditingId(null)
   }
@@ -291,108 +396,112 @@ export default function AdminSystemCategories() {
       setSubmitting(true)
 
       switch (activeTab) {
-        case "customers": {
+        case 'customers': {
           if (editingId) {
             await updateCustomer(token, editingId as number, values)
-            message.success("Cập nhật khách hàng thành công")
+            message.success('Cập nhật khách hàng thành công')
           } else {
             await createCustomer(token, values)
-            message.success("Thêm khách hàng thành công")
+            message.success('Thêm khách hàng thành công')
           }
           fetchCustomers()
           break
         }
-        case "banks": {
+        case 'banks': {
           if (editingId) {
             await updateBank(token, editingId as string, values)
-            message.success("Cập nhật ngân hàng thành công")
+            message.success('Cập nhật ngân hàng thành công')
           } else {
             await createBank(token, values)
-            message.success("Thêm ngân hàng thành công")
+            message.success('Thêm ngân hàng thành công')
           }
           fetchBanks()
           break
         }
-        case "categories": {
+        case 'categories': {
           if (editingId) {
             await updateCategory(token, editingId as number, values)
-            message.success("Cập nhật danh mục thành công")
+            message.success('Cập nhật danh mục thành công')
           } else {
             await createCategory(token, values)
-            message.success("Thêm danh mục thành công")
+            message.success('Thêm danh mục thành công')
           }
           fetchCategories()
           break
         }
-        case "cities": {
+        case 'cities': {
           if (editingId) {
             await updateCity(token, editingId as number, values)
-            message.success("Cập nhật tỉnh/thành phố thành công")
+            message.success('Cập nhật tỉnh/thành phố thành công')
           } else {
             await createCity(token, values)
-            message.success("Thêm tỉnh/thành phố thành công")
+            message.success('Thêm tỉnh/thành phố thành công')
           }
           fetchCitiesPaginated()
           break
         }
-        case "villages": {
+        case 'villages': {
           const city = allCities.find((c) => c.cityId === values.cityId)
           const payload = {
             villageId: values.villageId,
             villageName: values.villageName,
             villageLevel: values.villageLevel,
-            cityRequest: { cityId: values.cityId, cityName: city?.cityName ?? "", cityLevel: city?.cityLevel ?? "" },
+            cityRequest: {
+              cityId: values.cityId,
+              cityName: city?.cityName ?? '',
+              cityLevel: city?.cityLevel ?? '',
+            },
           }
           if (editingId) {
             await updateVillage(token, editingId as number, payload)
-            message.success("Cập nhật xã/phường thành công")
+            message.success('Cập nhật xã/phường thành công')
           } else {
             await createVillage(token, payload)
-            message.success("Thêm xã/phường thành công")
+            message.success('Thêm xã/phường thành công')
           }
           fetchVillagesPaginated()
           break
         }
-        case "materials": {
+        case 'materials': {
           if (editingId) {
             await updateMaterial(token, editingId as number, values)
-            message.success("Cập nhật nguyên liệu thành công")
+            message.success('Cập nhật nguyên liệu thành công')
           } else {
             await createMaterial(token, values)
-            message.success("Thêm nguyên liệu thành công")
+            message.success('Thêm nguyên liệu thành công')
           }
           fetchMaterials()
           break
         }
-        case "orderStatuses": {
+        case 'orderStatuses': {
           if (editingId) {
             await updateOrderStatus(token, editingId as number, values)
-            message.success("Cập nhật trạng thái đơn hàng thành công")
+            message.success('Cập nhật trạng thái đơn hàng thành công')
           } else {
             await createOrderStatus(token, values)
-            message.success("Thêm trạng thái đơn hàng thành công")
+            message.success('Thêm trạng thái đơn hàng thành công')
           }
           fetchOrderStatuses()
           break
         }
-        case "paymentStatuses": {
+        case 'paymentStatuses': {
           if (editingId) {
             await updatePaymentStatus(token, editingId as number, values)
-            message.success("Cập nhật trạng thái thanh toán thành công")
+            message.success('Cập nhật trạng thái thanh toán thành công')
           } else {
             await createPaymentStatus(token, values)
-            message.success("Thêm trạng thái thanh toán thành công")
+            message.success('Thêm trạng thái thanh toán thành công')
           }
           fetchPaymentStatuses()
           break
         }
-        case "paymentMethods": {
+        case 'paymentMethods': {
           if (editingId) {
             await updatePaymentMethod(token, editingId as number, values)
-            message.success("Cập nhật phương thức thanh toán thành công")
+            message.success('Cập nhật phương thức thanh toán thành công')
           } else {
             await createPaymentMethod(token, values)
-            message.success("Thêm phương thức thanh toán thành công")
+            message.success('Thêm phương thức thanh toán thành công')
           }
           fetchPaymentMethods()
           break
@@ -411,19 +520,46 @@ export default function AdminSystemCategories() {
   const handleDelete = async (id: string | number) => {
     try {
       switch (activeTab) {
-        case "customers": await deleteCustomer(token, id as number); fetchCustomers(); break
-        case "banks": await deleteBank(token, id as string); fetchBanks(); break
-        case "categories": await deleteCategory(token, id as number); fetchCategories(); break
-        case "cities": await deleteCity(token, id as number); fetchCitiesPaginated(); break
-        case "villages": await deleteVillage(token, id as number); fetchVillagesPaginated(); break
-        case "materials": await deleteMaterial(token, id as number); fetchMaterials(); break
-        case "orderStatuses": await deleteOrderStatus(token, id as number); fetchOrderStatuses(); break
-        case "paymentStatuses": await deletePaymentStatus(token, id as number); fetchPaymentStatuses(); break
-        case "paymentMethods": await deletePaymentMethod(token, id as number); fetchPaymentMethods(); break
+        case 'customers':
+          await deleteCustomer(token, id as number)
+          fetchCustomers()
+          break
+        case 'banks':
+          await deleteBank(token, id as string)
+          fetchBanks()
+          break
+        case 'categories':
+          await deleteCategory(token, id as number)
+          fetchCategories()
+          break
+        case 'cities':
+          await deleteCity(token, id as number)
+          fetchCitiesPaginated()
+          break
+        case 'villages':
+          await deleteVillage(token, id as number)
+          fetchVillagesPaginated()
+          break
+        case 'materials':
+          await deleteMaterial(token, id as number)
+          fetchMaterials()
+          break
+        case 'orderStatuses':
+          await deleteOrderStatus(token, id as number)
+          fetchOrderStatuses()
+          break
+        case 'paymentStatuses':
+          await deletePaymentStatus(token, id as number)
+          fetchPaymentStatuses()
+          break
+        case 'paymentMethods':
+          await deletePaymentMethod(token, id as number)
+          fetchPaymentMethods()
+          break
       }
-      message.success("Xóa thành công")
+      message.success('Xóa thành công')
     } catch {
-      message.error("Xóa thất bại")
+      message.error('Xóa thất bại')
     }
   }
 
@@ -433,76 +569,103 @@ export default function AdminSystemCategories() {
     if (!debouncedKeyword) return data
     const lower = debouncedKeyword.toLowerCase()
     return data.filter((item) =>
-      fields.some((f) => String(item[f] ?? "").toLowerCase().includes(lower))
+      fields.some((f) =>
+        String(item[f] ?? '')
+          .toLowerCase()
+          .includes(lower)
+      )
     )
   }
 
   // ─── Search placeholder ────────────────────────────────
 
   const searchPlaceholder: Record<TabKey, string> = {
-    customers: "Tìm kiếm khách hàng...",
-    banks: "Tìm kiếm ngân hàng...",
-    categories: "Tìm kiếm danh mục sản phẩm...",
-    cities: "Tìm kiếm tỉnh/thành phố...",
-    villages: "Tìm kiếm xã/phường/thị trấn...",
-    materials: "Tìm kiếm nguyên liệu...",
-    orderStatuses: "Tìm kiếm trạng thái đơn hàng...",
-    paymentStatuses: "Tìm kiếm trạng thái thanh toán...",
-    paymentMethods: "Tìm kiếm phương thức thanh toán...",
-    reviews: "Tìm kiếm đánh giá...",
+    customers: 'Tìm kiếm khách hàng...',
+    banks: 'Tìm kiếm ngân hàng...',
+    categories: 'Tìm kiếm danh mục sản phẩm...',
+    cities: 'Tìm kiếm tỉnh/thành phố...',
+    villages: 'Tìm kiếm xã/phường/thị trấn...',
+    materials: 'Tìm kiếm nguyên liệu...',
+    orderStatuses: 'Tìm kiếm trạng thái đơn hàng...',
+    paymentStatuses: 'Tìm kiếm trạng thái thanh toán...',
+    paymentMethods: 'Tìm kiếm phương thức thanh toán...',
+    reviews: 'Tìm kiếm đánh giá...',
   }
 
   // ─── Get current data & pagination info ────────────────
 
-  const isPaginated = activeTab === "cities" || activeTab === "villages" || activeTab === "reviews"
+  const isPaginated = activeTab === 'cities' || activeTab === 'villages' || activeTab === 'reviews'
   let displayData: Record<string, unknown>[] = []
   let totalElements = 0
 
   switch (activeTab) {
-    case "customers":
-      displayData = clientFilter(customers as unknown as Record<string, unknown>[], ["username", "email", "numberPhone"])
+    case 'customers':
+      displayData = clientFilter(customers as unknown as Record<string, unknown>[], [
+        'username',
+        'email',
+        'numberPhone',
+      ])
       totalElements = displayData.length
       break
-    case "banks":
-      displayData = clientFilter(banks as unknown as Record<string, unknown>[], ["bankId", "bankShortName", "bankName"])
+    case 'banks':
+      displayData = clientFilter(banks as unknown as Record<string, unknown>[], [
+        'bankId',
+        'bankShortName',
+        'bankName',
+      ])
       totalElements = displayData.length
       break
-    case "categories":
-      displayData = clientFilter(categories as unknown as Record<string, unknown>[], ["categoryName"])
+    case 'categories':
+      displayData = clientFilter(categories as unknown as Record<string, unknown>[], [
+        'categoryName',
+        'parentName',
+      ])
       totalElements = displayData.length
       break
-    case "cities":
+    case 'cities':
       displayData = cities as unknown as Record<string, unknown>[]
       totalElements = citiesPaginated?.totalElements ?? 0
       break
-    case "villages":
+    case 'villages':
       displayData = villages as unknown as Record<string, unknown>[]
       totalElements = villagesPaginated?.totalElements ?? 0
       break
-    case "materials":
-      displayData = clientFilter(materials as unknown as Record<string, unknown>[], ["materialName"])
+    case 'materials':
+      displayData = clientFilter(materials as unknown as Record<string, unknown>[], [
+        'materialName',
+      ])
       totalElements = displayData.length
       break
-    case "orderStatuses":
-      displayData = clientFilter(orderStatuses as unknown as Record<string, unknown>[], ["orderStatusName"])
+    case 'orderStatuses':
+      displayData = clientFilter(orderStatuses as unknown as Record<string, unknown>[], [
+        'orderStatusName',
+      ])
       totalElements = displayData.length
       break
-    case "paymentStatuses":
-      displayData = clientFilter(paymentStatuses as unknown as Record<string, unknown>[], ["paymentStatusName"])
+    case 'paymentStatuses':
+      displayData = clientFilter(paymentStatuses as unknown as Record<string, unknown>[], [
+        'paymentStatusName',
+      ])
       totalElements = displayData.length
       break
-    case "paymentMethods":
-      displayData = clientFilter(paymentMethods as unknown as Record<string, unknown>[], ["paymentMethodName"])
+    case 'paymentMethods':
+      displayData = clientFilter(paymentMethods as unknown as Record<string, unknown>[], [
+        'paymentMethodName',
+      ])
       totalElements = displayData.length
       break
-    case "reviews":
+    case 'reviews':
       displayData = reviews as unknown as Record<string, unknown>[]
       totalElements = reviewsPaginated?.totalElements ?? 0
       break
   }
 
   const totalPages = isPaginated
-    ? (activeTab === "cities" ? citiesPaginated?.totalPages ?? 0 : activeTab === "villages" ? villagesPaginated?.totalPages ?? 0 : reviewsPaginated?.totalPages ?? 0)
+    ? activeTab === 'cities'
+      ? (citiesPaginated?.totalPages ?? 0)
+      : activeTab === 'villages'
+        ? (villagesPaginated?.totalPages ?? 0)
+        : (reviewsPaginated?.totalPages ?? 0)
     : Math.ceil(totalElements / PAGE_SIZE)
 
   const paginatedData = isPaginated
@@ -519,39 +682,81 @@ export default function AdminSystemCategories() {
 
   const refetchCurrent = () => {
     switch (activeTab) {
-      case "customers": fetchCustomers(); break
-      case "banks": fetchBanks(); break
-      case "categories": fetchCategories(); break
-      case "cities": fetchCitiesPaginated(); break
-      case "villages": fetchVillagesPaginated(); break
-      case "materials": fetchMaterials(); break
-      case "orderStatuses": fetchOrderStatuses(); break
-      case "paymentStatuses": fetchPaymentStatuses(); break
-      case "paymentMethods": fetchPaymentMethods(); break
-      case "reviews": fetchReviews(); break
+      case 'customers':
+        fetchCustomers()
+        break
+      case 'banks':
+        fetchBanks()
+        break
+      case 'categories':
+        fetchCategories()
+        break
+      case 'cities':
+        fetchCitiesPaginated()
+        break
+      case 'villages':
+        fetchVillagesPaginated()
+        break
+      case 'materials':
+        fetchMaterials()
+        break
+      case 'orderStatuses':
+        fetchOrderStatuses()
+        break
+      case 'paymentStatuses':
+        fetchPaymentStatuses()
+        break
+      case 'paymentMethods':
+        fetchPaymentMethods()
+        break
+      case 'reviews':
+        fetchReviews()
+        break
     }
   }
 
   // ─── Modal title & form fields ─────────────────────────
 
-  const modalTitle = editingId ? "Chỉnh sửa" : "Thêm mới"
+  const modalTitle = editingId ? 'Chỉnh sửa' : 'Thêm mới'
 
   const renderFormFields = () => {
     switch (activeTab) {
-      case "customers":
+      case 'customers':
         return (
           <>
-            <Form.Item name="username" label="Username" rules={[{ required: true, message: "Vui lòng nhập username" }]}>
+            <Form.Item
+              name="username"
+              label="Username"
+              rules={[{ required: true, message: 'Vui lòng nhập username' }]}
+            >
               <Input placeholder="Username" disabled={!!editingId} />
             </Form.Item>
-            <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Vui lòng nhập email hợp lệ" }]}>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ' }]}
+            >
               <Input placeholder="Email" disabled={!!editingId} />
             </Form.Item>
-            <Form.Item name="numberPhone" label="Số điện thoại" rules={[{ required: true, pattern: /^[0-9]{10}$/, message: "10 chữ số" }]}>
+            <Form.Item
+              name="numberPhone"
+              label="Số điện thoại"
+              rules={[{ required: true, pattern: /^[0-9]{10}$/, message: '10 chữ số' }]}
+            >
               <Input placeholder="Số điện thoại" />
             </Form.Item>
-            <Form.Item name="password" label="Mật khẩu" rules={[{ required: !editingId, pattern: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,255}$/, message: "Chữ hoa, chữ thường và số, tối thiểu 8 ký tự" }]}>
-              <Input.Password placeholder={editingId ? "Để trống nếu không đổi" : "Mật khẩu"} />
+            <Form.Item
+              name="password"
+              label="Mật khẩu"
+              rules={[
+                {
+                  required: !editingId,
+                  pattern: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,255}$/,
+                  message: 'Chữ hoa, chữ thường và số, tối thiểu 8 ký tự',
+                },
+              ]}
+            >
+              <Input.Password placeholder={editingId ? 'Để trống nếu không đổi' : 'Mật khẩu'} />
             </Form.Item>
             <Form.Item name="nationalId" label="CCCD">
               <Input placeholder="12 chữ số" maxLength={12} disabled={!!editingId} />
@@ -559,18 +764,31 @@ export default function AdminSystemCategories() {
             <Form.Item name="accumulatedEcoPoints" label="Điểm eco" initialValue={0}>
               <InputNumber min={0} className="w-full" disabled={!!editingId} />
             </Form.Item>
-            <Form.Item name="isActive" label="Kích hoạt" valuePropName="checked" initialValue={true}>
+            <Form.Item
+              name="isActive"
+              label="Kích hoạt"
+              valuePropName="checked"
+              initialValue={true}
+            >
               <Switch />
             </Form.Item>
           </>
         )
-      case "banks":
+      case 'banks':
         return (
           <>
-            <Form.Item name="bankId" label="Mã ngân hàng" rules={[{ required: true, message: "Vui lòng nhập mã ngân hàng" }]}>
+            <Form.Item
+              name="bankId"
+              label="Mã ngân hàng"
+              rules={[{ required: true, message: 'Vui lòng nhập mã ngân hàng' }]}
+            >
               <Input placeholder="VD: VCB" />
             </Form.Item>
-            <Form.Item name="bankShortName" label="Tên viết tắt" rules={[{ required: true, message: "Vui lòng nhập tên viết tắt" }]}>
+            <Form.Item
+              name="bankShortName"
+              label="Tên viết tắt"
+              rules={[{ required: true, message: 'Vui lòng nhập tên viết tắt' }]}
+            >
               <Input placeholder="VD: Vietcombank" />
             </Form.Item>
             <Form.Item name="bankName" label="Tên đầy đủ">
@@ -578,39 +796,84 @@ export default function AdminSystemCategories() {
             </Form.Item>
           </>
         )
-      case "categories":
-        return (
-          <Form.Item name="categoryName" label="Tên danh mục" rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}>
-            <Input placeholder="Tên danh mục sản phẩm" />
-          </Form.Item>
-        )
-      case "cities":
+      case 'categories':
         return (
           <>
-            <Form.Item name="cityId" label="Mã tỉnh/thành" rules={[{ required: true, message: "Vui lòng nhập mã" }]}>
+            <Form.Item
+              name="categoryName"
+              label="Tên danh mục"
+              rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
+            >
+              <Input placeholder="Tên danh mục sản phẩm" />
+            </Form.Item>
+            <Form.Item name="parentId" label="Danh mục cha">
+              <Select allowClear placeholder="Để trống nếu là danh mục gốc">
+                {categories
+                  .filter((c) => c.parentId === null)
+                  .map((c) => (
+                    <Select.Option key={c.categoryId} value={c.categoryId}>
+                      {c.categoryName}
+                    </Select.Option>
+                  ))}
+              </Select>
+            </Form.Item>
+          </>
+        )
+      case 'cities':
+        return (
+          <>
+            <Form.Item
+              name="cityId"
+              label="Mã tỉnh/thành"
+              rules={[{ required: true, message: 'Vui lòng nhập mã' }]}
+            >
               <InputNumber className="w-full" placeholder="Mã tỉnh/thành" />
             </Form.Item>
-            <Form.Item name="cityName" label="Tên tỉnh/thành phố" rules={[{ required: true, message: "Vui lòng nhập tên" }]}>
+            <Form.Item
+              name="cityName"
+              label="Tên tỉnh/thành phố"
+              rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+            >
               <Input placeholder="Tên tỉnh/thành phố" />
             </Form.Item>
-            <Form.Item name="cityLevel" label="Cấp" rules={[{ required: true, message: "Vui lòng nhập cấp" }]}>
+            <Form.Item
+              name="cityLevel"
+              label="Cấp"
+              rules={[{ required: true, message: 'Vui lòng nhập cấp' }]}
+            >
               <Input placeholder="VD: Tỉnh, Thành phố trực thuộc TW" />
             </Form.Item>
           </>
         )
-      case "villages":
+      case 'villages':
         return (
           <>
-            <Form.Item name="villageId" label="Mã xã" rules={[{ required: true, message: "Vui lòng nhập mã" }]}>
+            <Form.Item
+              name="villageId"
+              label="Mã xã"
+              rules={[{ required: true, message: 'Vui lòng nhập mã' }]}
+            >
               <InputNumber className="w-full" placeholder="Mã xã" />
             </Form.Item>
-            <Form.Item name="villageName" label="Tên xã/phường/thị trấn" rules={[{ required: true, message: "Vui lòng nhập tên" }]}>
+            <Form.Item
+              name="villageName"
+              label="Tên xã/phường/thị trấn"
+              rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+            >
               <Input placeholder="Tên xã/phường/thị trấn" />
             </Form.Item>
-            <Form.Item name="villageLevel" label="Cấp" rules={[{ required: true, message: "Vui lòng nhập cấp" }]}>
+            <Form.Item
+              name="villageLevel"
+              label="Cấp"
+              rules={[{ required: true, message: 'Vui lòng nhập cấp' }]}
+            >
               <Input placeholder="VD: Xã, Phường, Thị trấn" />
             </Form.Item>
-            <Form.Item name="cityId" label="Tỉnh/Thành phố" rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố" }]}>
+            <Form.Item
+              name="cityId"
+              label="Tỉnh/Thành phố"
+              rules={[{ required: true, message: 'Vui lòng chọn tỉnh/thành phố' }]}
+            >
               <Select placeholder="Chọn tỉnh/thành phố" showSearch optionFilterProp="label">
                 {allCities.map((c) => (
                   <Select.Option key={c.cityId} value={c.cityId} label={c.cityName}>
@@ -621,36 +884,61 @@ export default function AdminSystemCategories() {
             </Form.Item>
           </>
         )
-      case "materials":
+      case 'materials':
         return (
           <>
-            <Form.Item name="materialName" label="Tên nguyên liệu" rules={[{ required: true, message: "Vui lòng nhập tên nguyên liệu" }]}>
+            <Form.Item
+              name="materialName"
+              label="Tên nguyên liệu"
+              rules={[{ required: true, message: 'Vui lòng nhập tên nguyên liệu' }]}
+            >
               <Input placeholder="Tên nguyên liệu" />
             </Form.Item>
-            <Form.Item name="emissionIndex" label="Hệ số phát thải" rules={[{ required: true, message: "Vui lòng nhập hệ số phát thải" }]}>
+            <Form.Item
+              name="emissionIndex"
+              label="Hệ số phát thải"
+              rules={[{ required: true, message: 'Vui lòng nhập hệ số phát thải' }]}
+            >
               <InputNumber min={0} step={0.1} className="w-full" placeholder="0.0" />
             </Form.Item>
           </>
         )
-      case "orderStatuses":
+      case 'orderStatuses':
         return (
-          <Form.Item name="orderStatusName" label="Tên trạng thái" rules={[{ required: true, message: "Vui lòng nhập tên trạng thái" }]}>
+          <Form.Item
+            name="orderStatusName"
+            label="Tên trạng thái"
+            rules={[{ required: true, message: 'Vui lòng nhập tên trạng thái' }]}
+          >
             <Input placeholder="VD: PENDING, CONFIRMED, SHIPPING..." />
           </Form.Item>
         )
-      case "paymentStatuses":
+      case 'paymentStatuses':
         return (
-          <Form.Item name="paymentStatusName" label="Tên trạng thái" rules={[{ required: true, message: "Vui lòng nhập tên trạng thái" }]}>
+          <Form.Item
+            name="paymentStatusName"
+            label="Tên trạng thái"
+            rules={[{ required: true, message: 'Vui lòng nhập tên trạng thái' }]}
+          >
             <Input placeholder="VD: PAID, UNPAID, FAILED" />
           </Form.Item>
         )
-      case "paymentMethods":
+      case 'paymentMethods':
         return (
           <>
-            <Form.Item name="paymentMethodName" label="Tên phương thức" rules={[{ required: true, message: "Vui lòng nhập tên phương thức" }]}>
+            <Form.Item
+              name="paymentMethodName"
+              label="Tên phương thức"
+              rules={[{ required: true, message: 'Vui lòng nhập tên phương thức' }]}
+            >
               <Input placeholder="VD: COD, Banking, MOMO..." />
             </Form.Item>
-            <Form.Item name="online" label="Thanh toán online" valuePropName="checked" initialValue={false}>
+            <Form.Item
+              name="online"
+              label="Thanh toán online"
+              valuePropName="checked"
+              initialValue={false}
+            >
               <Switch />
             </Form.Item>
           </>
@@ -664,42 +952,128 @@ export default function AdminSystemCategories() {
 
   const getIdKey = (item: Record<string, unknown>): string | number => {
     switch (activeTab) {
-      case "customers": return item.userId as number
-      case "banks": return item.bankId as string
-      case "categories": return item.categoryId as number
-      case "cities": return item.cityId as number
-      case "villages": return item.villageId as number
-      case "materials": return item.materialId as number
-      case "orderStatuses": return item.orderStatusId as number
-      case "paymentStatuses": return item.paymentStatusId as number
-      case "paymentMethods": return item.paymentMethodId as number
-      case "reviews": return item.reviewId as number
-      default: return 0
+      case 'customers':
+        return item.userId as number
+      case 'banks':
+        return item.bankId as string
+      case 'categories':
+        return item.categoryId as number
+      case 'cities':
+        return item.cityId as number
+      case 'villages':
+        return item.villageId as number
+      case 'materials':
+        return item.materialId as number
+      case 'orderStatuses':
+        return item.orderStatusId as number
+      case 'paymentStatuses':
+        return item.paymentStatusId as number
+      case 'paymentMethods':
+        return item.paymentMethodId as number
+      case 'reviews':
+        return item.reviewId as number
+      default:
+        return 0
     }
   }
 
   const renderTableHeader = () => {
     switch (activeTab) {
-      case "customers":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Username</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">SĐT</th><th className="px-4 py-3">Điểm eco</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "banks":
-        return <><th className="px-4 py-3">Mã NH</th><th className="px-4 py-3">Tên viết tắt</th><th className="px-4 py-3">Tên đầy đủ</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "categories":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên danh mục</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "cities":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên tỉnh/thành phố</th><th className="px-4 py-3">Cấp</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "villages":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên xã/phường</th><th className="px-4 py-3">Cấp</th><th className="px-4 py-3">Tỉnh/TP</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "materials":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên nguyên liệu</th><th className="px-4 py-3">Hệ số phát thải</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "orderStatuses":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "paymentStatuses":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "paymentMethods":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Tên phương thức</th><th className="px-4 py-3">Online</th><th className="px-4 py-3 text-center">Thao tác</th></>
-      case "reviews":
-        return <><th className="px-4 py-3">Mã</th><th className="px-4 py-3">Khách hàng</th><th className="px-4 py-3">Sản phẩm</th><th className="px-4 py-3">Đánh giá</th><th className="px-4 py-3">Nội dung</th><th className="px-4 py-3">Trạng thái</th><th className="px-4 py-3 text-center">Thao tác</th></>
+      case 'customers':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Username</th>
+            <th className="px-4 py-3">Email</th>
+            <th className="px-4 py-3">SĐT</th>
+            <th className="px-4 py-3">Điểm eco</th>
+            <th className="px-4 py-3">Trạng thái</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'banks':
+        return (
+          <>
+            <th className="px-4 py-3">Mã NH</th>
+            <th className="px-4 py-3">Tên viết tắt</th>
+            <th className="px-4 py-3">Tên đầy đủ</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'categories':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên danh mục</th>
+            <th className="px-4 py-3">Danh mục cha</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'cities':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên tỉnh/thành phố</th>
+            <th className="px-4 py-3">Cấp</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'villages':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên xã/phường</th>
+            <th className="px-4 py-3">Cấp</th>
+            <th className="px-4 py-3">Tỉnh/TP</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'materials':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên nguyên liệu</th>
+            <th className="px-4 py-3">Hệ số phát thải</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'orderStatuses':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên trạng thái</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'paymentStatuses':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên trạng thái</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'paymentMethods':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Tên phương thức</th>
+            <th className="px-4 py-3">Online</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
+      case 'reviews':
+        return (
+          <>
+            <th className="px-4 py-3">Mã</th>
+            <th className="px-4 py-3">Khách hàng</th>
+            <th className="px-4 py-3">Sản phẩm</th>
+            <th className="px-4 py-3">Đánh giá</th>
+            <th className="px-4 py-3">Nội dung</th>
+            <th className="px-4 py-3">Trạng thái</th>
+            <th className="px-4 py-3 text-center">Thao tác</th>
+          </>
+        )
       default:
         return null
     }
@@ -707,15 +1081,32 @@ export default function AdminSystemCategories() {
 
   const renderTableBody = () => {
     if (paginatedData.length === 0) {
-      const colCount = activeTab === "villages" ? 5 : activeTab === "customers" ? 7 : activeTab === "reviews" ? 7 : activeTab === "banks" || activeTab === "cities" || activeTab === "paymentMethods" ? 4 : activeTab === "materials" ? 4 : 3
-      return <tr><td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">Không tìm thấy dữ liệu</td></tr>
+      const colCount =
+        activeTab === 'villages'
+          ? 5
+          : activeTab === 'customers'
+            ? 7
+            : activeTab === 'reviews'
+              ? 7
+              : activeTab === 'banks' || activeTab === 'cities' || activeTab === 'paymentMethods'
+                ? 4
+                : activeTab === 'materials'
+                  ? 4
+                  : 3
+      return (
+        <tr>
+          <td colSpan={colCount} className="px-4 py-8 text-center text-gray-400">
+            Không tìm thấy dữ liệu
+          </td>
+        </tr>
+      )
     }
 
     return paginatedData.map((item) => {
       const id = getIdKey(item)
       return (
         <tr key={id} className="border-b hover:bg-green-50/50">
-          {activeTab === "customers" && (
+          {activeTab === 'customers' && (
             <>
               <td className="px-4 py-3">{item.userId as number}</td>
               <td className="px-4 py-3 font-medium">{item.username as string}</td>
@@ -724,34 +1115,49 @@ export default function AdminSystemCategories() {
               <td className="px-4 py-3">{item.accumulatedEcoPoints as number}</td>
               <td className="px-4 py-3">
                 {item.isActive ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Hoạt động</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Hoạt động
+                  </span>
                 ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Bị khoá</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Bị khoá
+                  </span>
                 )}
               </td>
             </>
           )}
-          {activeTab === "banks" && (
+          {activeTab === 'banks' && (
             <>
               <td className="px-4 py-3">{item.bankId as string}</td>
               <td className="px-4 py-3 font-medium">{item.bankShortName as string}</td>
               <td className="px-4 py-3">{item.bankName as string}</td>
             </>
           )}
-          {activeTab === "categories" && (
+          {activeTab === 'categories' && (
             <>
               <td className="px-4 py-3">{item.categoryId as number}</td>
               <td className="px-4 py-3 font-medium">{item.categoryName as string}</td>
+              <td className="px-4 py-3">
+                {item.parentId ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {item.parentName as string}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Root
+                  </span>
+                )}
+              </td>
             </>
           )}
-          {activeTab === "cities" && (
+          {activeTab === 'cities' && (
             <>
               <td className="px-4 py-3">{item.cityId as number}</td>
               <td className="px-4 py-3 font-medium">{item.cityName as string}</td>
               <td className="px-4 py-3">{item.cityLevel as string}</td>
             </>
           )}
-          {activeTab === "villages" && (
+          {activeTab === 'villages' && (
             <>
               <td className="px-4 py-3">{item.villageId as number}</td>
               <td className="px-4 py-3 font-medium">{item.villageName as string}</td>
@@ -759,61 +1165,72 @@ export default function AdminSystemCategories() {
               <td className="px-4 py-3">{item.cityName as string}</td>
             </>
           )}
-          {activeTab === "materials" && (
+          {activeTab === 'materials' && (
             <>
               <td className="px-4 py-3">{item.materialId as number}</td>
               <td className="px-4 py-3 font-medium">{item.materialName as string}</td>
               <td className="px-4 py-3">{item.emissionIndex as number}</td>
             </>
           )}
-          {activeTab === "orderStatuses" && (
+          {activeTab === 'orderStatuses' && (
             <>
               <td className="px-4 py-3">{item.orderStatusId as number}</td>
               <td className="px-4 py-3 font-medium">{item.orderStatusName as string}</td>
             </>
           )}
-          {activeTab === "paymentStatuses" && (
+          {activeTab === 'paymentStatuses' && (
             <>
               <td className="px-4 py-3">{item.paymentStatusId as number}</td>
               <td className="px-4 py-3 font-medium">{item.paymentStatusName as string}</td>
             </>
           )}
-          {activeTab === "paymentMethods" && (
+          {activeTab === 'paymentMethods' && (
             <>
               <td className="px-4 py-3">{item.paymentMethodId as number}</td>
               <td className="px-4 py-3 font-medium">{item.paymentMethodName as string}</td>
-              <td className="px-4 py-3">{item.online ? "✓" : "✗"}</td>
+              <td className="px-4 py-3">{item.online ? '✓' : '✗'}</td>
             </>
           )}
-          {activeTab === "reviews" && (
+          {activeTab === 'reviews' && (
             <>
               <td className="px-4 py-3">{item.reviewId as number}</td>
               <td className="px-4 py-3">{item.customerName as string}</td>
               <td className="px-4 py-3">{item.productId as number}</td>
-              <td className="px-4 py-3">{"★".repeat(item.reviewRating as number)}{"☆".repeat(5 - (item.reviewRating as number))}</td>
-              <td className="px-4 py-3 max-w-[200px] truncate" title={item.reviewContent as string}>{item.reviewContent as string}</td>
+              <td className="px-4 py-3">
+                {'★'.repeat(item.reviewRating as number)}
+                {'☆'.repeat(5 - (item.reviewRating as number))}
+              </td>
+              <td className="px-4 py-3 max-w-[200px] truncate" title={item.reviewContent as string}>
+                {item.reviewContent as string}
+              </td>
               <td className="px-4 py-3">
                 {item.isHidden ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Đã ẩn</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Đã ẩn
+                  </span>
                 ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Hiện</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Hiện
+                  </span>
                 )}
               </td>
             </>
           )}
           <td className="px-4 py-3">
             <div className="flex items-center justify-center gap-2">
-              {activeTab === "reviews" ? (
+              {activeTab === 'reviews' ? (
                 <button
                   onClick={async () => {
                     try {
                       await toggleReviewHidden(token, id as number)
                       fetchReviews()
-                      message.success(item.isHidden ? "Đã hiện đánh giá" : "Đã ẩn đánh giá")
-                    } catch { message.error("Thao tác thất bại") }
+                      message.success(item.isHidden ? 'Đã hiện đánh giá' : 'Đã ẩn đánh giá')
+                    } catch {
+                      message.error('Thao tác thất bại')
+                    }
                   }}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${item.isHidden ? "text-green-600 hover:bg-green-50" : "text-red-600 hover:bg-red-50"}`}
-                  title={item.isHidden ? "Hiện đánh giá" : "Ẩn đánh giá"}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${item.isHidden ? 'text-green-600 hover:bg-green-50' : 'text-red-600 hover:bg-red-50'}`}
+                  title={item.isHidden ? 'Hiện đánh giá' : 'Ẩn đánh giá'}
                 >
                   {item.isHidden ? <Eye size={15} /> : <EyeOff size={15} />}
                 </button>
@@ -830,16 +1247,16 @@ export default function AdminSystemCategories() {
                     title="Xác nhận xóa?"
                     onConfirm={() => handleDelete(id)}
                     okText="Xóa"
-                cancelText="Hủy"
-                okButtonProps={{ danger: true }}
-              >
-                <button
-                  className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  title="Xóa"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </Popconfirm>
+                    cancelText="Hủy"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <button
+                      className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                      title="Xóa"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </Popconfirm>
                 </>
               )}
             </div>
@@ -878,15 +1295,15 @@ export default function AdminSystemCategories() {
                 onClick={() => handleTabChange(tab.key)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab.key
-                    ? "bg-green-700 text-white"
-                    : "bg-white text-green-700 border border-green-300 hover:bg-green-50"
+                    ? 'bg-green-700 text-white'
+                    : 'bg-white text-green-700 border border-green-300 hover:bg-green-50'
                 }`}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-          {activeTab !== "reviews" && (
+          {activeTab !== 'reviews' && (
             <button
               onClick={openAddModal}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-700 text-white text-sm font-medium hover:bg-green-800 transition-colors cursor-pointer"
@@ -917,7 +1334,8 @@ export default function AdminSystemCategories() {
             {totalElements > 0 && (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-t border-emerald-100/60 mt-4">
                 <span className="text-sm text-gray-500">
-                  Hiển thị <b>{paginationInfo.from}</b> - <b>{paginationInfo.to}</b> / <b>{paginationInfo.total}</b> bản ghi
+                  Hiển thị <b>{paginationInfo.from}</b> - <b>{paginationInfo.to}</b> /{' '}
+                  <b>{paginationInfo.total}</b> bản ghi
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
@@ -956,7 +1374,7 @@ export default function AdminSystemCategories() {
         onCancel={handleModalClose}
         onOk={handleSubmit}
         confirmLoading={submitting}
-        okText={editingId ? "Cập nhật" : "Thêm mới"}
+        okText={editingId ? 'Cập nhật' : 'Thêm mới'}
         cancelText="Hủy"
         width={520}
         destroyOnClose

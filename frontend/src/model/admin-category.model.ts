@@ -40,6 +40,9 @@ export interface BankAdminResponse {
 export interface CategoryAdminResponse {
   categoryId: number
   categoryName: string
+  parentId: number | null
+  parentName: string | null
+  depth?: number
 }
 
 export interface MaterialAdminResponse {

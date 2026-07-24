@@ -21,7 +21,10 @@ public class CategoryMapper {
     public CategoryResponse toResponse(Category category) {
         return new CategoryResponse(
                 category.getCategoryId(),
-                category.getCategoryName()
+                category.getCategoryName(),
+                category.getParent() != null ? category.getParent().getCategoryId() : null,
+                category.getParent() != null ? category.getParent().getCategoryName() : null,
+                null
         );
     }
 }

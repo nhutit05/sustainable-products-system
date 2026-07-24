@@ -46,6 +46,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductImageService productImageService;
     private final ProductImageRepository productImageRepository;
+    private final ctu.student.regreen.service.interfaces.CategoryService categoryService;
 
 
     @Override
@@ -321,7 +322,9 @@ public class ProductServiceImpl implements ProductService {
 
         Specification<Product> spec = Specification
                 .where(ProductSpecification.withFetchJoins())
-                .and(ProductSpecification.filter(keyword, categoryId, statusSale));
+                .and(ProductSpecification.filter(keyword,
+                        categoryId != null ? categoryService.getDescendantIds(categoryId) : null,
+                        statusSale));
 
         Page<Product> productPage = repository.findAll(spec, pageable);
 

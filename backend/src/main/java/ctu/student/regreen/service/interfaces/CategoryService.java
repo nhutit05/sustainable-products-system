@@ -10,6 +10,8 @@ public interface CategoryService {
 
     List<CategoryResponse> getAll();
 
+    List<CategoryResponse> getTree();
+
     CategoryResponse getById(Integer id);
 
     CategoryResponse create(CategoryRequest request);
@@ -17,4 +19,6 @@ public interface CategoryService {
     CategoryResponse update(Integer id, CategoryRequest request);
 
     void delete(Integer id);
+
+    List<Integer> getDescendantIds(Integer categoryId);
 }
