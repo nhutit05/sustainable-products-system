@@ -15,9 +15,11 @@ public class CustomerMapper {
         Customer entity = new Customer();
 
         entity.setEmail(request.getEmail());
+        entity.setPassword(request.getPassword());
         entity.setUsername(request.getUsername());
         entity.setNumberPhone(request.getNumberPhone());
         entity.setNationalId(request.getNationalId());
+        entity.setAccumulatedEcoPoints(request.getAccumulatedEcoPoints());
         if (request.getIsActive() != null) {
             entity.setIsActive(request.getIsActive());
         }

@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios from 'axios'
 import type {
   CityAdminResponse,
   VillageAdminResponse,
@@ -10,10 +10,10 @@ import type {
   OrderStatusAdminResponse,
   PaymentStatusAdminResponse,
   PaymentMethodAdminResponse,
-} from "../model/admin-category.model"
-import type { ReviewResponse } from "../model/review.model"
+} from '../model/admin-category.model'
+import type { ReviewResponse } from '../model/review.model'
 
-const API_URL = "http://localhost:8080/api"
+const API_URL = 'http://localhost:8080/api'
 
 // ─── Cities ────────────────────────────────────────────────
 
@@ -23,13 +23,10 @@ export async function getCitiesPaginated(
   size: number,
   keyword?: string
 ): Promise<PageResponse<CityAdminResponse>> {
-  const response = await axios.get<PageResponse<CityAdminResponse>>(
-    `${API_URL}/cities/paginated`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { page, size, keyword: keyword || undefined },
-    }
-  )
+  const response = await axios.get<PageResponse<CityAdminResponse>>(`${API_URL}/cities/paginated`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { page, size, keyword: keyword || undefined },
+  })
   return response.data
 }
 
@@ -88,7 +85,12 @@ export async function getAllCities(token: string): Promise<CityAdminResponse[]> 
 
 export async function createVillage(
   token: string,
-  data: { villageId: number; villageName: string; villageLevel: string; cityRequest: { cityId: number; cityName: string; cityLevel: string } }
+  data: {
+    villageId: number
+    villageName: string
+    villageLevel: string
+    cityRequest: { cityId: number; cityName: string; cityLevel: string }
+  }
 ): Promise<VillageAdminResponse> {
   const response = await axios.post<VillageAdminResponse>(`${API_URL}/villages`, data, {
     headers: { Authorization: `Bearer ${token}` },
@@ -99,7 +101,12 @@ export async function createVillage(
 export async function updateVillage(
   token: string,
   id: number,
-  data: { villageId: number; villageName: string; villageLevel: string; cityRequest: { cityId: number; cityName: string; cityLevel: string } }
+  data: {
+    villageId: number
+    villageName: string
+    villageLevel: string
+    cityRequest: { cityId: number; cityName: string; cityLevel: string }
+  }
 ): Promise<VillageAdminResponse> {
   const response = await axios.put<VillageAdminResponse>(`${API_URL}/villages/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` },
@@ -124,7 +131,14 @@ export async function getAllCustomers(token: string): Promise<CustomerAdminRespo
 
 export async function createCustomer(
   token: string,
-  data: { username: string; email: string; numberPhone: string; password: string; nationalId?: string; accumulatedEcoPoints: number }
+  data: {
+    username: string
+    email: string
+    numberPhone: string
+    password: string
+    nationalId?: string
+    accumulatedEcoPoints: number
+  }
 ): Promise<CustomerAdminResponse> {
   const response = await axios.post<CustomerAdminResponse>(`${API_URL}/customers`, data, {
     headers: { Authorization: `Bearer ${token}` },
@@ -135,7 +149,14 @@ export async function createCustomer(
 export async function updateCustomer(
   token: string,
   id: number,
-  data: { username: string; email: string; numberPhone: string; password: string; nationalId?: string; accumulatedEcoPoints: number }
+  data: {
+    username: string
+    email: string
+    numberPhone: string
+    password: string
+    nationalId?: string
+    accumulatedEcoPoints: number
+  }
 ): Promise<CustomerAdminResponse> {
   const response = await axios.put<CustomerAdminResponse>(`${API_URL}/customers/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` },
@@ -194,9 +215,16 @@ export async function getAllCategories(token: string): Promise<CategoryAdminResp
   return response.data
 }
 
+export async function getCategoryTree(token: string): Promise<CategoryAdminResponse[]> {
+  const response = await axios.get<CategoryAdminResponse[]>(`${API_URL}/admin/categories/tree`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return response.data
+}
+
 export async function createCategory(
   token: string,
-  data: { categoryName: string }
+  data: { categoryName: string; parentId?: number | null }
 ): Promise<CategoryAdminResponse> {
   const response = await axios.post<CategoryAdminResponse>(`${API_URL}/admin/categories`, data, {
     headers: { Authorization: `Bearer ${token}` },
@@ -207,11 +235,15 @@ export async function createCategory(
 export async function updateCategory(
   token: string,
   id: number,
-  data: { categoryName: string }
+  data: { categoryName: string; parentId?: number | null }
 ): Promise<CategoryAdminResponse> {
-  const response = await axios.put<CategoryAdminResponse>(`${API_URL}/admin/categories/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.put<CategoryAdminResponse>(
+    `${API_URL}/admin/categories/${id}`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -245,9 +277,13 @@ export async function updateMaterial(
   id: number,
   data: { materialName: string; emissionIndex: number }
 ): Promise<MaterialAdminResponse> {
-  const response = await axios.put<MaterialAdminResponse>(`${API_URL}/admin/materials/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.put<MaterialAdminResponse>(
+    `${API_URL}/admin/materials/${id}`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -270,9 +306,13 @@ export async function createOrderStatus(
   token: string,
   data: { orderStatusName: string }
 ): Promise<OrderStatusAdminResponse> {
-  const response = await axios.post<OrderStatusAdminResponse>(`${API_URL}/admin/order-statuses`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.post<OrderStatusAdminResponse>(
+    `${API_URL}/admin/order-statuses`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -281,9 +321,13 @@ export async function updateOrderStatus(
   id: number,
   data: { orderStatusName: string }
 ): Promise<OrderStatusAdminResponse> {
-  const response = await axios.put<OrderStatusAdminResponse>(`${API_URL}/admin/order-statuses/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.put<OrderStatusAdminResponse>(
+    `${API_URL}/admin/order-statuses/${id}`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -296,9 +340,12 @@ export async function deleteOrderStatus(token: string, id: number): Promise<void
 // ─── Payment Statuses ──────────────────────────────────────
 
 export async function getAllPaymentStatuses(token: string): Promise<PaymentStatusAdminResponse[]> {
-  const response = await axios.get<PaymentStatusAdminResponse[]>(`${API_URL}/admin/payment-statuses`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.get<PaymentStatusAdminResponse[]>(
+    `${API_URL}/admin/payment-statuses`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -306,9 +353,13 @@ export async function createPaymentStatus(
   token: string,
   data: { paymentStatusName: string }
 ): Promise<PaymentStatusAdminResponse> {
-  const response = await axios.post<PaymentStatusAdminResponse>(`${API_URL}/admin/payment-statuses`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.post<PaymentStatusAdminResponse>(
+    `${API_URL}/admin/payment-statuses`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -317,9 +368,13 @@ export async function updatePaymentStatus(
   id: number,
   data: { paymentStatusName: string }
 ): Promise<PaymentStatusAdminResponse> {
-  const response = await axios.put<PaymentStatusAdminResponse>(`${API_URL}/admin/payment-statuses/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.put<PaymentStatusAdminResponse>(
+    `${API_URL}/admin/payment-statuses/${id}`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -332,9 +387,12 @@ export async function deletePaymentStatus(token: string, id: number): Promise<vo
 // ─── Payment Methods ───────────────────────────────────────
 
 export async function getAllPaymentMethods(token: string): Promise<PaymentMethodAdminResponse[]> {
-  const response = await axios.get<PaymentMethodAdminResponse[]>(`${API_URL}/admin/payment-methods`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.get<PaymentMethodAdminResponse[]>(
+    `${API_URL}/admin/payment-methods`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -342,9 +400,13 @@ export async function createPaymentMethod(
   token: string,
   data: { paymentMethodName: string; online: boolean }
 ): Promise<PaymentMethodAdminResponse> {
-  const response = await axios.post<PaymentMethodAdminResponse>(`${API_URL}/admin/payment-methods`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.post<PaymentMethodAdminResponse>(
+    `${API_URL}/admin/payment-methods`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -353,9 +415,13 @@ export async function updatePaymentMethod(
   id: number,
   data: { paymentMethodName: string; online: boolean }
 ): Promise<PaymentMethodAdminResponse> {
-  const response = await axios.put<PaymentMethodAdminResponse>(`${API_URL}/admin/payment-methods/${id}`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.put<PaymentMethodAdminResponse>(
+    `${API_URL}/admin/payment-methods/${id}`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }
 
@@ -373,19 +439,20 @@ export async function getReviewsPaginated(
   size: number,
   keyword?: string
 ): Promise<PageResponse<ReviewResponse>> {
-  const response = await axios.get<PageResponse<ReviewResponse>>(
-    `${API_URL}/admin/reviews`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { page, size, keyword: keyword || undefined },
-    }
-  )
+  const response = await axios.get<PageResponse<ReviewResponse>>(`${API_URL}/admin/reviews`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { page, size, keyword: keyword || undefined },
+  })
   return response.data
 }
 
 export async function toggleReviewHidden(token: string, reviewId: number): Promise<ReviewResponse> {
-  const response = await axios.patch<ReviewResponse>(`${API_URL}/admin/reviews/${reviewId}/toggle-hidden`, null, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
+  const response = await axios.patch<ReviewResponse>(
+    `${API_URL}/admin/reviews/${reviewId}/toggle-hidden`,
+    null,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
   return response.data
 }

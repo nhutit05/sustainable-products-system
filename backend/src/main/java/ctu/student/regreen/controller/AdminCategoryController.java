@@ -22,6 +22,11 @@ public class AdminCategoryController {
         return service.getAll();
     }
 
+    @GetMapping("/tree")
+    public List<CategoryResponse> getTree() {
+        return service.getTree();
+    }
+
     @GetMapping("/{id}")
     public CategoryResponse getById(
             @PathVariable Integer id) {

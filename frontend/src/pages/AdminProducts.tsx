@@ -32,7 +32,7 @@ export default function AdminProducts() {
 
   const [searchQuery, setSearchQuery] = useState('')
   // const debouncedRef = useRef<NodeJS.Timeout | null>()
-  const debouncedRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const debouncedRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [keyword, setKeyword] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<boolean | null>(null)

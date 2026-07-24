@@ -25,7 +25,7 @@ export interface CustomerAdminResponse {
   userId: number
   username: string
   email: string
-  numberPhone: string
+numberPhone: string
   nationalId: string
   accumulatedEcoPoints: number
   isActive: boolean
@@ -40,6 +40,9 @@ export interface BankAdminResponse {
 export interface CategoryAdminResponse {
   categoryId: number
   categoryName: string
+  parentId: number | null
+  parentName: string | null
+  depth?: number
 }
 
 export interface MaterialAdminResponse {

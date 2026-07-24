@@ -7,4 +7,6 @@ import lombok.Data;
 public class CategoryRequest {
     @NotBlank
     private String categoryName;
+
+    private Integer parentId;
 }

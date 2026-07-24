@@ -1,5 +1,6 @@
 package ctu.student.regreen.service.implement;
 
+import ctu.student.regreen.dto.request.GoogleLoginRequest;
 import ctu.student.regreen.exception.ErrorCode;
 import ctu.student.regreen.exception.ResourceNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,9 @@ import ctu.student.regreen.repository.UserRepository;
 import ctu.student.regreen.service.interfaces.AuthService;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -24,8 +28,8 @@ public class AuthServiceImpl implements AuthService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
     private final CartRepository cartRepository;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
  @Override
 public AuthResponse register(RegisterRequest request) {
@@ -85,5 +89,33 @@ public AuthResponse register(RegisterRequest request) {
                 token,
                 user.getUsername(),
                 user.getRole());
+    }
+
+    @Override
+    public AuthResponse googleLogin(GoogleLoginRequest request) {
+        Map<String, String> googleUser = googleTokenVerifier.verify(request.getCredential());
+        String email = googleUser.get("email");
+
+        Customer customer = customerRepository.findByEmail(email).orElseGet(() -> {
+            Customer newCustomer = new Customer();
+            newCustomer.setEmail(email);
+            newCustomer.setUsername(email.split("@")[0]);
+            newCustomer.setNumberPhone("0000000000");
+            newCustomer.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            newCustomer = customerRepository.save(newCustomer);
+
+            Cart cart = new Cart();
+            cart.setCustomer(newCustomer);
+            cartRepository.save(cart);
+
+            return newCustomer;
+        });
+
+        if (!customer.getIsActive()) {
+            throw new ResourceNotFoundException(ErrorCode.ACCOUNT_LOCKED);
+        }
+
+        String token = jwtService.generateToken(customer);
+        return new AuthResponse(token, customer.getUsername(), customer.getRole());
     }
 }
