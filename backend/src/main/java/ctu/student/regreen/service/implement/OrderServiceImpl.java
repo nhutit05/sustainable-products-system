@@ -39,6 +39,7 @@ import ctu.student.regreen.repository.PaymentMethodRepository;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.repository.VoucherRepository;
+import ctu.student.regreen.service.interfaces.NotificationService;
 import ctu.student.regreen.service.interfaces.OrderService;
 // import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,8 @@ public class OrderServiceImpl implements OrderService {
         private final OrderMapper orderMapper;
 
         private final PayOSService payOSService;
+
+        private final NotificationService notificationService;
 
         public long calculatePayableAmount(Order order) {
                 long total = 0;
@@ -270,6 +273,8 @@ public class OrderServiceImpl implements OrderService {
                 order.setOrderItems(items);
 
                 Order savedOrder = orderRepository.save(order);
+
+                notificationService.notifyNewOrderToAdmins(savedOrder);
 
                 Integer accummulatedEcoPoints = 0;
 

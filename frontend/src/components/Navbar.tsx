@@ -1,7 +1,8 @@
-import { Bell, Heart, Leaf, Menu, Search, ShoppingCart, X } from 'lucide-react'
+import { Heart, Leaf, Menu, Search, ShoppingCart, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import NavbarAccount from './NavbarAccount'
+import NotificationBell from './NotificationBell'
 import { useNotification } from '../context/useNotification'
 import { useCart } from '../context/CartContext'
 
@@ -141,10 +142,7 @@ export default function Navbar({ NAV_LINKS }: NavbarProps) {
             <button className="hidden lg:flex relative p-2 rounded-lg text-green-700 hover:bg-green-100 transition-colors">
               <Heart className="w-5 h-5" onClick={handleHeartClick} />
             </button>
-            <button className="hidden lg:flex relative p-2 rounded-lg text-green-700 hover:bg-green-100 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+            <NotificationBell />
             {userExist ? (
               <NavbarAccount />
             ) : (

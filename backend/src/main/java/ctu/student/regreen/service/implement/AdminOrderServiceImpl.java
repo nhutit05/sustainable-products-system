@@ -21,6 +21,7 @@ import ctu.student.regreen.repository.OrderRepository;
 import ctu.student.regreen.repository.OrderStatusRepository;
 import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.service.interfaces.AdminOrderService;
+import ctu.student.regreen.service.interfaces.NotificationService;
 import ctu.student.regreen.specification.OrderSpecification;
 // import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderStatusRepository orderStatusRepository;
     private final OrderMapper orderMapper;
     private final PaymentStatusRepository paymentStatusRepository;
+
+    private final NotificationService notificationService;
 
     private PaymentStatus getPaymentStatus(
             PaymentStatusName statusName) {
@@ -144,8 +147,15 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         order.setOrderStatus(
                 getOrderStatus(newStatus));
 
-        return orderMapper.toResponse(
+        OrderResponse response = orderMapper.toResponse(
                 orderRepository.save(order));
+
+        notificationService.notifyOrderStatusChanged(
+                order,
+                currentStatus.name(),
+                newStatus.name());
+
+        return response;
     }
 
     private Order getOrderEntity(Integer orderId) {

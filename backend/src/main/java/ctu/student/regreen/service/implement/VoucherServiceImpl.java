@@ -15,6 +15,7 @@ import ctu.student.regreen.dto.response.VoucherSummaryResponse;
 import ctu.student.regreen.mapper.VoucherMapper;
 import ctu.student.regreen.model.Voucher;
 import ctu.student.regreen.repository.VoucherRepository;
+import ctu.student.regreen.service.interfaces.NotificationService;
 import ctu.student.regreen.service.interfaces.VoucherService;
 import ctu.student.regreen.specification.VoucherSpecification;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,8 @@ public class VoucherServiceImpl
         private final VoucherRepository repository;
 
         private final VoucherMapper mapper;
+
+        private final NotificationService notificationService;
 
         @Override
         @Transactional
@@ -46,6 +49,8 @@ public class VoucherServiceImpl
                 Voucher voucher = mapper.toEntity(request);
 
                 voucher = repository.save(voucher);
+
+                notificationService.notifyNewVoucherToAllCustomers(voucher);
 
                 return mapper.toResponse(voucher);
         }

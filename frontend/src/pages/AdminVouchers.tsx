@@ -180,6 +180,7 @@ export default function AdminVouchers() {
   const [viewOpen, setViewOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
+  const [creating, setCreating] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [editingVoucherId, setEditingVoucherId] = useState<number>()
   const [editingVoucher, setEditingVoucher] = useState<VoucherResponse | null>(null)
@@ -482,6 +483,7 @@ export default function AdminVouchers() {
 
   async function handleCreate(values: Record<string, unknown>) {
     try {
+      setCreating(true)
       const request = {
         code: values.code as string,
         description: values.description as string,
@@ -520,6 +522,8 @@ export default function AdminVouchers() {
     } catch (error) {
       console.error(error)
       message.error('Tạo voucher thất bại.')
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -681,6 +685,7 @@ export default function AdminVouchers() {
           form.resetFields()
           setCreateOpen(false)
         }}
+        confirmLoading={creating}
         onOk={() => form.submit()}
         okText="Tạo mới"
         cancelText="Huỷ"
