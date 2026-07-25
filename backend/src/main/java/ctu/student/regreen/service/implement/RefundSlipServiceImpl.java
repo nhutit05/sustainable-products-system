@@ -15,6 +15,7 @@ import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.OrderRepository;
 import ctu.student.regreen.repository.RefundSlipRepository;
 import ctu.student.regreen.repository.RefundStatusRepository;
+import ctu.student.regreen.service.interfaces.NotificationService;
 import ctu.student.regreen.service.interfaces.RefundSlipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +41,8 @@ public class RefundSlipServiceImpl
         private final RefundStatusRepository refundStatusRepository;
 
         private final RefundSlipMapper refundSlipMapper;
+
+        private final NotificationService notificationService;
 
 
         @Override
@@ -102,9 +105,11 @@ public class RefundSlipServiceImpl
 
                 refundSlip.setBank(bank);
 
-                return refundSlipMapper.toResponse(
-                                refundSlipRepository.save(
-                                                refundSlip));
+                RefundSlip savedRefundSlip = refundSlipRepository.save(refundSlip);
+
+                notificationService.notifyNewRefundToAdmins(savedRefundSlip);
+
+                return refundSlipMapper.toResponse(savedRefundSlip);
         }
 
         @Override

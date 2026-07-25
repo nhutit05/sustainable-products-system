@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reviews/**").permitAll()
                         .requestMatchers("/api/cloudinary/**").permitAll()
                         .requestMatchers("/api/banners/**").permitAll()
+                        .requestMatchers("/api/notifications/**").hasAnyRole("CUSTOMER", "ADMIN")
 
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -87,6 +88,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/villages").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/jacoco/**").permitAll()
                         .requestMatchers("/api/chat/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         // fallback
                         .anyRequest().permitAll())
 

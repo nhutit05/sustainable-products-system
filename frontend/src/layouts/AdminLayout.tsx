@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import AdminNavbar from '../components/admin/AdminNavbar'
+import NotificationBell from '../components/NotificationBell'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import AdminDashboard from '../pages/AdminDashboard'
 import AdminSystemCategories from '../pages/AdminSystemCategories'
@@ -196,13 +197,17 @@ export default function AdminLayout() {
                 Re<span className="text-emerald-600">Green</span>
               </span>
             </div>
+            <div className="ml-auto">
+              <NotificationBell />
+            </div>
           </div>
         </header>
 
         {/* DESKTOP HEADER */}
         <header className="hidden lg:block sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
-          <div className="px-6 py-4">
+          <div className="px-6 py-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">{currentPageTitle}</h2>
+            <NotificationBell />
           </div>
         </header>
 
