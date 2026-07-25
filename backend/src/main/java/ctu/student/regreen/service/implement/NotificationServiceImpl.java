@@ -2,6 +2,8 @@ package ctu.student.regreen.service.implement;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,6 @@ import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Notification;
 import ctu.student.regreen.model.Order;
 import ctu.student.regreen.model.RefundSlip;
-import ctu.student.regreen.model.User;
 import ctu.student.regreen.model.Voucher;
 import ctu.student.regreen.repository.AdminRepository;
 import ctu.student.regreen.repository.CustomerRepository;
@@ -35,48 +36,15 @@ public class NotificationServiceImpl implements NotificationService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
-    @Transactional
-    public NotificationResponse createNotification(
-            Integer userId,
-            String title,
-            String message,
-            NotificationTypeName type,
-            Integer referenceId,
-            String referenceType) {
-
-        User user = customerRepository.findById(userId)
-                .map(u -> (User) u)
-                .orElseGet(() -> adminRepository.findById(userId)
-                        .orElseThrow(() -> new RuntimeException(
-                                "User not found with id: " + userId)));
-
-        Notification notification = new Notification();
-        notification.setUser(user);
-        notification.setTitle(title);
-        notification.setMessage(message);
-        notification.setType(type.name());
-        notification.setReferenceId(referenceId);
-        notification.setReferenceType(referenceType);
-        notification.setIsRead(false);
-
-        Notification saved = notificationRepository.save(notification);
-        NotificationResponse response = notificationMapper.toResponse(saved);
-
-        messagingTemplate.convertAndSendToUser(
-                userId.toString(),
-                "/queue/notifications",
-                response);
-
-        return response;
-    }
-
-    @Override
-    public List<NotificationResponse> getMyNotifications() {
+    public List<NotificationResponse> getMyNotifications(int page, int size) {
 
         Integer userId = getCurrentUserId();
 
+        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
         return notificationRepository
-                .findByUserUserIdOrderByCreatedAtDesc(userId)
+                .findByUserUserIdOrderByCreatedAtDesc(userId, pageable)
+                .getContent()
                 .stream()
                 .map(notificationMapper::toResponse)
                 .toList();
@@ -93,8 +61,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationResponse markAsRead(
-            Integer notificationId) {
+    public void markAsRead(Integer notificationId) {
 
         Integer userId = getCurrentUserId();
 
@@ -109,8 +76,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         notification.setIsRead(true);
 
-        return notificationMapper.toResponse(
-                notificationRepository.save(notification));
+        notificationRepository.save(notification);
     }
 
     @Override
@@ -119,32 +85,27 @@ public class NotificationServiceImpl implements NotificationService {
 
         Integer userId = getCurrentUserId();
 
-        List<Notification> unread = notificationRepository
-                .findByUserUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
-
-        for (Notification n : unread) {
-            n.setIsRead(true);
-        }
-
-        notificationRepository.saveAll(unread);
+        notificationRepository.markAllAsReadByUserId(userId);
     }
 
     @Override
     @Transactional
     public void notifyNewVoucherToAllCustomers(Voucher voucher) {
 
-        List<Customer> customers = customerRepository.findAll();
+        List<Integer> customerIds = customerRepository.findAllIds();
 
-        for (Customer customer : customers) {
-            createNotification(
-                    customer.getUserId(),
-                    "Khuyến mãi mới: " + voucher.getCode(),
-                    "Chúng tôi có khuyến mãi mới với giảm "
-                            + voucher.getDiscountValue()
-                            + "%. Mã: " + voucher.getCode(),
-                    NotificationTypeName.NEW_VOUCHER,
-                    voucher.getVoucherId(),
-                    "VOUCHER");
+        if (customerIds.isEmpty()) return;
+
+        String title = "Khuyến mãi mới: " + voucher.getCode();
+        String message = "Chúng tôi có khuyến mãi mới với giảm "
+                + voucher.getDiscountValue()
+                + "%. Mã: " + voucher.getCode();
+
+        String type = NotificationTypeName.NEW_VOUCHER.name();
+        Integer refId = voucher.getVoucherId();
+        String refType = "VOUCHER";
+        for (Integer userId : customerIds) {
+            notificationRepository.insertSingle(userId, title, message, type, refId, refType);
         }
     }
 
@@ -152,18 +113,18 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void notifyNewOrderToAdmins(Order order) {
 
-        List<Admin> admins = adminRepository.findAll();
+        List<Integer> adminIds = adminRepository.findAllIds();
 
-        for (Admin admin : admins) {
-            createNotification(
-                    admin.getUserId(),
-                    "Đơn hàng mới",
-                    "Khách hàng " + order.getCustomer().getUsername()
-                            + " vừa tạo đơn hàng #"
-                            + order.getOrderId(),
-                    NotificationTypeName.NEW_ORDER,
-                    order.getOrderId(),
-                    "ORDER");
+        if (adminIds.isEmpty()) return;
+
+        String title = "Đơn hàng mới";
+        String message = "Khách hàng " + order.getCustomer().getUsername()
+                + " vừa tạo đơn hàng #" + order.getOrderId();
+        String type = NotificationTypeName.NEW_ORDER.name();
+        Integer refId = order.getOrderId();
+        String refType = "ORDER";
+        for (Integer userId : adminIds) {
+            notificationRepository.insertSingle(userId, title, message, type, refId, refType);
         }
     }
 
@@ -171,18 +132,18 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void notifyNewRefundToAdmins(RefundSlip refundSlip) {
 
-        List<Admin> admins = adminRepository.findAll();
+        List<Integer> adminIds = adminRepository.findAllIds();
 
-        for (Admin admin : admins) {
-            createNotification(
-                    admin.getUserId(),
-                    "Yêu cầu hoàn tiền mới",
-                    "Đơn hàng #"
-                            + refundSlip.getOrder().getOrderId()
-                            + " có yêu cầu hoàn tiền",
-                    NotificationTypeName.NEW_REFUND_REQUEST,
-                    refundSlip.getRefundSlipId(),
-                    "REFUND_SLIP");
+        if (adminIds.isEmpty()) return;
+
+        String title = "Yêu cầu hoàn tiền mới";
+        String message = "Đơn hàng #" + refundSlip.getOrder().getOrderId()
+                + " có yêu cầu hoàn tiền";
+        String type = NotificationTypeName.NEW_REFUND_REQUEST.name();
+        Integer refId = refundSlip.getRefundSlipId();
+        String refType = "REFUND_SLIP";
+        for (Integer userId : adminIds) {
+            notificationRepository.insertSingle(userId, title, message, type, refId, refType);
         }
     }
 
@@ -197,14 +158,14 @@ public class NotificationServiceImpl implements NotificationService {
 
         String statusText = getStatusText(newStatus);
 
-        createNotification(
-                customerId,
-                "Đơn hàng #" + order.getOrderId() + " - " + statusText,
-                "Trạng thái đơn hàng của bạn đã thay đổi từ \""
-                        + getStatusText(oldStatus) + "\" sang \"" + statusText + "\"",
-                NotificationTypeName.ORDER_STATUS_CHANGED,
-                order.getOrderId(),
-                "ORDER");
+        String title = "Đơn hàng #" + order.getOrderId() + " - " + statusText;
+        String message = "Trạng thái đơn hàng của bạn đã thay đổi từ \""
+                + getStatusText(oldStatus) + "\" sang \"" + statusText + "\"";
+
+        notificationRepository.insertSingle(
+                customerId, title, message,
+                NotificationTypeName.ORDER_STATUS_CHANGED.name(),
+                order.getOrderId(), "ORDER");
     }
 
     private Integer getCurrentUserId() {

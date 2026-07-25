@@ -10,15 +10,11 @@ import ctu.student.regreen.model.Voucher;
 
 public interface NotificationService {
 
-    NotificationResponse createNotification(Integer userId, String title, String message,
-                                           NotificationTypeName type, Integer referenceId,
-                                           String referenceType);
-
-    List<NotificationResponse> getMyNotifications();
+    List<NotificationResponse> getMyNotifications(int page, int size);
 
     long getUnreadCount();
 
-    NotificationResponse markAsRead(Integer notificationId);
+    void markAsRead(Integer notificationId);
 
     void markAllAsRead();
 

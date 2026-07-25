@@ -1,8 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Notification } from '../model/notification.model'
 import {
-  getNotifications,
-  getUnreadCount,
+  getNotificationSummary,
   markAsRead as apiMarkAsRead,
   markAllAsRead as apiMarkAllAsRead,
 } from '../services/notification.service'
@@ -63,9 +62,9 @@ export const NotificationBellProvider = ({ children }: { children: React.ReactNo
   const fetchNotifications = useCallback(async () => {
     if (!token) return
     try {
-      const [notifs, count] = await Promise.all([getNotifications(token), getUnreadCount(token)])
-      setNotifications(notifs)
-      setUnreadCount(count)
+      const summary = await getNotificationSummary(token)
+      setNotifications(summary.notifications)
+      setUnreadCount(summary.unreadCount)
     } catch {
       // silently ignore
     }

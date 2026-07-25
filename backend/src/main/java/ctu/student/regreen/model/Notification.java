@@ -21,9 +21,8 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "notifications", indexes = {
-    @Index(name = "idx_notification_user_id", columnList = "user_id"),
-    @Index(name = "idx_notification_is_read", columnList = "is_read"),
-    @Index(name = "idx_notification_created_at", columnList = "created_at")
+    @Index(name = "idx_notif_user_read", columnList = "user_id, is_read"),
+    @Index(name = "idx_notif_user_created", columnList = "user_id, created_at DESC")
 })
 @Getter
 @Setter
