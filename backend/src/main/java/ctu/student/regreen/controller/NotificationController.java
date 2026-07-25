@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ctu.student.regreen.dto.response.NotificationResponse;
+import ctu.student.regreen.dto.response.NotificationSummaryResponse;
 import ctu.student.regreen.service.interfaces.NotificationService;
 import lombok.RequiredArgsConstructor;
 
@@ -22,11 +24,25 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @GetMapping
-    public ResponseEntity<List<NotificationResponse>> getMyNotifications() {
+    @GetMapping("/summary")
+    public ResponseEntity<NotificationSummaryResponse> getSummary(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+
+        List<NotificationResponse> notifications = notificationService.getMyNotifications(page, size);
+        long unreadCount = notificationService.getUnreadCount();
 
         return ResponseEntity.ok(
-                notificationService.getMyNotifications());
+                new NotificationSummaryResponse(notifications, unreadCount));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<NotificationResponse>> getMyNotifications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+
+        return ResponseEntity.ok(
+                notificationService.getMyNotifications(page, size));
     }
 
     @GetMapping("/unread-count")
@@ -37,11 +53,12 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<NotificationResponse> markAsRead(
+    public ResponseEntity<Void> markAsRead(
             @PathVariable Integer id) {
 
-        return ResponseEntity.ok(
-                notificationService.markAsRead(id));
+        notificationService.markAsRead(id);
+
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/read-all")
