@@ -18,6 +18,7 @@ import {
   PlusOutlined,
   GiftOutlined,
 } from '@ant-design/icons'
+import { useCart } from '../../context/CartContext'
 
 const { Text, Title } = Typography
 
@@ -63,6 +64,7 @@ export default function Checkout({
   const [orderId, setOrderId] = useState<number>()
   const [expiredAt, setExpiredAt] = useState<string | null>(null)
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null)
+  const { refreshCartCount } = useCart()
 
   const [vouchers, setVouchers] = useState<
     {
@@ -184,6 +186,7 @@ export default function Checkout({
       const result = await response.json()
 
       if (!response.ok) {
+        refreshCartCount()
         showNotification({
           message: 'Đặt hàng thất bại. Vui lòng thử lại.',
           type: 'ERROR',

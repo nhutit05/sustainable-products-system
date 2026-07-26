@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { customerResponse, meResponse } from '../model/customer'
-import { Heart, Leaf, MapPinIcon, Package, User } from 'lucide-react'
+import { BanknoteArrowUp, Heart, Leaf, MapPinIcon, Package, User } from 'lucide-react'
 import { CustomerTypeName, type CustomerTypeRoleKey } from '../enum/Customer.enum'
 import NavbarProfile from '../components/profile/NavbarProfile'
 import { useCustomer } from '../context/useCustomer'
@@ -91,6 +91,11 @@ export default function Profile() {
       label: 'Sản phẩm yêu thích',
       to: 'favorites',
       icon: <Heart className="w-5 h-5" />,
+    },
+    {
+      label: 'Quản lý hoàn tiền',
+      to: 'refunds',
+      icon: <BanknoteArrowUp className="w-5 h-5" />,
     },
   ]
 

@@ -114,3 +114,17 @@ export interface RefundSlipRequest {
   orderId: number
   bankId: string
 }
+
+export interface RefundResponse {
+  refundSlipId: number
+  bankNumber: string
+  accountBankName: string
+  reason: string
+  orderId: number
+  bankId: string
+  bankName: string
+  refundStatusId: number
+  refundStatusName: string
+  createdAt: string
+  updatedAt: string
+}

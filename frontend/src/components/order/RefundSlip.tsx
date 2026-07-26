@@ -11,12 +11,10 @@ const { TextArea } = Input
 interface InvoiceOrderProps {
   order: OrderResponse
   setOnClose: (value: boolean) => void
+  setSendRefund: (value: boolean) => void
 }
 
-// Danh sách ngân hàng phổ biến tại VN (mã BIN theo Napas).
-// TODO: nếu backend đã có API danh sách ngân hàng, thay list tĩnh này bằng dữ liệu fetch được.
-
-export default function RefundSlip({ order, setOnClose }: InvoiceOrderProps) {
+export default function RefundSlip({ order, setOnClose, setSendRefund }: InvoiceOrderProps) {
   const [form] = Form.useForm<RefundSlipRequest>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { showNotification } = useNotification()
@@ -79,12 +77,11 @@ export default function RefundSlip({ order, setOnClose }: InvoiceOrderProps) {
         type: 'SUCCESS',
         duration: 3000,
       })
+      setSendRefund(true)
       setOnClose(false)
     } catch (error) {
-      // Lỗi validate của antd Form cũng rơi vào đây nhưng không cần xử lý gì thêm,
-      // antd đã tự hiển thị lỗi ngay trên từng ô input.
+      console.error('Error submitting refund request:', error)
       if (error instanceof Error) {
-        console.error('Error submitting refund slip:', error)
         setOnClose(false)
         showNotification({
           message: 'Gửi yêu cầu hoàn tiền thất bại. Vui lòng thử lại.',
@@ -169,10 +166,6 @@ export default function RefundSlip({ order, setOnClose }: InvoiceOrderProps) {
           <Form.Item
             label="Tên chủ tài khoản"
             name="accountBankName"
-            // normalize chạy TRƯỚC khi antd lưu giá trị vào Form và trước khi validate,
-            // nên giá trị dùng để so khớp regex luôn là bản đã viết hoa — không còn
-            // tình trạng validate nhầm với giá trị gốc (chưa viết hoa) như khi dùng
-            // onChange thủ công gây ra.
             normalize={(value: string) => value?.toUpperCase()}
             rules={[
               { required: true, message: 'Vui lòng nhập tên chủ tài khoản' },

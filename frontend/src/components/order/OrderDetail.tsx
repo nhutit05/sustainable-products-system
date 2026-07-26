@@ -12,15 +12,22 @@ import {
   Calendar,
   X,
 } from 'lucide-react'
+import { useState } from 'react'
 
 interface OrderDetailProps {
   order: OrderResponse
   setOnClose: (value: boolean) => void
   setIsOpenRefund: (value: boolean) => void
   handleShowRefund: (order: OrderResponse) => void
+  sendRefund: boolean
 }
 
-export default function OrderDetail({ order, setOnClose, handleShowRefund }: OrderDetailProps) {
+export default function OrderDetail({
+  order,
+  setOnClose,
+  handleShowRefund,
+  sendRefund,
+}: OrderDetailProps) {
   const Icon = OrderStatusIcon[order.orderStatusName as keyof typeof OrderStatusIcon]
 
   const formatted = (dateString: string) =>
@@ -172,15 +179,16 @@ export default function OrderDetail({ order, setOnClose, handleShowRefund }: Ord
           </div>
         </div>
 
-        {/* BUTTON CANCEL ORDER */}
+        {/* BUTTON CANCEL / REFUND ORDER */}
         {order.orderStatusName === 'COMPLETED' && (
           <div className="flex justify-end gap-3 mt-4">
             <button
+              type="button"
               onClick={() => handleShowRefund(order)}
-              className="px-4 py-2 border border-red-400 rounded-xl text-sm font-semibold text-red-600 hover:text-red-800 transition-colors
-          hover:cursor-pointer hover:bg-red-50 active:scale-97 active:transition-transform"
+              disabled={sendRefund}
+              className="px-4 py-2 border border-red-400 rounded-xl text-sm font-semibold text-red-600 hover:text-red-800 transition-colors hover:cursor-pointer hover:bg-red-50 active:scale-95 active:transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Hủy đơn hàng
+              {sendRefund ? 'Đã gửi yêu cầu' : 'Hủy / Hoàn tiền'}
             </button>
           </div>
         )}

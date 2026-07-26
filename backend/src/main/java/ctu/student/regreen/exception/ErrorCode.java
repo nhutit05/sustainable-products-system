@@ -26,6 +26,8 @@ public enum ErrorCode {
 
     IMAGE_UPLOAD_FAILED("USR_009", "Image upload failed"),
 
+    ORDER_ALREADY_EXISTS("ORD_001", "Order already exists"),
+
     ACCOUNT_LOCKED("USR_010", "Tài khoản đã bị khoá");
 
     private final String code;
