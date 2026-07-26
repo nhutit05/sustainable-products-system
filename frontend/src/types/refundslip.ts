@@ -1,23 +1,23 @@
 export interface RefundSlipResponse {
-    refundSlipId: number;
+  refundSlipId: number
 
-    bankNumber: string;
+  bankNumber: string
 
-    accountBankName: string;
+  accountBankName: string
 
-    reason: string;
+  reason: string
 
-    orderId: number;
+  orderId: number
 
-    bankId: string;
+  bankId: string
 
-    bankName: string;
+  bankName: string
 
-    refundStatusId: number;
+  refundStatusId: number
 
-    refundStatusName: "PENDING" | "APPROVED" | "REJECTED" | "REFUNDED";
+  refundStatusName: 'PENDING' | 'APPROVED' | 'REJECTED' | 'REFUNDED'
 
-    createdAt: string;
+  createdAt: string
 
-    updatedAt: string;
+  updatedAt: string
 }

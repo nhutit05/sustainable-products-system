@@ -82,7 +82,12 @@ export default function ProfileInfo() {
   }
 
   const submitUpdate = async () => {
-    const values: Record<FieldKey, string> = { username, email, numberPhone, nationalId }
+    const values: Record<FieldKey, string> = {
+      username,
+      email,
+      numberPhone,
+      nationalId,
+    }
     const nextErrors: Errors = {}
     for (const key of Object.keys(values) as FieldKey[]) {
       const message = validateField(key, values[key])

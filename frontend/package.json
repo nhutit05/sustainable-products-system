@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",
+    "@depup/sockjs-client": "^1.6.1-depup.0",
     "@payos/payos-checkout": "^1.0.8",
     "@stomp/stompjs": "^7.3.0",
     "@tailwindcss/vite": "^4.3.1",

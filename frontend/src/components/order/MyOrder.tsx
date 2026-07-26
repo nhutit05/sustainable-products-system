@@ -25,6 +25,7 @@ export default function MyOrder() {
 
   // REFUND
   const [isOpenRefund, setIsOpenRefund] = useState<boolean>(false)
+  const [sendRefund, setSendRefund] = useState<boolean>(false)
 
   const orderStatus = [
     { index: -1, id: 'ALL', name: 'Tất cả' },
@@ -308,6 +309,7 @@ export default function MyOrder() {
           setOnClose={setOnClose}
           setIsOpenRefund={setIsOpenRefund}
           handleShowRefund={handleShowRefund}
+          sendRefund={sendRefund}
         />
       )}
 
@@ -318,7 +320,11 @@ export default function MyOrder() {
 
       {/* MODAL REFUNDSLIP */}
       {isOpenRefund && selectedOrder && (
-        <RefundSlip order={selectedOrder} setOnClose={setIsOpenRefund} />
+        <RefundSlip
+          order={selectedOrder}
+          setOnClose={setIsOpenRefund}
+          setSendRefund={setSendRefund}
+        />
       )}
     </div>
   )

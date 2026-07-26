@@ -18,14 +18,13 @@ import Chatbot from '../components/Chatbot'
 import { Sparkles, X } from 'lucide-react'
 import ProfileFavorite from '../components/profile/ProfileFavorite'
 import CarbonCalculator from '../pages/caculator/CarbonCaculator'
+import MyRefundSlip from '../components/profile/MyRefundSlip'
 
 export default function CustomerLayout() {
   const NAV_LINKS = [
     { label: 'Home', to: '/' },
     { label: 'Products', to: '/products' },
-    // { label: 'Blog', to: '/blog' },
     { label: 'Carbon-Calculator', to: '/carbon-calculator' },
-    // { label: 'About Us', to: '/about' },
   ]
 
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
@@ -82,6 +81,7 @@ export default function CustomerLayout() {
             <Route path="orders" element={<MyOrder />} />
             <Route path="addresses" element={<ProfileAddress />} />
             <Route path="favorites" element={<ProfileFavorite />} />
+            <Route path="refunds" element={<MyRefundSlip />} />
           </Route>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Signup />} />
