@@ -4,6 +4,8 @@ import ctu.student.regreen.dto.request.RefundSlipRequest;
 import ctu.student.regreen.dto.response.RefundSlipResponse;
 import ctu.student.regreen.enums.OrderStatusName;
 import ctu.student.regreen.enums.RefundStatusName;
+import ctu.student.regreen.exception.ErrorCode;
+import ctu.student.regreen.exception.ResourceNotFoundException;
 import ctu.student.regreen.mapper.RefundSlipMapper;
 import ctu.student.regreen.model.Bank;
 import ctu.student.regreen.model.Customer;
@@ -55,8 +57,7 @@ public class RefundSlipServiceImpl
                 if (refundSlipRepository.existsByOrderOrderId(
                                 request.getOrderId())) {
 
-                        throw new RuntimeException(
-                                        "Order already has refund slip");
+                        throw new RuntimeException(ErrorCode.ORDER_ALREADY_EXISTS.getMessage());
                 }
 
                 Order order = orderRepository.findById(

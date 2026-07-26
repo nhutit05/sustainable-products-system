@@ -98,7 +98,12 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        customer = customerRepository.save(customer);
+         try {
+             customer = customerRepository.save(customer);
+
+         } catch (Exception e) {
+             throw new RuntimeException("Failed to update customer: " + e.getMessage());
+            }
 
         return customerMapper.toResponse(customer);
     }
