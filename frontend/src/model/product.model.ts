@@ -84,3 +84,21 @@ export type CategoryResponse = {
   categoryId: number
   categoryName: string
 }
+
+// ===== RECOMMENDATION =====
+export type ProductRecommendationItem = {
+  productId: number
+  productName: string
+  productPrice: number
+  productCarbonIndex: number
+  baseEcoPoints: number
+  imageUrl: string
+  categoryId: number
+  categoryName: string
+  matchReason: string
+}
+
+export type ProductRecommendation = {
+  productId: number
+  recommendations: ProductRecommendationItem[]
+}

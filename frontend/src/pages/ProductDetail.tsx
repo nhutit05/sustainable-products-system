@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { ProductDetail, ProductResponse } from '../model/product.model'
-import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
+import type { ProductDetail, ProductRecommendation, ProductResponse } from '../model/product.model'
+import { ChessKing, Heart, Leaf, Plus, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart, CartItemResponse } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
@@ -10,6 +10,7 @@ import type { paymentMethodResponse } from '../model/paymentMethod'
 import { Modal, Radio, Space } from 'antd'
 import Checkout from '../components/order/Checkout'
 import { useCart } from '../context/CartContext'
+import CompareListInput from '../components/product/CompareListInput'
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -39,7 +40,7 @@ export default function ProductDetail() {
   const countReviews = 0
 
   // Danh sach san pham goi y => lay tam tu products
-  const [suggestProducts, setSuggestProducts] = useState<ProductDetail[]>([])
+  const [suggestProducts, setSuggestProducts] = useState<ProductRecommendation | null>(null)
 
   const [cart, setCart] = useState<Cart | null>(null)
 
@@ -81,7 +82,9 @@ export default function ProductDetail() {
     // fetch tam toan bo product
     const fetchSuggestProducts = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products`)
+        const response = await fetch(
+          `http://localhost:8080/api/products/${productId}/recommendations?limit=6`
+        )
         if (response.ok) {
           const data = await response.json()
           setSuggestProducts(data)
@@ -329,6 +332,10 @@ export default function ProductDetail() {
             },
             body: JSON.stringify(cartItem),
           })
+
+          if (!response.ok) {
+            throw new Error('Failed to create cart item')
+          }
         } catch (error) {
           console.error('Error creating cart item:', error)
         }
@@ -336,6 +343,12 @@ export default function ProductDetail() {
 
       createCartItem()
     }
+  }
+
+  const [isCompareListOpen, setIsCompareListOpen] = useState(false)
+
+  const showListCompare = () => {
+    setIsCompareListOpen(true)
   }
 
   return (
@@ -411,6 +424,17 @@ export default function ProductDetail() {
                   <Sprout className="mr-1 w-4 h-4 shrink-0" />
                   {product.baseEcoPoints} Eco Points
                 </div>
+
+                {/* SO SANH SAN PHAM */}
+                <button
+                  onClick={showListCompare}
+                  className="flex items-center  border border-emerald-100 text-xs px-3 py-1.5 font-bold rounded-full text-emerald-900 whitespace-nowrap
+                  hover:scale-105 hover:cursor-pointer hover:shadow-sm hover:shadow-emerald-400/20 transition-all duration-300
+                "
+                >
+                  <Plus className="mr-1 w-4 h-4 shrink-0" />
+                  So sánh
+                </button>
               </header>
 
               {/* Product Name */}
@@ -501,7 +525,11 @@ export default function ProductDetail() {
             <h2 className="text-lg font-semibold mb-3 sm:mb-4 text-green-900">
               Sản phẩm liên quan
             </h2>
-            <ProductCardSuggest products={suggestProducts} />
+            {product && suggestProducts && suggestProducts.recommendations.length > 0 ? (
+              <ProductCardSuggest product={suggestProducts} />
+            ) : (
+              <p className="text-green-700 text-sm px-4">Không có sản phẩm liên quan</p>
+            )}
           </div>
 
           {/* Products Reviews */}
@@ -605,6 +633,11 @@ export default function ProductDetail() {
           paymentMethodId={selectedPaymentMethod || 0}
           setOnClose={() => setIsOpenCheckout(false)}
         />
+      )}
+
+      {/* Compare List */}
+      {isCompareListOpen && product && (
+        <CompareListInput onCloseInput={() => setIsCompareListOpen(false)} firstProduct={product} />
       )}
     </div>
   )

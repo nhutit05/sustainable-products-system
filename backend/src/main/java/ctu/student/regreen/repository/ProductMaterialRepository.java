@@ -30,4 +30,16 @@ public interface ProductMaterialRepository extends JpaRepository<ProductMaterial
     @Transactional
     @Query("DELETE FROM ProductMaterial pm WHERE pm.product.productId = :productId")
     void deleteByProductId(@Param("productId") Integer productId);
+
+    // Lấy danh sách vật liệu theo danh sách productId (FETCH kèm Material entity)
+    @Query("SELECT pm FROM ProductMaterial pm " +
+            "JOIN FETCH pm.material " +
+            "WHERE pm.product.productId IN :productIds")
+    List<ProductMaterial> findByProductIdsWithMaterial(@Param("productIds") List<Integer> productIds);
+
+    // Lấy danh sách vật liệu của 1 sản phẩm
+    @Query("SELECT pm FROM ProductMaterial pm " +
+            "JOIN FETCH pm.material " +
+            "WHERE pm.product.productId = :productId")
+    List<ProductMaterial> findByProductIdWithMaterial(@Param("productId") Integer productId);
 }
