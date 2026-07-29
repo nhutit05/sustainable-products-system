@@ -1,6 +1,8 @@
 package ctu.student.regreen.controller;
 
+import ctu.student.regreen.dto.response.CompareProductsResponse;
 import ctu.student.regreen.dto.response.ProductResponse;
+import ctu.student.regreen.service.interfaces.CompareProductsService;
 import ctu.student.regreen.service.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService service;
+    private final CompareProductsService compareProductsService;
 
     @GetMapping
     public List<ProductResponse> getAll(
@@ -48,5 +51,11 @@ public class ProductController {
     @GetMapping("/count")
     public Integer countProducts() {
          return service.countProducts();
+    }
+
+    // [GET] /api/products/compare?productIds=1,2,3
+    @GetMapping("/compare")
+    public CompareProductsResponse compareProducts(@RequestParam List<Integer> productIds) {
+        return compareProductsService.compareProducts(productIds);
     }
 }

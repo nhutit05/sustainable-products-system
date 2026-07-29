@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { ProductDetail, ProductResponse } from '../model/product.model'
-import { ChessKing, Heart, Leaf, ShoppingCart, Sprout, Zap } from 'lucide-react'
+import { ChessKing, Heart, Leaf, Plus, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart, CartItemResponse } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
@@ -10,6 +10,7 @@ import type { paymentMethodResponse } from '../model/paymentMethod'
 import { Modal, Radio, Space } from 'antd'
 import Checkout from '../components/order/Checkout'
 import { useCart } from '../context/CartContext'
+import CompareListInput from '../components/product/CompareListInput'
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -39,7 +40,7 @@ export default function ProductDetail() {
   const countReviews = 0
 
   // Danh sach san pham goi y => lay tam tu products
-  const [suggestProducts, setSuggestProducts] = useState<ProductDetail[]>([])
+  const [suggestProducts, setSuggestProducts] = useState<ProductResponse[]>([])
 
   const [cart, setCart] = useState<Cart | null>(null)
 
@@ -329,6 +330,10 @@ export default function ProductDetail() {
             },
             body: JSON.stringify(cartItem),
           })
+
+          if (!response.ok) {
+            throw new Error('Failed to create cart item')
+          }
         } catch (error) {
           console.error('Error creating cart item:', error)
         }
@@ -336,6 +341,12 @@ export default function ProductDetail() {
 
       createCartItem()
     }
+  }
+
+  const [isCompareListOpen, setIsCompareListOpen] = useState(false)
+
+  const showListCompare = () => {
+    setIsCompareListOpen(true)
   }
 
   return (
@@ -411,6 +422,17 @@ export default function ProductDetail() {
                   <Sprout className="mr-1 w-4 h-4 shrink-0" />
                   {product.baseEcoPoints} Eco Points
                 </div>
+
+                {/* SO SANH SAN PHAM */}
+                <button
+                  onClick={showListCompare}
+                  className="flex items-center  border border-emerald-100 text-xs px-3 py-1.5 font-bold rounded-full text-emerald-900 whitespace-nowrap
+                  hover:scale-105 hover:cursor-pointer hover:shadow-sm hover:shadow-emerald-400/20 transition-all duration-300
+                "
+                >
+                  <Plus className="mr-1 w-4 h-4 shrink-0" />
+                  So sánh
+                </button>
               </header>
 
               {/* Product Name */}
@@ -604,6 +626,15 @@ export default function ProductDetail() {
           totalPrice={product?.productPrice || 0}
           paymentMethodId={selectedPaymentMethod || 0}
           setOnClose={() => setIsOpenCheckout(false)}
+        />
+      )}
+
+      {/* Compare List */}
+      {isCompareListOpen && product && (
+        <CompareListInput
+          onCloseInput={() => setIsCompareListOpen(false)}
+          firstProduct={product}
+          allProducts={suggestProducts}
         />
       )}
     </div>
