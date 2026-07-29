@@ -2,9 +2,12 @@ package ctu.student.regreen.controller;
 
 import ctu.student.regreen.dto.response.CompareProductsResponse;
 import ctu.student.regreen.dto.response.ProductResponse;
+import ctu.student.regreen.dto.response.RecommendationResponse;
 import ctu.student.regreen.service.interfaces.CompareProductsService;
+import ctu.student.regreen.service.interfaces.ProductRecommendationService;
 import ctu.student.regreen.service.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -17,6 +20,7 @@ public class ProductController {
 
     private final ProductService service;
     private final CompareProductsService compareProductsService;
+    private final ProductRecommendationService productRecommendationService;
 
     @GetMapping
     public List<ProductResponse> getAll(
@@ -46,6 +50,14 @@ public class ProductController {
     @GetMapping("/{id}")
     public ProductResponse getById(@PathVariable Integer id) {
         return service.getById(id);
+    }
+
+    // [GET] /api/products/{id}/recommendations?limit=5
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<RecommendationResponse> getRecommendations(
+            @PathVariable("id") Integer productId,
+            @RequestParam(defaultValue = "6") int limit) {
+        return ResponseEntity.ok(productRecommendationService.getRecommendations(productId, limit));
     }
 
     @GetMapping("/count")

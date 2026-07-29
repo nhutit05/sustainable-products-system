@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { ProductDetail, ProductResponse } from '../model/product.model'
+import type { ProductDetail, ProductRecommendation, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, Plus, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart, CartItemResponse } from '../model/cart.model'
@@ -40,7 +40,7 @@ export default function ProductDetail() {
   const countReviews = 0
 
   // Danh sach san pham goi y => lay tam tu products
-  const [suggestProducts, setSuggestProducts] = useState<ProductResponse[]>([])
+  const [suggestProducts, setSuggestProducts] = useState<ProductRecommendation | null>(null)
 
   const [cart, setCart] = useState<Cart | null>(null)
 
@@ -82,7 +82,9 @@ export default function ProductDetail() {
     // fetch tam toan bo product
     const fetchSuggestProducts = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products`)
+        const response = await fetch(
+          `http://localhost:8080/api/products/${productId}/recommendations?limit=6`
+        )
         if (response.ok) {
           const data = await response.json()
           setSuggestProducts(data)
@@ -523,7 +525,11 @@ export default function ProductDetail() {
             <h2 className="text-lg font-semibold mb-3 sm:mb-4 text-green-900">
               Sản phẩm liên quan
             </h2>
-            <ProductCardSuggest products={suggestProducts} />
+            {product && suggestProducts && suggestProducts.recommendations.length > 0 ? (
+              <ProductCardSuggest product={suggestProducts} />
+            ) : (
+              <p className="text-green-700 text-sm px-4">Không có sản phẩm liên quan</p>
+            )}
           </div>
 
           {/* Products Reviews */}
@@ -631,11 +637,7 @@ export default function ProductDetail() {
 
       {/* Compare List */}
       {isCompareListOpen && product && (
-        <CompareListInput
-          onCloseInput={() => setIsCompareListOpen(false)}
-          firstProduct={product}
-          allProducts={suggestProducts}
-        />
+        <CompareListInput onCloseInput={() => setIsCompareListOpen(false)} firstProduct={product} />
       )}
     </div>
   )

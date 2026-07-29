@@ -12,20 +12,16 @@ const MIN_COMPARE = 2
 interface CompareListInputProps {
   onCloseInput: () => void
   firstProduct: ProductResponse
-  allProducts: ProductResponse[]
 }
 
-export default function CompareListInput({
-  onCloseInput,
-  firstProduct,
-  allProducts,
-}: CompareListInputProps) {
+export default function CompareListInput({ onCloseInput, firstProduct }: CompareListInputProps) {
   const { showNotification } = useNotification()
 
   const [listCompare, setListCompare] = useState<ProductResponse[]>([firstProduct])
   const [searchText, setSearchText] = useState('')
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [compareIds, setCompareIds] = useState<number[] | null>(null)
+  const [allProducts, setAllProducts] = useState<ProductResponse[]>([])
 
   // Đảm bảo sản phẩm đang xem luôn có mặt trong danh sách so sánh, không nhân đôi
   useEffect(() => {
@@ -34,6 +30,24 @@ export default function CompareListInput({
       return [firstProduct, ...prev]
     })
   }, [firstProduct])
+
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/products`)
+        if (response.ok) {
+          const data = await response.json()
+          setAllProducts(data)
+        } else {
+          console.error('Failed to fetch products')
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error)
+      }
+    }
+
+    fetchAllProducts()
+  }, [])
 
   const removeProduct = (productId: number) => {
     setListCompare((prev) => prev.filter((product) => product.productId !== productId))

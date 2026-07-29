@@ -85,32 +85,20 @@ export type CategoryResponse = {
   categoryName: string
 }
 
-// ============= PRODUCTS COMPARE ==========
-export type CompareProduct = {
-  products: [
-    {
-      productId: number
-      productName: string
-      productPrice: number
-      productCarbonIndex: number
-      baseEcoPoints: number
-    },
-  ]
-  sections: [
-    {
-      sectionName: string
-      attributes: [
-        {
-          key: string
-          label: string
-          values: {
-            additionalProp1: string
-            additionalProp2: string
-            additionalProp3: string
-          }
-          highlightedValue: string
-        },
-      ]
-    },
-  ]
+// ===== RECOMMENDATION =====
+export type ProductRecommendationItem = {
+  productId: number
+  productName: string
+  productPrice: number
+  productCarbonIndex: number
+  baseEcoPoints: number
+  imageUrl: string
+  categoryId: number
+  categoryName: string
+  matchReason: string
+}
+
+export type ProductRecommendation = {
+  productId: number
+  recommendations: ProductRecommendationItem[]
 }
