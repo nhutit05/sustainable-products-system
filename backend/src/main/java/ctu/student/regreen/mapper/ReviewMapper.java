@@ -5,14 +5,10 @@ import ctu.student.regreen.dto.response.ReviewResponse;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.Review;
-import ctu.student.regreen.repository.CustomerRepository;
-import ctu.student.regreen.repository.ProductRepository;
-import ctu.student.regreen.service.interfaces.ReviewImageService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 

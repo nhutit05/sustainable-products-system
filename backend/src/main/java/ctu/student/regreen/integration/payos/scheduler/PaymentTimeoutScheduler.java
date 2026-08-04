@@ -13,7 +13,6 @@ import ctu.student.regreen.enums.PaymentStatusName;
 import ctu.student.regreen.model.Order;
 import ctu.student.regreen.model.OrderItem;
 import ctu.student.regreen.model.OrderStatus;
-import ctu.student.regreen.model.PaymentMethod;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.repository.OrderRepository;

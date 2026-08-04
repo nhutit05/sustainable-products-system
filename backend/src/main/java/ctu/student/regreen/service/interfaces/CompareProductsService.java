@@ -3,12 +3,7 @@ package ctu.student.regreen.service.interfaces;
 import ctu.student.regreen.dto.response.CompareProductsResponse;
 import ctu.student.regreen.dto.response.CompareSection;
 import ctu.student.regreen.dto.response.ProductMaterialResponse;
-import ctu.student.regreen.dto.response.ProductResponse;
 import ctu.student.regreen.model.Product;
-import ctu.student.regreen.model.ProductMaterial;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 public interface CompareProductsService {

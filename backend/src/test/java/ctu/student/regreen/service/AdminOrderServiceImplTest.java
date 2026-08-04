@@ -1,294 +1,557 @@
-// package ctu.student.regreen.service;
+package ctu.student.regreen.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
-// import static org.junit.jupiter.api.Assertions.assertEquals;
-// import static org.junit.jupiter.api.Assertions.assertNotNull;
-// import static org.junit.jupiter.api.Assertions.assertThrows;
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.lenient;
-// import static org.mockito.Mockito.mock;
-// import static org.mockito.Mockito.never;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.when;
+import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.dto.response.OrderSummaryResponse;
+import ctu.student.regreen.mapper.OrderMapper;
+import ctu.student.regreen.model.Order;
+import ctu.student.regreen.model.OrderStatus;
+import ctu.student.regreen.model.PaymentMethod;
+import ctu.student.regreen.model.PaymentStatus;
+import ctu.student.regreen.repository.OrderRepository;
+import ctu.student.regreen.repository.OrderStatusRepository;
+import ctu.student.regreen.repository.PaymentStatusRepository;
+import ctu.student.regreen.service.implement.AdminOrderServiceImpl;
+import ctu.student.regreen.service.interfaces.NotificationService;
 
-// import java.util.List;
-// import java.util.Optional;
+@ExtendWith(MockitoExtension.class)
+class AdminOrderServiceImplTest {
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
+    @Mock
+    private OrderRepository orderRepository;
 
-// import ctu.student.regreen.dto.response.OrderResponse;
-// import ctu.student.regreen.mapper.OrderMapper;
-// import ctu.student.regreen.model.Order;
-// import ctu.student.regreen.model.OrderStatus;
-// import ctu.student.regreen.model.PaymentMethod;
-// import ctu.student.regreen.model.PaymentStatus;
-// import ctu.student.regreen.repository.OrderRepository;
-// import ctu.student.regreen.repository.OrderStatusRepository;
-// import ctu.student.regreen.repository.PaymentStatusRepository;
-// import ctu.student.regreen.service.implement.AdminOrderServiceImpl;
+    @Mock
+    private OrderStatusRepository orderStatusRepository;
 
-// @ExtendWith(MockitoExtension.class)
-// public class AdminOrderServiceImplTest {
-//         @Mock
-//         private OrderRepository orderRepository;
+    @Mock
+    private PaymentStatusRepository paymentStatusRepository;
 
-//         @Mock
-//         private OrderStatusRepository orderStatusRepository;
+    @Mock
+    private OrderMapper orderMapper;
 
-//         @Mock
-//         private PaymentStatusRepository paymentStatusRepository;
+    @Mock
+    private NotificationService notificationService;
 
-//         @Mock
-//         private OrderMapper orderMapper;
+    @InjectMocks
+    private AdminOrderServiceImpl service;
 
-//         @InjectMocks
-//         private AdminOrderServiceImpl service;
+    private Order order;
+    private OrderResponse response;
 
-//         private Order order;
-//         private OrderResponse response;
+    private static final Integer ORDER_ID = 1;
+    private static final LocalDateTime ORDERED_AT =
+            LocalDateTime.of(2025, 6, 1, 10, 0);
 
-//         // @BeforeEach
-//         // void setUp() {
+    @BeforeEach
+    void setUp() {
 
-//         // order = new Order();
+        order = new Order();
+        order.setOrderId(ORDER_ID);
+        order.setOrderedAt(ORDERED_AT);
+        order.setOrderReceiver("Nguyen Van A");
+        order.setOrderReceiverPhone("0901234567");
+        order.setOrderAddress("123 ABC");
 
-//         // response = mock(OrderResponse.class);
+        response = new OrderResponse();
+        response.setOrderId(ORDER_ID);
+        response.setOrderStatusName("CONFIRMED");
+    }
 
-//         // when(orderMapper.toResponse(any(Order.class)))
-//         // .thenReturn(response);
-//         // }
+    private OrderStatus status(String name) {
+
+        OrderStatus s = new OrderStatus();
+        s.setOrderStatusName(name);
 
-//         @BeforeEach
-//         void setUp() {
-//                 order = new Order();
+        return s;
+    }
 
-//                 response = mock(OrderResponse.class);
+    private PaymentStatus paymentStatus(String name) {
 
-//                 lenient().when(orderMapper.toResponse(any(Order.class)))
-//                                 .thenReturn(response);
-//         }
+        PaymentStatus s = new PaymentStatus();
+        s.setPaymentStatusName(name);
 
-//         private OrderStatus status(String name) {
+        return s;
+    }
 
-//                 OrderStatus s = new OrderStatus();
-//                 s.setOrderStatusName(name);
+    private PaymentMethod paymentMethod(boolean online) {
 
-//                 return s;
-//         }
+        PaymentMethod pm = new PaymentMethod();
+        pm.setOnline(online);
 
-//         private PaymentStatus paymentStatus(String name) {
+        return pm;
+    }
 
-//                 PaymentStatus s = new PaymentStatus();
-//                 s.setPaymentStatusName(name);
+    private void mockGetOrderEntity() {
 
-//                 return s;
-//         }
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
+    }
 
-//         private PaymentMethod paymentMethod(boolean online) {
+    private void mockUpdateStatus(
+            String currentStatusName,
+            String newStatusName) {
 
-//                 PaymentMethod pm = new PaymentMethod();
-//                 pm.setOnline(online);
+        order.setOrderStatus(status(currentStatusName));
 
-//                 return pm;
-//         }
+        mockGetOrderEntity();
 
-//         @Test
-//         void getAllOrders_success() {
+        when(orderStatusRepository
+                .findByOrderStatusName(newStatusName))
+                .thenReturn(Optional.of(status(newStatusName)));
 
-//                 when(orderRepository.findAll())
-//                                 .thenReturn(List.of(order));
+        when(orderRepository.save(any(Order.class)))
+                .thenReturn(order);
 
-//                 List<OrderResponse> result = service.getAllOrders();
+        when(orderMapper.toResponse(any(Order.class)))
+                .thenReturn(response);
+    }
 
-//                 assertEquals(1, result.size());
+    // ==================== getOrders ====================
 
-//                 verify(orderRepository).findAll();
-//         }
+    @Test
+    void getOrders_success() {
 
-//         @Test
-//         void getOrderById_success() {
+        OrderSummaryResponse summary =
+                new OrderSummaryResponse();
+        summary.setOrderId(ORDER_ID);
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Order> orderPage =
+                new PageImpl<>(List.of(order), pageable, 1);
 
-//                 OrderResponse result = service.getOrderById(1);
+        when(orderRepository.findAll(
+                any(Specification.class),
+                any(Pageable.class)))
+                .thenReturn(orderPage);
 
-//                 assertNotNull(result);
-//         }
+        when(orderMapper.toSummary(order))
+                .thenReturn(summary);
 
-//         @Test
-//         void confirmOrder_success() {
+        Page<OrderSummaryResponse> result =
+                service.getOrders(
+                        null, null, null, null,
+                        null, null, pageable);
 
-//                 order.setOrderStatus(
-//                                 status("PENDING"));
+        assertEquals(1, result.getContent().size());
+        assertEquals(ORDER_ID,
+                result.getContent().get(0).getOrderId());
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+        verify(orderRepository).findAll(
+                any(Specification.class),
+                any(Pageable.class));
+        verify(orderMapper).toSummary(order);
+    }
 
-//                 when(orderStatusRepository
-//                                 .findByOrderStatusName("CONFIRMED"))
-//                                 .thenReturn(Optional.of(
-//                                                 status("CONFIRMED")));
+    @Test
+    void getOrders_empty_returnsEmptyPage() {
 
-//                 when(orderRepository.save(any()))
-//                                 .thenReturn(order);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Order> emptyPage =
+                new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-//                 service.confirmOrder(1);
+        when(orderRepository.findAll(
+                any(Specification.class),
+                any(Pageable.class)))
+                .thenReturn(emptyPage);
 
-//                 assertEquals(
-//                                 "CONFIRMED",
-//                                 order.getOrderStatus()
-//                                                 .getOrderStatusName());
-//         }
+        Page<OrderSummaryResponse> result =
+                service.getOrders(
+                        null, null, null, null,
+                        null, null, pageable);
 
-//         @Test
-//         void shippingOrder_onlinePaid_success() {
+        assertTrue(result.getContent().isEmpty());
+        verify(orderMapper, never()).toSummary(any());
+    }
 
-//                 order.setOrderStatus(
-//                                 status("CONFIRMED"));
+    // ==================== getOrderById ====================
 
-//                 order.setPaymentMethod(
-//                                 paymentMethod(true));
+    @Test
+    void getOrderById_success() {
 
-//                 order.setPaymentStatus(
-//                                 paymentStatus("PAID"));
+        mockGetOrderEntity();
+        when(orderMapper.toResponse(order))
+                .thenReturn(response);
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+        OrderResponse result =
+                service.getOrderById(ORDER_ID);
 
-//                 when(orderStatusRepository
-//                                 .findByOrderStatusName("SHIPPING"))
-//                                 .thenReturn(Optional.of(
-//                                                 status("SHIPPING")));
+        assertNotNull(result);
+        assertEquals(ORDER_ID, result.getOrderId());
+        verify(orderRepository).findByIdWithDetails(ORDER_ID);
+        verify(orderMapper).toResponse(order);
+    }
 
-//                 when(orderRepository.save(any()))
-//                                 .thenReturn(order);
+    @Test
+    void getOrderById_notFound_throwsException() {
 
-//                 service.shippingOrder(1);
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
 
-//                 assertEquals(
-//                                 "SHIPPING",
-//                                 order.getOrderStatus()
-//                                                 .getOrderStatusName());
-//         }
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.getOrderById(ORDER_ID));
 
-//         @Test
-//         void shippingOrder_onlineUnpaid_fail() {
+        assertEquals("Order not found", ex.getMessage());
+    }
 
-//                 order.setOrderStatus(
-//                                 status("CONFIRMED"));
+    // ==================== confirmOrder ====================
 
-//                 order.setPaymentMethod(
-//                                 paymentMethod(true));
+    @Test
+    void confirmOrder_success() {
 
-//                 order.setPaymentStatus(
-//                                 paymentStatus("UNPAID"));
+        mockUpdateStatus("PENDING", "CONFIRMED");
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+        OrderResponse result =
+                service.confirmOrder(ORDER_ID);
 
-//                 RuntimeException ex = assertThrows(
-//                                 RuntimeException.class,
-//                                 () -> service.shippingOrder(1));
+        assertNotNull(result);
+        assertEquals("CONFIRMED",
+                order.getOrderStatus().getOrderStatusName());
 
-//                 assertEquals(
-//                                 "Online payment order must be paid before shipping",
-//                                 ex.getMessage());
+        verify(orderRepository).save(order);
+        verify(orderMapper).toResponse(order);
+        verify(notificationService)
+                .notifyOrderStatusChanged(
+                        order, "PENDING", "CONFIRMED");
+    }
 
-//                 verify(orderRepository, never())
-//                                 .save(any());
-//         }
+    @Test
+    void confirmOrder_notFound_throwsException() {
 
-//         @Test
-//         void completeOrder_cod_autoPaid() {
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
 
-//                 order.setOrderStatus(
-//                                 status("SHIPPING"));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.confirmOrder(ORDER_ID));
 
-//                 order.setPaymentMethod(
-//                                 paymentMethod(false));
+        assertEquals("Order not found", ex.getMessage());
+        verify(orderRepository, never()).save(any());
+    }
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+    // ==================== shippingOrder ====================
 
-//                 when(paymentStatusRepository
-//                                 .findByPaymentStatusName("PAID"))
-//                                 .thenReturn(Optional.of(
-//                                                 paymentStatus("PAID")));
+    @Test
+    void shippingOrder_onlinePaid_success() {
 
-//                 when(orderStatusRepository
-//                                 .findByOrderStatusName("COMPLETED"))
-//                                 .thenReturn(Optional.of(
-//                                                 status("COMPLETED")));
+        order.setPaymentMethod(paymentMethod(true));
+        order.setPaymentStatus(paymentStatus("PAID"));
 
-//                 when(orderRepository.save(any()))
-//                                 .thenReturn(order);
+        mockUpdateStatus("CONFIRMED", "SHIPPING");
 
-//                 service.completeOrder(1);
+        OrderResponse result =
+                service.shippingOrder(ORDER_ID);
 
-//                 assertEquals(
-//                                 "PAID",
-//                                 order.getPaymentStatus()
-//                                                 .getPaymentStatusName());
+        assertNotNull(result);
+        assertEquals("SHIPPING",
+                order.getOrderStatus().getOrderStatusName());
 
-//                 assertEquals(
-//                                 "COMPLETED",
-//                                 order.getOrderStatus()
-//                                                 .getOrderStatusName());
-//         }
+        verify(orderRepository).save(order);
+        verify(notificationService)
+                .notifyOrderStatusChanged(
+                        order, "CONFIRMED", "SHIPPING");
+    }
 
-//         @Test
-//         void rejectOrder_success() {
+    @Test
+    void shippingOrder_cod_success() {
 
-//                 order.setOrderStatus(
-//                                 status("PENDING"));
+        order.setPaymentMethod(paymentMethod(false));
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+        mockUpdateStatus("CONFIRMED", "SHIPPING");
 
-//                 when(orderStatusRepository
-//                                 .findByOrderStatusName("CANCELLED"))
-//                                 .thenReturn(Optional.of(
-//                                                 status("CANCELLED")));
+        OrderResponse result =
+                service.shippingOrder(ORDER_ID);
 
-//                 when(orderRepository.save(any()))
-//                                 .thenReturn(order);
+        assertNotNull(result);
+        assertEquals("SHIPPING",
+                order.getOrderStatus().getOrderStatusName());
 
-//                 service.rejectOrder(1);
+        verify(orderRepository).save(order);
+    }
 
-//                 assertEquals(
-//                                 "CANCELLED",
-//                                 order.getOrderStatus()
-//                                                 .getOrderStatusName());
-//         }
+    @Test
+    void shippingOrder_onlineUnpaid_throwsException() {
 
-//         @Test
-//         void invalidTransition_fail() {
+        order.setPaymentMethod(paymentMethod(true));
+        order.setPaymentStatus(paymentStatus("UNPAID"));
 
-//                 order.setOrderStatus(
-//                                 status("PENDING"));
+        mockGetOrderEntity();
 
-//                 order.setPaymentMethod(
-//                                 paymentMethod(false));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.shippingOrder(ORDER_ID));
 
-//                 when(orderRepository.findById(1))
-//                                 .thenReturn(Optional.of(order));
+        assertEquals(
+                "Online payment order must be paid before shipping",
+                ex.getMessage());
 
-//                 when(paymentStatusRepository
-//                                 .findByPaymentStatusName("PAID"))
-//                                 .thenReturn(Optional.of(
-//                                                 paymentStatus("PAID")));
+        verify(orderRepository, never()).save(any());
+    }
 
-//                 RuntimeException ex = assertThrows(
-//                                 RuntimeException.class,
-//                                 () -> service.completeOrder(1));
+    @Test
+    void shippingOrder_notFound_throwsException() {
 
-//                 assertEquals(
-//                                 "Invalid order status transition",
-//                                 ex.getMessage());
-//         }
-// }
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.shippingOrder(ORDER_ID));
+
+        assertEquals("Order not found", ex.getMessage());
+    }
+
+    // ==================== completeOrder ====================
+
+    @Test
+    void completeOrder_cod_autoPaid() {
+
+        order.setPaymentMethod(paymentMethod(false));
+
+        mockUpdateStatus("SHIPPING", "COMPLETED");
+
+        when(paymentStatusRepository
+                .findByPaymentStatusName("PAID"))
+                .thenReturn(Optional.of(paymentStatus("PAID")));
+
+        OrderResponse result =
+                service.completeOrder(ORDER_ID);
+
+        assertNotNull(result);
+        assertEquals("COMPLETED",
+                order.getOrderStatus().getOrderStatusName());
+        assertEquals("PAID",
+                order.getPaymentStatus().getPaymentStatusName());
+
+        verify(orderRepository).save(order);
+        verify(notificationService)
+                .notifyOrderStatusChanged(
+                        order, "SHIPPING", "COMPLETED");
+    }
+
+    @Test
+    void completeOrder_onlineAlreadyPaid_success() {
+
+        order.setPaymentMethod(paymentMethod(true));
+        order.setPaymentStatus(paymentStatus("PAID"));
+
+        mockUpdateStatus("SHIPPING", "COMPLETED");
+
+        OrderResponse result =
+                service.completeOrder(ORDER_ID);
+
+        assertNotNull(result);
+        assertEquals("COMPLETED",
+                order.getOrderStatus().getOrderStatusName());
+
+        verify(orderRepository).save(order);
+        verify(paymentStatusRepository, never())
+                .findByPaymentStatusName(any());
+    }
+
+    @Test
+    void completeOrder_notFound_throwsException() {
+
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.completeOrder(ORDER_ID));
+
+        assertEquals("Order not found", ex.getMessage());
+        verify(orderRepository, never()).save(any());
+    }
+
+    // ==================== rejectOrder ====================
+
+    @Test
+    void rejectOrder_success() {
+
+        mockUpdateStatus("PENDING", "CANCELLED");
+
+        OrderResponse result =
+                service.rejectOrder(ORDER_ID);
+
+        assertNotNull(result);
+        assertEquals("CANCELLED",
+                order.getOrderStatus().getOrderStatusName());
+
+        verify(orderRepository).save(order);
+        verify(notificationService)
+                .notifyOrderStatusChanged(
+                        order, "PENDING", "CANCELLED");
+    }
+
+    @Test
+    void rejectOrder_fromConfirmed_success() {
+
+        mockUpdateStatus("CONFIRMED", "CANCELLED");
+
+        OrderResponse result =
+                service.rejectOrder(ORDER_ID);
+
+        assertNotNull(result);
+        assertEquals("CANCELLED",
+                order.getOrderStatus().getOrderStatusName());
+
+        verify(orderRepository).save(order);
+        verify(notificationService)
+                .notifyOrderStatusChanged(
+                        order, "CONFIRMED", "CANCELLED");
+    }
+
+    @Test
+    void rejectOrder_notFound_throwsException() {
+
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.rejectOrder(ORDER_ID));
+
+        assertEquals("Order not found", ex.getMessage());
+    }
+
+    // ==================== invalid transitions ====================
+
+    @Test
+    void shippingOrder_fromPending_throwsException() {
+
+        order.setOrderStatus(status("PENDING"));
+        order.setPaymentMethod(paymentMethod(false));
+
+        mockGetOrderEntity();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.shippingOrder(ORDER_ID));
+
+        assertEquals(
+                "Invalid order status transition",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void completeOrder_fromPending_throwsException() {
+
+        order.setOrderStatus(status("PENDING"));
+        order.setPaymentMethod(paymentMethod(false));
+
+        mockGetOrderEntity();
+
+        when(paymentStatusRepository
+                .findByPaymentStatusName("PAID"))
+                .thenReturn(Optional.of(paymentStatus("PAID")));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.completeOrder(ORDER_ID));
+
+        assertEquals(
+                "Invalid order status transition",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmOrder_fromShipping_throwsException() {
+
+        order.setOrderStatus(status("SHIPPING"));
+
+        mockGetOrderEntity();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.confirmOrder(ORDER_ID));
+
+        assertEquals(
+                "Invalid order status transition",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void rejectOrder_fromShipping_throwsException() {
+
+        order.setOrderStatus(status("SHIPPING"));
+
+        mockGetOrderEntity();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.rejectOrder(ORDER_ID));
+
+        assertEquals(
+                "Invalid order status transition",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmOrder_fromCompleted_throwsException() {
+
+        order.setOrderStatus(status("COMPLETED"));
+
+        mockGetOrderEntity();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.confirmOrder(ORDER_ID));
+
+        assertEquals(
+                "Order status cannot be changed",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmOrder_fromCancelled_throwsException() {
+
+        order.setOrderStatus(status("CANCELLED"));
+
+        mockGetOrderEntity();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.confirmOrder(ORDER_ID));
+
+        assertEquals(
+                "Order status cannot be changed",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+}

@@ -3,7 +3,6 @@ package ctu.student.regreen.service.interfaces;
 import java.util.List;
 
 import ctu.student.regreen.dto.response.NotificationResponse;
-import ctu.student.regreen.enums.NotificationTypeName;
 import ctu.student.regreen.model.Order;
 import ctu.student.regreen.model.RefundSlip;
 import ctu.student.regreen.model.Voucher;

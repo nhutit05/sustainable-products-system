@@ -2,7 +2,6 @@ package ctu.student.regreen.service.implement;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,10 +46,6 @@ public class StatisticsServiceImpl implements StatisticsService {
     private LocalDateTime parseEnd(String dateStr) {
         if (dateStr == null || dateStr.isBlank()) return LocalDateTime.of(2100, 1, 1, 0, 0);
         return LocalDate.parse(dateStr, DATE_FMT).plusDays(1).atStartOfDay();
-    }
-
-    private String dateKey(String startDate, String endDate) {
-        return (startDate != null ? startDate : "all") + "_" + (endDate != null ? endDate : "all");
     }
 
     @Override

@@ -1,12 +1,8 @@
 package ctu.student.regreen.controller;
 
-import ctu.student.regreen.dto.response.ReviewImageResponse;
 import ctu.student.regreen.service.interfaces.ReviewImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping

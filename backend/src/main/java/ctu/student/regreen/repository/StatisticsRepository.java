@@ -6,22 +6,16 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
 import ctu.student.regreen.dto.response.CarbonIndexStatsResponse;
 import ctu.student.regreen.dto.response.InventoryDetailResponse;
-import ctu.student.regreen.dto.response.NewCustomerStatsResponse;
 import ctu.student.regreen.dto.response.OrderStatusDistributionResponse;
 import ctu.student.regreen.dto.response.RefundStatsResponse;
 import ctu.student.regreen.dto.response.RevenueByCategoryResponse;
-import ctu.student.regreen.dto.response.RevenueByPeriodResponse;
-import ctu.student.regreen.dto.response.ReviewStatsResponse;
 import ctu.student.regreen.dto.response.TopCustomerResponse;
 import ctu.student.regreen.dto.response.TopProductResponse;
 import ctu.student.regreen.dto.response.VoucherStatsResponse;
 import ctu.student.regreen.model.Order;
 
-@Repository
 public interface StatisticsRepository extends JpaRepository<Order, Integer> {
 
     // ==================== REVENUE BY CATEGORY (with optional date filter) ====================
