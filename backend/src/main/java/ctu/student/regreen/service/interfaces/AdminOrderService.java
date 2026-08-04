@@ -4,8 +4,6 @@ import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import ctu.student.regreen.dto.response.OrderResponse;
 import ctu.student.regreen.dto.response.OrderSummaryResponse;
 

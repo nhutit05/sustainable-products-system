@@ -64,7 +64,6 @@ public class ReportExportServiceImpl implements ReportExportService {
     private static final String[] INVENTORY_HEADERS = {"STT", "San pham", "Danh muc", "Ton kho", "Gia (VND)"};
     private static final String[] NEW_CUSTOMER_HEADERS = {"Thang", "So KH moi"};
 
-    private static final String REPORT_TITLE = "ReGreen - Bao cao thong ke";
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Override

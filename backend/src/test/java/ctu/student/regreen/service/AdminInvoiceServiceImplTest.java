@@ -14,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,67 +38,103 @@ class AdminInvoiceServiceImplTest {
     private Invoice invoice;
     private InvoiceResponse response;
 
+    private static final Integer INVOICE_ID = 1;
+    private static final LocalDateTime CREATED_AT =
+            LocalDateTime.of(2025, 1, 15, 10, 30);
+    private static final String RECEIVER = "Nguyen Van A";
+    private static final String PHONE = "0901234567";
+    private static final Float TOTAL_AMOUNT = 200_000f;
+    private static final Float DISCOUNT_AMOUNT = 20_000f;
+    private static final Float FINAL_AMOUNT = 180_000f;
+
     @BeforeEach
     void setUp() {
 
         invoice = new Invoice();
+        invoice.setInvoiceId(INVOICE_ID);
+        invoice.setCreatedAt(CREATED_AT);
 
-        response = mock(
-                InvoiceResponse.class);
-
-        lenient()
-                .when(invoiceMapper.toResponse(any()))
-                .thenReturn(response);
+        response = new InvoiceResponse(
+                INVOICE_ID,
+                CREATED_AT,
+                1,
+                RECEIVER,
+                PHONE,
+                TOTAL_AMOUNT,
+                DISCOUNT_AMOUNT,
+                FINAL_AMOUNT);
     }
 
     @Test
     void getAllInvoices_success() {
 
         when(invoiceRepository.findAll())
-                .thenReturn(
-                        List.of(invoice));
+                .thenReturn(List.of(invoice));
+        when(invoiceMapper.toResponse(any(Invoice.class)))
+                .thenReturn(response);
 
         List<InvoiceResponse> result =
                 service.getAllInvoices();
 
-        assertEquals(
-                1,
-                result.size());
+        assertEquals(1, result.size());
+        assertEquals(INVOICE_ID, result.get(0).getInvoiceId());
+        assertEquals(RECEIVER, result.get(0).getOrderReceiver());
+        assertEquals(PHONE, result.get(0).getOrderReceiverPhone());
+        assertEquals(TOTAL_AMOUNT, result.get(0).getTotalAmount());
+        assertEquals(DISCOUNT_AMOUNT, result.get(0).getDiscountAmount());
+        assertEquals(FINAL_AMOUNT, result.get(0).getFinalAmount());
 
-        verify(invoiceRepository)
-                .findAll();
+        verify(invoiceRepository).findAll();
+        verify(invoiceMapper).toResponse(invoice);
+    }
+
+    @Test
+    void getAllInvoices_emptyList_returnsEmpty() {
+
+        when(invoiceRepository.findAll())
+                .thenReturn(Collections.emptyList());
+
+        List<InvoiceResponse> result =
+                service.getAllInvoices();
+
+        assertTrue(result.isEmpty());
+        verify(invoiceRepository).findAll();
+        verify(invoiceMapper, never()).toResponse(any());
     }
 
     @Test
     void getInvoiceById_success() {
 
-        when(invoiceRepository.findById(1))
-                .thenReturn(
-                        Optional.of(invoice));
+        when(invoiceRepository.findById(INVOICE_ID))
+                .thenReturn(Optional.of(invoice));
+        when(invoiceMapper.toResponse(invoice))
+                .thenReturn(response);
 
         InvoiceResponse result =
-                service.getInvoiceById(1);
+                service.getInvoiceById(INVOICE_ID);
 
         assertNotNull(result);
+        assertEquals(INVOICE_ID, result.getInvoiceId());
+        assertEquals(CREATED_AT, result.getCreatedAt());
+        assertEquals(RECEIVER, result.getOrderReceiver());
 
-        verify(invoiceRepository)
-                .findById(1);
+        verify(invoiceRepository).findById(INVOICE_ID);
+        verify(invoiceMapper).toResponse(invoice);
     }
 
     @Test
-    void getInvoiceById_notFound_fail() {
+    void getInvoiceById_notFound_throwsException() {
 
-        when(invoiceRepository.findById(1))
-                .thenReturn(
-                        Optional.empty());
+        when(invoiceRepository.findById(INVOICE_ID))
+                .thenReturn(Optional.empty());
 
         RuntimeException ex =
                 assertThrows(
                         RuntimeException.class,
-                        () -> service.getInvoiceById(1));
+                        () -> service.getInvoiceById(INVOICE_ID));
 
-        assertEquals(
-                "Invoice not found",
-                ex.getMessage());
+        assertEquals("Invoice not found", ex.getMessage());
+        verify(invoiceRepository).findById(INVOICE_ID);
+        verify(invoiceMapper, never()).toResponse(any());
     }
 }

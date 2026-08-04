@@ -1,7 +1,6 @@
 package ctu.student.regreen.mapper;
 
 import ctu.student.regreen.dto.request.ReviewImageRequest;
-import ctu.student.regreen.dto.response.ReviewImageResponse;
 import ctu.student.regreen.model.Review;
 import ctu.student.regreen.model.ReviewImage;
 import ctu.student.regreen.repository.ReviewRepository;

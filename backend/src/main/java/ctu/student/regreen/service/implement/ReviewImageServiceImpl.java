@@ -1,5 +1,4 @@
 package ctu.student.regreen.service.implement;
-import ctu.student.regreen.mapper.ReviewImageMapper;
 import ctu.student.regreen.repository.ReviewImageRepository;
 import ctu.student.regreen.service.interfaces.CloudinaryService;
 import ctu.student.regreen.service.interfaces.ReviewImageService;
@@ -14,8 +13,6 @@ import java.util.Map;
 public class ReviewImageServiceImpl implements ReviewImageService {
 
     private final ReviewImageRepository repository;
-    private final ReviewImageMapper mapper;
-
     private final CloudinaryService cloudinaryService;
 
 //    public List<ReviewImageResponse> getAll() {

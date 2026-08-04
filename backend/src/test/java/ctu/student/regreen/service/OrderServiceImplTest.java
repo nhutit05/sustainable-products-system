@@ -1,24 +1,23 @@
 package ctu.student.regreen.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import ctu.student.regreen.dto.request.OrderRequest;
 import ctu.student.regreen.dto.response.CheckoutResponse;
 import ctu.student.regreen.dto.response.OrderResponse;
+import ctu.student.regreen.integration.payos.dto.PayOSCheckoutResult;
 import ctu.student.regreen.integration.payos.service.PayOSService;
 import ctu.student.regreen.mapper.OrderMapper;
 import ctu.student.regreen.model.Address;
@@ -42,6 +42,7 @@ import ctu.student.regreen.model.PaymentMethod;
 import ctu.student.regreen.model.PaymentStatus;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.Village;
+import ctu.student.regreen.model.Voucher;
 import ctu.student.regreen.repository.AddressRepository;
 import ctu.student.regreen.repository.CartItemRepository;
 import ctu.student.regreen.repository.CartRepository;
@@ -54,571 +55,953 @@ import ctu.student.regreen.repository.PaymentStatusRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.repository.VoucherRepository;
 import ctu.student.regreen.service.implement.OrderServiceImpl;
+import ctu.student.regreen.service.interfaces.NotificationService;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
 
-        @Mock
-        private OrderRepository orderRepository;
+    @Mock private OrderRepository orderRepository;
+    @Mock private CustomerRepository customerRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private CartRepository cartRepository;
+    @Mock private CartItemRepository cartItemRepository;
+    @Mock private PaymentMethodRepository paymentMethodRepository;
+    @Mock private VoucherRepository voucherRepository;
+    @Mock private OrderStatusRepository orderStatusRepository;
+    @Mock private PaymentStatusRepository paymentStatusRepository;
+    @Mock private AddressRepository addressRepository;
+    @Mock private InvoiceRepository invoiceRepository;
+    @Mock private OrderMapper orderMapper;
+    @Mock private PayOSService payOSService;
+    @Mock private NotificationService notificationService;
 
-        @Mock
-        private CustomerRepository customerRepository;
+    @InjectMocks
+    private OrderServiceImpl service;
 
-        @Mock
-        private ProductRepository productRepository;
+    private Customer customer;
+    private Order order;
+    private OrderResponse response;
 
-        @Mock
-        private CartRepository cartRepository;
+    private static final Integer CUSTOMER_ID = 1;
+    private static final Integer ORDER_ID = 1;
+    private static final String USERNAME = "testuser";
 
-        @Mock
-        private CartItemRepository cartItemRepository;
+    @BeforeEach
+    void setUp() {
 
-        @Mock
-        private PaymentMethodRepository paymentMethodRepository;
+        Authentication authentication =
+                mock(Authentication.class);
 
-        @Mock
-        private AddressRepository addressRepository;
+        SecurityContext securityContext =
+                mock(SecurityContext.class);
 
-        @Mock
-        private VoucherRepository voucherRepository;
+        when(authentication.getName())
+                .thenReturn(USERNAME);
 
-        @Mock
-        private OrderStatusRepository orderStatusRepository;
+        when(securityContext.getAuthentication())
+                .thenReturn(authentication);
 
-        @Mock
-        private PaymentStatusRepository paymentStatusRepository;
+        SecurityContextHolder.setContext(
+                securityContext);
 
-        @Mock
-        private InvoiceRepository invoiceRepository;
+        customer = new Customer();
+        customer.setUserId(CUSTOMER_ID);
+        customer.setUsername(USERNAME);
 
-        @Mock
-        private OrderMapper orderMapper;
+        when(customerRepository.findByUsername(USERNAME))
+                .thenReturn(Optional.of(customer));
 
-        @Mock
-        private PayOSService payOSService;
+        order = new Order();
+        order.setOrderId(ORDER_ID);
+        order.setCustomer(customer);
 
-        @InjectMocks
-        private OrderServiceImpl service;
+        response = new OrderResponse();
+        response.setOrderId(ORDER_ID);
 
-        private Customer customer;
-        private Order order;
-        private OrderResponse response;
+        lenient()
+                .when(orderMapper.toResponse(any(Order.class)))
+                .thenReturn(response);
+    }
 
-        @BeforeEach
-        void setUp() {
+    @AfterEach
+    void tearDown() {
 
-                Authentication authentication = mock(Authentication.class);
+        SecurityContextHolder.clearContext();
+    }
 
-                SecurityContext securityContext = mock(SecurityContext.class);
+    private OrderStatus orderStatus(String name) {
 
-                when(authentication.getName())
-                                .thenReturn("testuser");
+        OrderStatus status = new OrderStatus();
+        status.setOrderStatusName(name);
 
-                when(securityContext.getAuthentication())
-                                .thenReturn(authentication);
+        return status;
+    }
 
-                SecurityContextHolder.setContext(
-                                securityContext);
+    private PaymentStatus paymentStatus(String name) {
 
-                customer = new Customer();
-                customer.setUserId(1);
+        PaymentStatus status = new PaymentStatus();
+        status.setPaymentStatusName(name);
 
-                when(customerRepository
-                                .findByUsername("testuser"))
-                                .thenReturn(Optional.of(customer));
+        return status;
+    }
 
-                order = new Order();
+    private PaymentMethod paymentMethod(boolean online) {
 
-                response = mock(OrderResponse.class);
+        PaymentMethod method = new PaymentMethod();
+        method.setOnline(online);
 
-                lenient()
-                                .when(orderMapper.toResponse(any()))
-                                .thenReturn(response);
-        }
+        return method;
+    }
 
-        private OrderStatus orderStatus(String name) {
+    private Address createAddress() {
 
-                OrderStatus status = new OrderStatus();
-                status.setOrderStatusName(name);
+        City city = new City();
+        city.setCityId(1);
+        city.setCityName("HCM");
 
-                return status;
-        }
+        Village village = new Village();
+        village.setVillageId(1);
+        village.setVillageName("Phuong 1");
+        village.setCity(city);
 
-        private PaymentStatus paymentStatus(String name) {
+        Address address = new Address();
+        address.setAddressId(1);
+        address.setAddressName("Home");
+        address.setAddressStreet("3/2");
+        address.setCustomer(customer);
+        address.setVillage(village);
 
-                PaymentStatus status = new PaymentStatus();
-                status.setPaymentStatusName(name);
+        return address;
+    }
 
-                return status;
-        }
+    // ==================== getMyOrders ====================
 
-        private PaymentMethod paymentMethod(boolean online) {
+    @Test
+    void getMyOrders_success() {
 
-                PaymentMethod method = new PaymentMethod();
-                method.setOnline(online);
+        order.setCustomer(customer);
 
-                return method;
-        }
+        when(orderRepository
+                .findByCustomerUserIdWithDetails(CUSTOMER_ID))
+                .thenReturn(List.of(order));
 
-        @Test
-        void getMyOrders_success() {
+        List<OrderResponse> result =
+                service.getMyOrders();
 
-                order.setCustomer(customer);
+        assertEquals(1, result.size());
 
-                when(orderRepository
-                                .findByCustomerUserId(1))
-                                .thenReturn(List.of(order));
+        verify(customerRepository).findByUsername(USERNAME);
+        verify(orderRepository)
+                .findByCustomerUserIdWithDetails(CUSTOMER_ID);
+        verify(orderMapper).toResponse(order);
+    }
 
-                List<OrderResponse> result = service.getMyOrders();
+    @Test
+    void getMyOrders_empty_returnsEmptyList() {
 
-                assertEquals(1, result.size());
+        when(orderRepository
+                .findByCustomerUserIdWithDetails(CUSTOMER_ID))
+                .thenReturn(Collections.emptyList());
 
-                verify(orderRepository)
-                                .findByCustomerUserId(1);
-        }
+        List<OrderResponse> result =
+                service.getMyOrders();
 
-        @Test
-        void getById_success() {
+        assertTrue(result.isEmpty());
+        verify(orderMapper, never()).toResponse(any());
+    }
 
-                order.setCustomer(customer);
+    @Test
+    void getMyOrders_customerNotFound_throwsException() {
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+        when(customerRepository.findByUsername(USERNAME))
+                .thenReturn(Optional.empty());
 
-                OrderResponse result = service.getById(1);
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.getMyOrders());
 
-                assertNotNull(result);
-        }
+        assertEquals("Customer not found", ex.getMessage());
+    }
 
-        @Test
-        void getById_accessDenied_fail() {
+    // ==================== getById ====================
 
-                Customer anotherCustomer = new Customer();
+    @Test
+    void getById_success() {
 
-                anotherCustomer.setUserId(999);
+        order.setCustomer(customer);
 
-                order.setCustomer(anotherCustomer);
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+        OrderResponse result =
+                service.getById(ORDER_ID);
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.getById(1));
+        assertNotNull(result);
+        assertEquals(ORDER_ID, result.getOrderId());
 
-                assertEquals(
-                                "Access denied",
-                                ex.getMessage());
-        }
+        verify(customerRepository).findByUsername(USERNAME);
+        verify(orderRepository).findByIdWithDetails(ORDER_ID);
+        verify(orderMapper).toResponse(order);
+    }
 
-        @Test
-        void cancel_pending_success() {
+    @Test
+    void getById_orderNotFound_throwsException() {
 
-                Product product = new Product();
-                product.setInventory(10);
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
 
-                OrderItem item = new OrderItem();
-                item.setProduct(product);
-                item.setQuantity(2);
+        assertThrows(
+                RuntimeException.class,
+                () -> service.getById(ORDER_ID));
 
-                order.setCustomer(customer);
-                order.setOrderItems(List.of(item));
-                order.setOrderStatus(
-                                orderStatus("PENDING"));
+        verify(orderMapper, never()).toResponse(any());
+    }
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+    @Test
+    void getById_accessDenied_throwsException() {
 
-                when(orderStatusRepository
-                                .findByOrderStatusName("CANCELLED"))
-                                .thenReturn(Optional.of(
-                                                orderStatus("CANCELLED")));
+        Customer anotherCustomer = new Customer();
+        anotherCustomer.setUserId(999);
 
-                when(orderRepository.save(any()))
-                                .thenReturn(order);
+        order.setCustomer(anotherCustomer);
 
-                service.cancel(1);
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                assertEquals(
-                                12,
-                                product.getInventory());
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.getById(ORDER_ID));
 
-                assertEquals(
-                                "CANCELLED",
-                                order.getOrderStatus()
-                                                .getOrderStatusName());
-        }
+        assertEquals("Access denied", ex.getMessage());
 
-        @Test
-        void cancel_alreadyCancelled_fail() {
+        verify(orderMapper, never()).toResponse(any());
+    }
 
-                order.setCustomer(customer);
+    @Test
+    void getById_customerNotFound_throwsException() {
 
-                order.setOrderStatus(
-                                orderStatus("CANCELLED"));
+        when(customerRepository.findByUsername(USERNAME))
+                .thenReturn(Optional.empty());
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.getById(ORDER_ID));
 
-                when(orderStatusRepository
-                                .findByOrderStatusName("CANCELLED"))
-                                .thenReturn(Optional.of(
-                                                orderStatus("CANCELLED")));
+        assertEquals("Customer not found", ex.getMessage());
+    }
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.cancel(1));
+    // ==================== cancel ====================
 
-                assertEquals(
-                                "Order already cancelled",
-                                ex.getMessage());
-        }
+    @Test
+    void cancel_pending_success() {
 
-        @Test
-        void cancel_notPending_fail() {
+        Product product = new Product();
+        product.setProductId(10);
+        product.setInventory(10);
 
-                order.setCustomer(customer);
+        OrderItem item = new OrderItem();
+        item.setOrder(order);
+        item.setProduct(product);
+        item.setQuantity(2);
+        item.setPurchasedPrice(100f);
 
-                order.setOrderStatus(
-                                orderStatus("SHIPPING"));
+        order.setCustomer(customer);
+        order.setOrderItems(List.of(item));
+        order.setOrderStatus(orderStatus("PENDING"));
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                when(orderStatusRepository
-                                .findByOrderStatusName("CANCELLED"))
-                                .thenReturn(Optional.of(
-                                                orderStatus("CANCELLED")));
+        when(orderStatusRepository
+                .findByOrderStatusName("CANCELLED"))
+                .thenReturn(Optional.of(
+                        orderStatus("CANCELLED")));
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.cancel(1));
+        when(orderRepository.save(any(Order.class)))
+                .thenReturn(order);
 
-                assertEquals(
-                                "Order cannot be cancelled",
-                                ex.getMessage());
-        }
+        OrderResponse cancelResponse = new OrderResponse();
+        cancelResponse.setOrderId(ORDER_ID);
 
-        @Test
-        void pay_online_success() {
+        when(orderMapper.toResponse(order))
+                .thenReturn(cancelResponse);
 
-                order.setCustomer(customer);
+        OrderResponse result = service.cancel(ORDER_ID);
 
-                order.setPaymentMethod(
-                                paymentMethod(true));
+        assertNotNull(result);
+        assertEquals(12, product.getInventory());
+        assertEquals("CANCELLED",
+                order.getOrderStatus().getOrderStatusName());
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+        verify(orderRepository).save(order);
+        verify(orderMapper).toResponse(order);
+    }
 
-                when(paymentStatusRepository
-                                .findByPaymentStatusName("PAID"))
-                                .thenReturn(Optional.of(
-                                                paymentStatus("PAID")));
+    @Test
+    void cancel_alreadyCancelled_throwsException() {
 
-                when(orderRepository.save(any()))
-                                .thenReturn(order);
+        order.setCustomer(customer);
+        order.setOrderStatus(orderStatus("CANCELLED"));
 
-                service.pay(1);
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                assertEquals(
-                                "PAID",
-                                order.getPaymentStatus()
-                                                .getPaymentStatusName());
-        }
+        when(orderStatusRepository
+                .findByOrderStatusName("CANCELLED"))
+                .thenReturn(Optional.of(
+                        orderStatus("CANCELLED")));
 
-        @Test
-        void pay_cod_fail() {
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.cancel(ORDER_ID));
 
-                order.setCustomer(customer);
+        assertEquals(
+                "Order already cancelled",
+                ex.getMessage());
 
-                order.setPaymentMethod(
-                                paymentMethod(false));
+        verify(orderRepository, never()).save(any());
+    }
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+    @Test
+    void cancel_notPending_throwsException() {
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.pay(1));
+        order.setCustomer(customer);
+        order.setOrderStatus(orderStatus("SHIPPING"));
 
-                assertEquals(
-                                "COD order cannot be paid online",
-                                ex.getMessage());
-        }
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-        @Test
-        void pay_accessDenied_fail() {
+        when(orderStatusRepository
+                .findByOrderStatusName("CANCELLED"))
+                .thenReturn(Optional.of(
+                        orderStatus("CANCELLED")));
 
-                Customer anotherCustomer = new Customer();
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.cancel(ORDER_ID));
 
-                anotherCustomer.setUserId(99);
+        assertEquals(
+                "Order cannot be cancelled",
+                ex.getMessage());
 
-                order.setCustomer(anotherCustomer);
+        verify(orderRepository, never()).save(any());
+    }
 
-                order.setPaymentMethod(
-                                paymentMethod(true));
+    @Test
+    void cancel_orderNotFound_throwsException() {
 
-                when(orderRepository.findById(1))
-                                .thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.empty());
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.pay(1));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.cancel(ORDER_ID));
 
-                assertEquals(
-                                "Access denied",
-                                ex.getMessage());
-        }
+        verify(orderRepository, never()).save(any());
+    }
 
-        @Test
-        void checkout_success() {
+    @Test
+    void cancel_accessDenied_throwsException() {
 
-                OrderRequest request = new OrderRequest();
+        Customer anotherCustomer = new Customer();
+        anotherCustomer.setUserId(999);
 
-                request.setOrderReceiver("Nguyen Van A");
-                request.setOrderReceiverPhone("0123456789");
-                request.setPaymentMethodId(1);
-                request.setProductIds(List.of(10));
-                request.setAddressId(1);
+        order.setCustomer(anotherCustomer);
+        order.setOrderStatus(orderStatus("PENDING"));
 
-                Cart cart = new Cart();
-                cart.setCartId(1);
+        when(orderRepository.findByIdWithDetails(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                PaymentMethod paymentMethod = paymentMethod(false);
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.cancel(ORDER_ID));
 
-                Product product = new Product();
+        assertEquals("Access denied", ex.getMessage());
 
-                product.setProductId(10);
-                product.setProductName("Green Tea");
-                product.setProductPrice(100f);
-                product.setInventory(20);
+        verify(orderRepository, never()).save(any());
+    }
 
-                CartItem cartItem = new CartItem();
+    @Test
+    void cancel_customerNotFound_throwsException() {
 
-                cartItem.setId(
-                                new CartItemId(1, 10));
-                
-                City city = new City();
-                city.setCityId(1);
+        when(customerRepository.findByUsername(USERNAME))
+                .thenReturn(Optional.empty());
 
-                Village village = new Village();
-                village.setCity(city);
-                
-                Address address = new Address();
-                address.setAddressId(1);
-                address.setAddressName("Hoai");
-                address.setAddressStreet("3/2");
-                address.setCustomer(customer);
-                address.setVillage(village);
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.cancel(ORDER_ID));
 
-                cartItem.setQuantity(2);
+        assertEquals("Customer not found", ex.getMessage());
+    }
 
-                when(cartRepository
-                                .findByCustomerUserId(1))
-                                .thenReturn(Optional.of(cart));
+    // ==================== pay ====================
 
-                when(paymentMethodRepository
-                                .findById(1))
-                                .thenReturn(Optional.of(paymentMethod));
-                
-                when(addressRepository.findById(1)).thenReturn(Optional.of(address));
+    @Test
+    void pay_online_success() {
 
-                when(orderStatusRepository
-                                .findByOrderStatusName("PENDING"))
-                                .thenReturn(Optional.of(
-                                                orderStatus("PENDING")));
+        order.setCustomer(customer);
+        order.setPaymentMethod(paymentMethod(true));
 
-                when(paymentStatusRepository
-                                .findByPaymentStatusName("UNPAID"))
-                                .thenReturn(Optional.of(
-                                                paymentStatus("UNPAID")));
+        when(orderRepository.findById(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                when(cartItemRepository
-                                .findById(new CartItemId(1, 10)))
-                                .thenReturn(Optional.of(cartItem));
+        when(paymentStatusRepository
+                .findByPaymentStatusName("PAID"))
+                .thenReturn(Optional.of(
+                        paymentStatus("PAID")));
 
-                when(productRepository.findById(10))
-                                .thenReturn(Optional.of(product));
+        when(orderRepository.save(any(Order.class)))
+                .thenReturn(order);
 
-                when(orderRepository.save(any(Order.class)))
-                                .thenAnswer(inv -> inv.getArgument(0));
+        OrderResponse payResponse = new OrderResponse();
+        payResponse.setOrderId(ORDER_ID);
 
-                CheckoutResponse result = service.checkout(request);
+        when(orderMapper.toResponse(order))
+                .thenReturn(payResponse);
 
-                verify(addressRepository).findById(anyInt());
+        OrderResponse result = service.pay(ORDER_ID);
 
-                assertNotNull(result);
+        assertNotNull(result);
+        assertEquals("PAID",
+                order.getPaymentStatus().getPaymentStatusName());
 
-                assertEquals(
-                                18,
-                                product.getInventory());
+        verify(orderRepository).save(order);
+        verify(orderMapper).toResponse(order);
+    }
 
-                verify(productRepository)
-                                .save(product);
+    @Test
+    void pay_cod_throwsException() {
 
-                verify(cartItemRepository)
-                                .delete(cartItem);
+        order.setCustomer(customer);
+        order.setPaymentMethod(paymentMethod(false));
 
-                verify(invoiceRepository)
-                                .save(any(Invoice.class));
-        }
+        when(orderRepository.findById(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-        @Test
-        void checkout_noProductsSelected_fail() {
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.pay(ORDER_ID));
 
-                OrderRequest request = new OrderRequest();
+        assertEquals(
+                "COD order cannot be paid online",
+                ex.getMessage());
 
-                request.setOrderReceiver("A");
-                request.setOrderReceiverPhone("0123456789");
-                request.setPaymentMethodId(1);
-                request.setProductIds(List.of());
-                request.setAddressId(1);
+        verify(orderRepository, never()).save(any());
+    }
 
-                City city = new City();
-                city.setCityId(1);
+    @Test
+    void pay_accessDenied_throwsException() {
 
-                Village village = new Village();
-                village.setCity(city);
+        Customer anotherCustomer = new Customer();
+        anotherCustomer.setUserId(99);
 
-                Address address = new Address();
-                address.setAddressId(1);
-                address.setAddressName("Hoai");
-                address.setAddressStreet("3/2");
-                address.setCustomer(customer);
-                address.setVillage(village);
+        order.setCustomer(anotherCustomer);
+        order.setPaymentMethod(paymentMethod(true));
 
-                Cart cart = new Cart();
-                cart.setCartId(1);
+        when(orderRepository.findById(ORDER_ID))
+                .thenReturn(Optional.of(order));
 
-                when(cartRepository
-                                .findByCustomerUserId(1))
-                                .thenReturn(Optional.of(cart));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.pay(ORDER_ID));
 
-                when(paymentMethodRepository
-                                .findById(1))
-                                .thenReturn(Optional.of(
-                                                paymentMethod(false)));
-                
-                when(addressRepository.findById(1)).thenReturn(Optional.of(address));
+        assertEquals("Access denied", ex.getMessage());
 
-                when(orderStatusRepository
-                                .findByOrderStatusName("PENDING"))
-                                .thenReturn(Optional.of(
-                                                orderStatus("PENDING")));
+        verify(orderRepository, never()).save(any());
+    }
 
-                when(paymentStatusRepository
-                                .findByPaymentStatusName("UNPAID"))
-                                .thenReturn(Optional.of(
-                                                paymentStatus("UNPAID")));
+    @Test
+    void pay_orderNotFound_throwsException() {
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.checkout(request));
+        when(orderRepository.findById(ORDER_ID))
+                .thenReturn(Optional.empty());
 
-                assertEquals(
-                                "No products selected",
-                                ex.getMessage());
-        }
+        assertThrows(
+                RuntimeException.class,
+                () -> service.pay(ORDER_ID));
 
-        @Test
-        void checkout_voucherNotFound_fail() {
+        verify(orderRepository, never()).save(any());
+    }
 
-                OrderRequest request = new OrderRequest();
+    @Test
+    void pay_customerNotFound_throwsException() {
 
-                request.setOrderReceiver("A");
-                request.setOrderReceiverPhone("0123456789");
-                request.setPaymentMethodId(1);
-                request.setVoucherId(99);
-                request.setProductIds(List.of(10));
-                request.setAddressId(1);
+        when(customerRepository.findByUsername(USERNAME))
+                .thenReturn(Optional.empty());
 
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.pay(ORDER_ID));
 
-                Cart cart = new Cart();
+        assertEquals("Customer not found", ex.getMessage());
+    }
 
-                when(cartRepository
-                                .findByCustomerUserId(1))
-                                .thenReturn(Optional.of(cart));
+    // ==================== checkout ====================
 
-                when(paymentMethodRepository
-                                .findById(1))
-                                .thenReturn(Optional.of(
-                                                paymentMethod(false)));
+    private void stubCheckoutBase() {
 
-                when(voucherRepository
-                                .findById(99))
-                                .thenReturn(Optional.empty());
+        Address address = createAddress();
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.checkout(request));
+        lenient().when(addressRepository.findById(1))
+                .thenReturn(Optional.of(address));
 
-                assertEquals(
-                                "Voucher not found",
-                                ex.getMessage());
-        }
+        lenient().when(orderStatusRepository
+                .findByOrderStatusName("PENDING"))
+                .thenReturn(Optional.of(orderStatus("PENDING")));
 
-        @Test
-        void checkout_productOutOfStock_fail() {
+        lenient().when(paymentStatusRepository
+                .findByPaymentStatusName("UNPAID"))
+                .thenReturn(Optional.of(paymentStatus("UNPAID")));
+    }
 
-                OrderRequest request = new OrderRequest();
+    private Cart setupCart() {
 
-                request.setOrderReceiver("A");
-                request.setOrderReceiverPhone("0123456789");
-                request.setPaymentMethodId(1);
-                request.setProductIds(List.of(10));
-                request.setAddressId(1);
+        Cart cart = new Cart();
+        cart.setCartId(1);
 
-                Cart cart = new Cart();
-                cart.setCartId(1);
+        when(cartRepository.findByCustomerUserId(CUSTOMER_ID))
+                .thenReturn(Optional.of(cart));
 
-                City city = new City();
-                city.setCityId(1);
+        return cart;
+    }
 
-                Village village = new Village();
-                village.setCity(city);
+    @Test
+    void checkout_cod_success() {
 
-                Address address = new Address();
-                address.setAddressId(1);
-                address.setVillage(village);
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("Nguyen Van A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
 
-                CartItem cartItem = new CartItem();
-                cartItem.setId(new CartItemId(1, 10));
-                cartItem.setQuantity(5);
+        Cart cart = setupCart();
 
-                Product product = new Product();
-                product.setProductId(10);
-                product.setProductName("Green Tea");
-                product.setInventory(2);
+        Product product = new Product();
+        product.setProductId(10);
+        product.setProductName("Green Tea");
+        product.setProductPrice(100f);
+        product.setInventory(20);
+        product.setBaseEcoPoints(10);
 
-                
-                when(cartRepository.findByCustomerUserId(1))
-                                .thenReturn(Optional.of(cart));
+        CartItem cartItem = new CartItem();
+        cartItem.setId(new CartItemId(1, 10));
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(2);
 
-                when(paymentMethodRepository.findById(1))
-                                .thenReturn(Optional.of(paymentMethod(false)));
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
 
-                when(addressRepository.findById(1)).thenReturn(Optional.of(address));
+        stubCheckoutBase();
 
+        when(cartItemRepository
+                .findByCartCartIdWithProduct(1))
+                .thenReturn(List.of(cartItem));
 
-                when(orderStatusRepository.findByOrderStatusName("PENDING"))
-                                .thenReturn(Optional.of(orderStatus("PENDING")));
+        when(productRepository
+                .findAllWithCategoryByIdIn(List.of(10)))
+                .thenReturn(List.of(product));
 
-                when(paymentStatusRepository.findByPaymentStatusName("UNPAID"))
-                                .thenReturn(Optional.of(paymentStatus("UNPAID")));
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
-                when(cartItemRepository.findById(new CartItemId(1, 10)))
-                                .thenReturn(Optional.of(cartItem));
+        when(orderMapper.toResponse(any(Order.class)))
+                .thenReturn(response);
 
-                when(productRepository.findById(10))
-                                .thenReturn(Optional.of(product));
+        CheckoutResponse result =
+                service.checkout(request);
 
-                RuntimeException ex = assertThrows(
-                                RuntimeException.class,
-                                () -> service.checkout(request));
+        assertNotNull(result);
+        assertEquals(18, product.getInventory());
 
-                assertEquals(
-                                "Green Tea is out of stock",
-                                ex.getMessage());
-        }
+        verify(productRepository).save(product);
+        verify(cartItemRepository).delete(cartItem);
+        verify(invoiceRepository).save(any(Invoice.class));
+        verify(notificationService)
+                .notifyNewOrderToAdmins(any(Order.class));
+    }
 
+    @Test
+    void checkout_onlinePayment_success() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("Nguyen Van A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        Cart cart = setupCart();
+
+        Product product = new Product();
+        product.setProductId(10);
+        product.setProductName("Green Tea");
+        product.setProductPrice(100f);
+        product.setInventory(20);
+        product.setBaseEcoPoints(10);
+
+        CartItem cartItem = new CartItem();
+        cartItem.setId(new CartItemId(1, 10));
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(2);
+
+        PayOSCheckoutResult payOSResult =
+                PayOSCheckoutResult.builder()
+                        .payOSOrderCode(12345L)
+                        .checkoutUrl("https://pay.payos.vn/abc")
+                        .qrCode("qr-data")
+                        .expiredAt(LocalDateTime.now().plusMinutes(15))
+                        .build();
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(true)));
+
+        stubCheckoutBase();
+
+        when(cartItemRepository
+                .findByCartCartIdWithProduct(1))
+                .thenReturn(List.of(cartItem));
+
+        when(productRepository
+                .findAllWithCategoryByIdIn(List.of(10)))
+                .thenReturn(List.of(product));
+
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        when(payOSService.createCheckout(
+                any(Order.class), anyLong()))
+                .thenReturn(payOSResult);
+
+        when(orderMapper.toResponse(any(Order.class)))
+                .thenReturn(response);
+
+        CheckoutResponse result =
+                service.checkout(request);
+
+        assertNotNull(result);
+        assertNotNull(result.getCheckoutUrl());
+        assertEquals("https://pay.payos.vn/abc",
+                result.getCheckoutUrl());
+
+        verify(payOSService).createCheckout(
+                any(Order.class), anyLong());
+        verify(invoiceRepository).save(any(Invoice.class));
+    }
+
+    @Test
+    void checkout_withVoucher_success() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("Nguyen Van A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setVoucherId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        Cart cart = setupCart();
+
+        Voucher voucher = new Voucher();
+        voucher.setVoucherId(1);
+        voucher.setDiscountValue(10f);
+        voucher.setQuantity(10);
+        voucher.setStartedAt(java.time.LocalDate.now());
+        voucher.setExpiredAt(java.time.LocalDate.now().plusDays(10));
+
+        Product product = new Product();
+        product.setProductId(10);
+        product.setProductName("Green Tea");
+        product.setProductPrice(100f);
+        product.setInventory(20);
+        product.setBaseEcoPoints(10);
+
+        CartItem cartItem = new CartItem();
+        cartItem.setId(new CartItemId(1, 10));
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(2);
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        when(voucherRepository
+                .findByVoucherIdAndIsActiveTrue(1))
+                .thenReturn(Optional.of(voucher));
+
+        stubCheckoutBase();
+
+        when(cartItemRepository
+                .findByCartCartIdWithProduct(1))
+                .thenReturn(List.of(cartItem));
+
+        when(productRepository
+                .findAllWithCategoryByIdIn(List.of(10)))
+                .thenReturn(List.of(product));
+
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        when(orderMapper.toResponse(any(Order.class)))
+                .thenReturn(response);
+
+        CheckoutResponse result =
+                service.checkout(request);
+
+        assertNotNull(result);
+        assertEquals(9, voucher.getQuantity());
+        assertEquals(18, product.getInventory());
+
+        verify(voucherRepository)
+                .findByVoucherIdAndIsActiveTrue(1);
+    }
+
+    @Test
+    void checkout_noProductsSelected_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of());
+        request.setAddressId(1);
+
+        setupCart();
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        stubCheckoutBase();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals("No products selected", ex.getMessage());
+    }
+
+    @Test
+    void checkout_voucherNotFound_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setVoucherId(99);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        setupCart();
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        when(voucherRepository
+                .findByVoucherIdAndIsActiveTrue(99))
+                .thenReturn(Optional.empty());
+
+        stubCheckoutBase();
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals("Voucher not found", ex.getMessage());
+    }
+
+    @Test
+    void checkout_outOfStock_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        Cart cart = setupCart();
+
+        Product product = new Product();
+        product.setProductId(10);
+        product.setProductName("Green Tea");
+        product.setInventory(2);
+
+        CartItem cartItem = new CartItem();
+        cartItem.setId(new CartItemId(1, 10));
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(5);
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        stubCheckoutBase();
+
+        when(cartItemRepository
+                .findByCartCartIdWithProduct(1))
+                .thenReturn(List.of(cartItem));
+
+        when(productRepository
+                .findAllWithCategoryByIdIn(List.of(10)))
+                .thenReturn(List.of(product));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals(
+                "Green Tea is out of stock",
+                ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_cartNotFound_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        when(cartRepository.findByCustomerUserId(CUSTOMER_ID))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_addressNotFound_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        setupCart();
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        when(addressRepository.findById(1))
+                .thenReturn(Optional.empty());
+
+        when(orderStatusRepository
+                .findByOrderStatusName("PENDING"))
+                .thenReturn(Optional.of(orderStatus("PENDING")));
+
+        when(paymentStatusRepository
+                .findByPaymentStatusName("UNPAID"))
+                .thenReturn(Optional.of(paymentStatus("UNPAID")));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals("Address not found", ex.getMessage());
+    }
+
+    @Test
+    void checkout_productNotFound_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        Cart cart = setupCart();
+
+        CartItem cartItem = new CartItem();
+        cartItem.setId(new CartItemId(1, 10));
+        cartItem.setCart(cart);
+        cartItem.setQuantity(2);
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        stubCheckoutBase();
+
+        when(cartItemRepository
+                .findByCartCartIdWithProduct(1))
+                .thenReturn(List.of(cartItem));
+
+        when(productRepository
+                .findAllWithCategoryByIdIn(List.of(10)))
+                .thenReturn(Collections.emptyList());
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals("Product not found", ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_cartItemNotFound_throwsException() {
+
+        OrderRequest request = new OrderRequest();
+        request.setOrderReceiver("A");
+        request.setOrderReceiverPhone("0123456789");
+        request.setPaymentMethodId(1);
+        request.setProductIds(List.of(10));
+        request.setAddressId(1);
+
+        Cart cart = setupCart();
+
+        Product product = new Product();
+        product.setProductId(10);
+        product.setProductName("Green Tea");
+        product.setInventory(20);
+
+        when(paymentMethodRepository.findById(1))
+                .thenReturn(Optional.of(paymentMethod(false)));
+
+        stubCheckoutBase();
+
+        when(cartItemRepository
+                .findByCartCartIdWithProduct(1))
+                .thenReturn(Collections.emptyList());
+
+        when(productRepository
+                .findAllWithCategoryByIdIn(List.of(10)))
+                .thenReturn(List.of(product));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals("Cart item not found", ex.getMessage());
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void checkout_customerNotFound_throwsException() {
+
+        when(customerRepository.findByUsername(USERNAME))
+                .thenReturn(Optional.empty());
+
+        OrderRequest request = new OrderRequest();
+        request.setProductIds(List.of(10));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.checkout(request));
+
+        assertEquals("Customer not found", ex.getMessage());
+    }
 }

@@ -3,7 +3,6 @@ package ctu.student.regreen.controller;
 import ctu.student.regreen.dto.request.BannerRequest;
 import ctu.student.regreen.dto.response.BannerResponse;
 import ctu.student.regreen.service.interfaces.BannerService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;

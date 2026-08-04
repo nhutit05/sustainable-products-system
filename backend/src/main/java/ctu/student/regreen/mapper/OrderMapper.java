@@ -27,18 +27,20 @@ public class OrderMapper {
             total += price * item.getQuantity();
         }
 
-         if (order.getVoucher() != null) {
-            if (order.getVoucher().getMaxDiscountAmount() != null) {
-                long reducedPrice = Math.round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
+        if (order.getVoucher() == null) {
+            return total;
+        }
+
+        if (order.getVoucher().getMaxDiscountAmount() != null && order.getVoucher().getMaxDiscountAmount() > 0) {
+            long reducedPrice = Math.round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
                     .round(order.getVoucher().getMaxDiscountAmount())
                             ? Math.round(order.getVoucher().getMaxDiscountAmount())
                             : Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
-            total = total - reducedPrice;
-            } else {
-                total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
-            }
-            
+            total -= reducedPrice;
+        } else {
+            total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
         }
+
         return total;
     }
 

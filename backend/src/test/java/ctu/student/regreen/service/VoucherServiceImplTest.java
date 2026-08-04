@@ -1,302 +1,499 @@
-// package ctu.student.regreen.service;
+package ctu.student.regreen.service;
+
+import ctu.student.regreen.dto.request.VoucherRequest;
+import ctu.student.regreen.dto.request.VoucherUpdateRequest;
+import ctu.student.regreen.dto.response.VoucherResponse;
+import ctu.student.regreen.dto.response.VoucherSummaryResponse;
+import ctu.student.regreen.mapper.VoucherMapper;
+import ctu.student.regreen.model.Voucher;
+import ctu.student.regreen.repository.VoucherRepository;
+import ctu.student.regreen.service.implement.VoucherServiceImpl;
+import ctu.student.regreen.service.interfaces.NotificationService;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class VoucherServiceImplTest {
+
+    @Mock
+    private VoucherRepository repository;
+
+    @Mock
+    private VoucherMapper mapper;
+
+    @Mock
+    private NotificationService notificationService;
+
+    @InjectMocks
+    private VoucherServiceImpl service;
+
+    private Voucher voucher;
+    private VoucherRequest createRequest;
+    private VoucherUpdateRequest updateRequest;
+
+    private static final Integer VOUCHER_ID = 1;
+    private static final String CODE = "SALE10";
+
+    @BeforeEach
+    void setUp() {
+
+        voucher = new Voucher();
+        voucher.setVoucherId(VOUCHER_ID);
+        voucher.setCode(CODE);
+        voucher.setDescription("Sale 10%");
+        voucher.setDiscountValue(10f);
+        voucher.setStartedAt(LocalDate.now());
+        voucher.setExpiredAt(LocalDate.now().plusDays(10));
+        voucher.setQuantity(100);
+        voucher.setIsActive(true);
+
+        createRequest = new VoucherRequest();
+        createRequest.setCode(CODE);
+        createRequest.setDescription("Sale 10%");
+        createRequest.setDiscountValue(10f);
+        createRequest.setStartedAt(LocalDate.now());
+        createRequest.setExpiredAt(LocalDate.now().plusDays(10));
+        createRequest.setQuantity(100);
+        createRequest.setIsActive(true);
+
+        updateRequest = new VoucherUpdateRequest();
+        updateRequest.setCode(CODE);
+        updateRequest.setDescription("Sale 10%");
+        updateRequest.setDiscountValue(10f);
+        updateRequest.setStartedAt(LocalDate.now());
+        updateRequest.setExpiredAt(LocalDate.now().plusDays(10));
+        updateRequest.setQuantity(100);
+        updateRequest.setIsActive(true);
+    }
+
+    private VoucherResponse voucherResponse() {
+
+        return new VoucherResponse(
+                VOUCHER_ID,
+                CODE,
+                "Sale 10%",
+                10f,
+                LocalDate.now(),
+                LocalDate.now().plusDays(10),
+                100,
+                true,
+                0f,
+                0f);
+    }
 
-// import ctu.student.regreen.dto.request.VoucherRequest;
-// import ctu.student.regreen.dto.response.VoucherResponse;
-// import ctu.student.regreen.mapper.VoucherMapper;
-// import ctu.student.regreen.model.Voucher;
-// import ctu.student.regreen.repository.VoucherRepository;
-// import ctu.student.regreen.service.implement.VoucherServiceImpl;
+    // ==================== create ====================
 
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
+    @Test
+    void create_success() {
 
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
+        when(repository.existsByCode(CODE))
+                .thenReturn(false);
 
-// import java.time.LocalDate;
-// import java.util.List;
-// import java.util.Optional;
+        when(mapper.toEntity(createRequest))
+                .thenReturn(voucher);
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.ArgumentMatchers.*;
-// import static org.mockito.Mockito.*;
+        when(repository.save(voucher))
+                .thenReturn(voucher);
 
-// @ExtendWith(MockitoExtension.class)
-// class VoucherServiceImplTest {
+        when(mapper.toResponse(voucher))
+                .thenReturn(voucherResponse());
 
-//     @Mock
-//     private VoucherRepository repository;
+        VoucherResponse result =
+                service.create(createRequest);
 
-//     @Mock
-//     private VoucherMapper mapper;
+        assertNotNull(result);
+        assertEquals(VOUCHER_ID, result.getVoucherId());
+        assertEquals(CODE, result.getCode());
 
-//     @InjectMocks
-//     private VoucherServiceImpl service;
+        verify(repository).existsByCode(CODE);
+        verify(mapper).toEntity(createRequest);
+        verify(repository).save(voucher);
+        verify(notificationService)
+                .notifyNewVoucherToAllCustomers(voucher);
+        verify(mapper).toResponse(voucher);
+    }
 
-//     private Voucher voucher;
-//     private VoucherRequest request;
-//     private VoucherResponse response;
+    @Test
+    void create_duplicateCode_throwsException() {
 
-//     @BeforeEach
-//     void setUp() {
+        when(repository.existsByCode(CODE))
+                .thenReturn(true);
 
-//         voucher = new Voucher();
-//         voucher.setVoucherId(1);
-//         voucher.setCode("SALE10");
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.create(createRequest));
 
-//         request = new VoucherRequest();
+        assertEquals(
+                "Voucher code already exists",
+                ex.getMessage());
 
-//         request.setCode("SALE10");
-//         request.setDiscountValue(10F);
-//         request.setQuantity(100);
+        verify(repository, never()).save(any());
+        verify(notificationService, never())
+                .notifyNewVoucherToAllCustomers(any());
+    }
 
-//         request.setStartedAt(
-//                 LocalDate.now());
+    @Test
+    void create_invalidDate_throwsException() {
 
-//         request.setExpiredAt(
-//                 LocalDate.now().plusDays(10));
+        createRequest.setExpiredAt(LocalDate.now());
 
-//         response =
-//                 mock(VoucherResponse.class);
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.create(createRequest));
 
-//         lenient()
-//                 .when(mapper.toResponse(any()))
-//                 .thenReturn(response);
+        assertEquals(
+                "Expired date must be after started date",
+                ex.getMessage());
 
-//         lenient()
-//                 .when(mapper.toEntity(any()))
-//                 .thenReturn(voucher);
-//     }
+        verify(repository, never()).save(any());
+    }
 
-//     @Test
-//     void create_success() {
+    @Test
+    void create_invalidDiscount_throwsException() {
 
-//         when(repository.existsByCode("SALE10"))
-//                 .thenReturn(false);
+        createRequest.setDiscountValue(0f);
 
-//         when(repository.save(any()))
-//                 .thenReturn(voucher);
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.create(createRequest));
 
-//         VoucherResponse result =
-//                 service.create(request);
+        assertEquals(
+                "Discount value must be greater than 0",
+                ex.getMessage());
 
-//         assertNotNull(result);
+        verify(repository, never()).save(any());
+    }
 
-//         verify(repository)
-//                 .save(any());
-//     }
+    @Test
+    void create_invalidQuantity_throwsException() {
 
-//     @Test
-//     void create_duplicateCode_fail() {
+        createRequest.setQuantity(0);
 
-//         when(repository.existsByCode("SALE10"))
-//                 .thenReturn(true);
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.create(createRequest));
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.create(request));
+        assertEquals(
+                "Quantity must be greater than 0",
+                ex.getMessage());
 
-//         assertEquals(
-//                 "Voucher code already exists",
-//                 ex.getMessage());
-//     }
+        verify(repository, never()).save(any());
+    }
 
-//     @Test
-//     void create_invalidDate_fail() {
+    // ==================== getAll ====================
 
-//         request.setExpiredAt(
-//                 request.getStartedAt());
+    @Test
+    void getAll_success() {
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.create(request));
+        when(repository.findAllByIsActiveTrue())
+                .thenReturn(List.of(voucher));
 
-//         assertEquals(
-//                 "Expired date must be after started date",
-//                 ex.getMessage());
-//     }
+        when(mapper.toResponse(voucher))
+                .thenReturn(voucherResponse());
 
-//     @Test
-//     void create_invalidDiscount_fail() {
+        List<VoucherResponse> result =
+                service.getAll();
 
-//         request.setDiscountValue(0F);
+        assertEquals(1, result.size());
+        assertEquals(CODE, result.get(0).getCode());
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.create(request));
+        verify(repository).findAllByIsActiveTrue();
+        verify(mapper).toResponse(voucher);
+    }
 
-//         assertEquals(
-//                 "Discount value must be greater than 0",
-//                 ex.getMessage());
-//     }
+    @Test
+    void getAll_empty_returnsEmptyList() {
 
-//     @Test
-//     void create_invalidQuantity_fail() {
+        when(repository.findAllByIsActiveTrue())
+                .thenReturn(Collections.emptyList());
 
-//         request.setQuantity(0);
+        List<VoucherResponse> result =
+                service.getAll();
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.create(request));
+        assertTrue(result.isEmpty());
+        verify(repository).findAllByIsActiveTrue();
+        verify(mapper, never()).toResponse(any());
+    }
 
-//         assertEquals(
-//                 "Quantity must be greater than 0",
-//                 ex.getMessage());
-//     }
+    // ==================== getById ====================
 
-//     @Test
-//     void getAll_success() {
+    @Test
+    void getById_success() {
 
-//         when(repository.findAll())
-//                 .thenReturn(
-//                         List.of(voucher));
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
 
-//         List<VoucherResponse> result =
-//                 service.getAll();
+        when(mapper.toResponse(voucher))
+                .thenReturn(voucherResponse());
 
-//         assertEquals(
-//                 1,
-//                 result.size());
-//     }
+        VoucherResponse result =
+                service.getById(VOUCHER_ID);
 
-//     @Test
-//     void getById_success() {
+        assertNotNull(result);
+        assertEquals(VOUCHER_ID, result.getVoucherId());
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.of(voucher));
+        verify(repository).findById(VOUCHER_ID);
+        verify(mapper).toResponse(voucher);
+    }
 
-//         VoucherResponse result =
-//                 service.getById(1);
+    @Test
+    void getById_notFound_throwsException() {
 
-//         assertNotNull(result);
-//     }
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.empty());
 
-//     @Test
-//     void getById_notFound_fail() {
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.getById(VOUCHER_ID));
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.empty());
+        assertEquals(
+                "Voucher not found with id: " + VOUCHER_ID,
+                ex.getMessage());
+    }
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.getById(1));
+    // ==================== update ====================
 
-//         assertEquals(
-//                 "Voucher not found with id: 1",
-//                 ex.getMessage());
-//     }
+    @Test
+    void update_success() {
 
-//     @Test
-//     void update_success() {
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.of(voucher));
+        when(repository.save(voucher))
+                .thenReturn(voucher);
 
-//         when(repository.findByCode("SALE10"))
-//                 .thenReturn(
-//                         Optional.of(voucher));
+        when(mapper.toResponse(voucher))
+                .thenReturn(voucherResponse());
 
-//         when(repository.save(any()))
-//                 .thenReturn(voucher);
+        VoucherResponse result =
+                service.update(VOUCHER_ID, updateRequest);
 
-//         VoucherResponse result =
-//                 service.update(
-//                         1,
-//                         request);
+        assertNotNull(result);
+        assertEquals(VOUCHER_ID, result.getVoucherId());
 
-//         assertNotNull(result);
+        verify(repository).findById(VOUCHER_ID);
+        verify(repository).save(voucher);
+        verify(mapper).toResponse(voucher);
+    }
 
-//         verify(mapper)
-//                 .update(
-//                         voucher,
-//                         request);
-//     }
+    @Test
+    void update_notFound_throwsException() {
 
-//     @Test
-//     void update_notFound_fail() {
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.empty());
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.empty());
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.update(VOUCHER_ID, updateRequest));
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.update(
-//                                 1,
-//                                 request));
+        assertEquals(
+                "Voucher not found with id: " + VOUCHER_ID,
+                ex.getMessage());
 
-//         assertEquals(
-//                 "Voucher not found with id: 1",
-//                 ex.getMessage());
-//     }
+        verify(repository, never()).save(any());
+    }
 
-//     @Test
-//     void update_duplicateCode_fail() {
+    @Test
+    void update_duplicateCode_throwsException() {
 
-//         Voucher anotherVoucher =
-//                 new Voucher();
+        Voucher anotherVoucher = new Voucher();
+        anotherVoucher.setVoucherId(99);
+        anotherVoucher.setCode("NEWCODE");
 
-//         anotherVoucher.setVoucherId(99);
+        updateRequest.setCode("NEWCODE");
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.of(voucher));
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
 
-//         when(repository.findByCode("SALE10"))
-//                 .thenReturn(
-//                         Optional.of(
-//                                 anotherVoucher));
+        when(repository.findByCode("NEWCODE"))
+                .thenReturn(Optional.of(anotherVoucher));
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.update(
-//                                 1,
-//                                 request));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.update(VOUCHER_ID, updateRequest));
 
-//         assertEquals(
-//                 "Voucher code already exists",
-//                 ex.getMessage());
-//     }
+        assertEquals(
+                "Voucher code already exists",
+                ex.getMessage());
 
-//     @Test
-//     void delete_success() {
+        verify(repository, never()).save(any());
+    }
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.of(voucher));
+    @Test
+    void update_sameCode_noDuplicateCheck() {
 
-//         service.delete(1);
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
 
-//         verify(repository)
-//                 .delete(voucher);
-//     }
+        when(repository.save(voucher))
+                .thenReturn(voucher);
 
-//     @Test
-//     void delete_notFound_fail() {
+        when(mapper.toResponse(voucher))
+                .thenReturn(voucherResponse());
 
-//         when(repository.findById(1))
-//                 .thenReturn(
-//                         Optional.empty());
+        VoucherResponse result =
+                service.update(VOUCHER_ID, updateRequest);
 
-//         RuntimeException ex =
-//                 assertThrows(
-//                         RuntimeException.class,
-//                         () -> service.delete(1));
+        assertNotNull(result);
 
-//         assertEquals(
-//                 "Voucher not found with id: 1",
-//                 ex.getMessage());
-//     }
-// }
+        verify(repository, never()).findByCode(any());
+        verify(repository).save(voucher);
+    }
+
+    @Test
+    void update_invalidDate_throwsException() {
+
+        updateRequest.setStartedAt(LocalDate.now().plusDays(5));
+        updateRequest.setExpiredAt(LocalDate.now().plusDays(5));
+
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.update(VOUCHER_ID, updateRequest));
+
+        assertEquals(
+                "Expired date must be after started date",
+                ex.getMessage());
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void update_partialUpdate_discountOnly() {
+
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
+
+        VoucherUpdateRequest partialRequest =
+                new VoucherUpdateRequest();
+        partialRequest.setDiscountValue(20f);
+
+        when(repository.save(voucher))
+                .thenReturn(voucher);
+
+        VoucherResponse expected = new VoucherResponse(
+                VOUCHER_ID, CODE, "Sale 10%",
+                20f, LocalDate.now(),
+                LocalDate.now().plusDays(10),
+                100, true, 0f, 0f);
+
+        when(mapper.toResponse(voucher))
+                .thenReturn(expected);
+
+        VoucherResponse result =
+                service.update(VOUCHER_ID, partialRequest);
+
+        assertNotNull(result);
+        assertEquals(20f, result.getDiscountValue());
+
+        verify(repository).save(voucher);
+    }
+
+    // ==================== getAllForAdmin ====================
+
+    @Test
+    void getAllForAdmin_success() {
+
+        VoucherSummaryResponse summary =
+                new VoucherSummaryResponse(
+                        VOUCHER_ID, CODE, "Sale 10%",
+                        10f, LocalDate.now(),
+                        100, LocalDate.now().plusDays(10),
+                        true, 0f, 0f);
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Voucher> voucherPage =
+                new PageImpl<>(List.of(voucher), pageable, 1);
+
+        when(repository.findAll(
+                any(Specification.class),
+                any(Pageable.class)))
+                .thenReturn(voucherPage);
+
+        when(mapper.toSummary(voucher))
+                .thenReturn(summary);
+
+        Page<VoucherSummaryResponse> result =
+                service.getAllForAdmin(null, null, pageable);
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(CODE, result.getContent().get(0).getCode());
+
+        verify(repository).findAll(
+                any(Specification.class),
+                any(Pageable.class));
+        verify(mapper).toSummary(voucher);
+    }
+
+    @Test
+    void getAllForAdmin_empty_returnsEmptyPage() {
+
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Voucher> emptyPage =
+                new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(repository.findAll(
+                any(Specification.class),
+                any(Pageable.class)))
+                .thenReturn(emptyPage);
+
+        Page<VoucherSummaryResponse> result =
+                service.getAllForAdmin(null, null, pageable);
+
+        assertTrue(result.getContent().isEmpty());
+        verify(mapper, never()).toSummary(any());
+    }
+
+    // ==================== delete ====================
+
+    @Test
+    void delete_success() {
+
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.of(voucher));
+
+        service.delete(VOUCHER_ID);
+
+        verify(repository).findById(VOUCHER_ID);
+        verify((org.springframework.data.repository.CrudRepository) repository).delete(voucher);
+    }
+
+    @Test
+    void delete_notFound_throwsException() {
+
+        when(repository.findById(VOUCHER_ID))
+                .thenReturn(Optional.empty());
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.delete(VOUCHER_ID));
+
+        assertEquals(
+                "Voucher not found with id: " + VOUCHER_ID,
+                ex.getMessage());
+
+        verify((org.springframework.data.repository.CrudRepository<?, ?>) repository, never()).delete(any());
+    }
+}

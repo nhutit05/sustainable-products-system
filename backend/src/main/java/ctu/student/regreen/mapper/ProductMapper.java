@@ -15,8 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductMapper {
 
-    private final ProductMaterialMapper productMaterialMapper;
-
     public Product toEntity(
             ProductRequest request,
             Category category

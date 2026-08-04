@@ -1,6 +1,5 @@
 package ctu.student.regreen.service.implement;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;

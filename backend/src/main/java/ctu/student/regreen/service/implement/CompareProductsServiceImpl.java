@@ -4,7 +4,6 @@ import ctu.student.regreen.dto.response.*;
 import ctu.student.regreen.mapper.ProductMaterialMapper;
 import ctu.student.regreen.model.Product;
 import ctu.student.regreen.model.ProductImage;
-import ctu.student.regreen.model.ProductMaterial;
 import ctu.student.regreen.repository.ProductImageRepository;
 import ctu.student.regreen.repository.ProductMaterialRepository;
 import ctu.student.regreen.repository.ProductRepository;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -2,8 +2,6 @@ package ctu.student.regreen.service.interfaces;
 
 import ctu.student.regreen.dto.response.RefundSlipResponse;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

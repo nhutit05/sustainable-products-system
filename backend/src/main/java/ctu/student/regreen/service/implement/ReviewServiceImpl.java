@@ -10,7 +10,6 @@ import ctu.student.regreen.model.Review;
 import ctu.student.regreen.repository.CustomerRepository;
 import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.repository.ReviewRepository;
-import ctu.student.regreen.service.interfaces.CloudinaryService;
 import ctu.student.regreen.service.interfaces.ReviewImageService;
 import ctu.student.regreen.service.interfaces.ReviewService;
 import lombok.AllArgsConstructor;
@@ -35,8 +34,6 @@ public class ReviewServiceImpl implements ReviewService {
     private final ProductRepository productRepository;
 
     private final ReviewImageService reviewImageService;
-
-    private final CloudinaryService cloudinaryService;
 
     private Customer getCurrentCustomer() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

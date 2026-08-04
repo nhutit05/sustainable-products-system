@@ -18,7 +18,6 @@ import ctu.student.regreen.mapper.OrderMapper;
 import ctu.student.regreen.model.Address;
 import ctu.student.regreen.model.Cart;
 import ctu.student.regreen.model.CartItem;
-import ctu.student.regreen.model.CartItemId;
 import ctu.student.regreen.model.Customer;
 import ctu.student.regreen.model.Invoice;
 import ctu.student.regreen.model.Order;
@@ -41,7 +40,6 @@ import ctu.student.regreen.repository.ProductRepository;
 import ctu.student.regreen.repository.VoucherRepository;
 import ctu.student.regreen.service.interfaces.NotificationService;
 import ctu.student.regreen.service.interfaces.OrderService;
-// import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -79,22 +77,23 @@ public class OrderServiceImpl implements OrderService {
                         total += price * item.getQuantity();
                 }
 
-                if (order.getVoucher() != null) {
-                        if (order.getVoucher().getMaxDiscountAmount() != null) {
-                                long reducedPrice = Math
-                                                .round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
-                                                                .round(order.getVoucher().getMaxDiscountAmount())
-                                                                                ? Math.round(order.getVoucher()
-                                                                                                .getMaxDiscountAmount())
-                                                                                : Math.round(total * order.getVoucher()
-                                                                                                .getDiscountValue()
-                                                                                                / 100.0);
-                                total = total - reducedPrice;
-                        } else {
-                                total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
-                        }
-                        
+                if (order.getVoucher() == null)
+                        return total;
+
+                if (order.getVoucher().getMaxDiscountAmount() != null && order.getVoucher().getMaxDiscountAmount() > 0) {
+                        long reducedPrice = Math
+                                        .round(total * order.getVoucher().getDiscountValue() / 100.0) > Math
+                                                        .round(order.getVoucher().getMaxDiscountAmount())
+                                                                        ? Math.round(order.getVoucher()
+                                                                                        .getMaxDiscountAmount())
+                                                                        : Math.round(total * order.getVoucher()
+                                                                                        .getDiscountValue()
+                                                                                        / 100.0);
+                        total -= reducedPrice;
+                } else {
+                        total -= Math.round(total * order.getVoucher().getDiscountValue() / 100.0);
                 }
+
                 return total;
         }
 
