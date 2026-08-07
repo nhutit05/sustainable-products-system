@@ -59,30 +59,29 @@ export default function MyOrder() {
       }
     }
 
-    const fetchRefundOrder = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/refund-slips/order/${selectedOrder?.orderId}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        )
-        if (response.ok) {
-          setSendRefund(true)
-        }
-      } catch (error) {
-        console.error('Error fetching refund order:', error)
-      }
-    }
-
     if (token) {
       fetchOrders()
-      fetchRefundOrder()
     }
   }, [token])
+
+  const fetchRefundOrder = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/refund-slips/order/${selectedOrder?.orderId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      )
+      if (response.ok) {
+        setSendRefund(true)
+      }
+    } catch (error) {
+      console.error('Error fetching refund order:', error)
+    }
+  }
 
   const formatted = (dateString: string) =>
     new Intl.DateTimeFormat('vi-VN', {
@@ -128,7 +127,8 @@ export default function MyOrder() {
   }
 
   // SHOW DETAIL
-  const handleShowDetail = (order: OrderResponse) => {
+  const handleShowDetail = async (order: OrderResponse) => {
+    await fetchRefundOrder()
     setSelectedOrder(order)
     setOnCloseReceipt(false)
     setOnClose(true)
