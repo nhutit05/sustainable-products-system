@@ -220,6 +220,12 @@ export default function ProductDetail() {
       } catch (error) {
         console.error('Error adding product to cart:', error)
       }
+    } else {
+      showNotification({
+        message: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
+        type: 'WARNING',
+        duration: 3000,
+      })
     }
   }
 

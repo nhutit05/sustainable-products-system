@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import type { CartItemResponse } from '../../model/cart.model'
-import type { ProductIntroduce } from '../../model/product.model'
+import type { ProductDetail, ProductIntroduce } from '../../model/product.model'
 import { Leaf, Minus, Plus, Trash2 } from 'lucide-react'
+import { useNotification } from '../../context/useNotification'
 
 interface CartItemProps {
   item: CartItemResponse // Day la cart item
@@ -10,12 +11,14 @@ interface CartItemProps {
 }
 
 export default function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
-  const [product, setProduct] = useState<ProductIntroduce | null>(null)
+  const [product, setProduct] = useState<ProductDetail | null>(null)
   // Optimistic quantity state — cập nhật UI ngay, sync API sau
   const [localQty, setLocalQty] = useState(item.quantity)
   const [localSubtotal, setLocalSubtotal] = useState(item.subtotal)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
+
+  const { showNotification } = useNotification()
 
   // Ref để debounce: lưu timeout và quantity mới nhất cần sync
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -23,11 +26,21 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   const unitPrice = useRef<number>(item.quantity > 0 ? item.subtotal / item.quantity : 0)
 
   useEffect(() => {
-    setLocalQty(item.quantity)
+    if (product && item.quantity <= product.inventory) {
+      setLocalQty(item.quantity)
+    } else {
+      showNotification({
+        message: `Số lượng sản phẩm trong giỏ hàng vượt quá tồn kho. Vui lòng kiểm tra lại.`,
+        type: 'WARNING',
+        duration: 3000,
+      })
+      // Rollback về quantity cũ nếu vượt quá tồn kho
+      setLocalQty(item.quantity)
+    }
     setLocalSubtotal(item.subtotal)
     unitPrice.current = item.quantity > 0 ? item.subtotal / item.quantity : 0
     pendingQty.current = item.quantity
-  }, [item.quantity, item.subtotal])
+  }, [item.quantity, item.subtotal, product, showNotification])
 
   const syncQtyToServer = useCallback(
     async (newQty: number) => {
@@ -104,13 +117,8 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
       try {
         const response = await fetch(`http://localhost:8080/api/products/${item.productId}`)
         if (response.ok) {
-          const data: ProductIntroduce = await response.json()
+          const data: ProductDetail = await response.json()
 
-          const images = await fetch(`http://localhost:8080/api/products/${item.productId}/images`)
-          if (images.ok) {
-            const imageDatas = await images.json()
-            data.productImage = imageDatas[0].imageUrl
-          }
           setProduct(data)
         } else {
           console.error('Failed to fetch product data')
@@ -136,7 +144,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
         <div className="cartItem_content flex items-center gap-4 w-full">
           <div className="cartItem_image">
             <img
-              src={product.productImage}
+              src={product.imageUrls[0] || '/images/default-product.png'}
               alt={product.productName}
               className="cartItem-img w-24 h-24 rounded-2xl object-cover"
             />
