@@ -35,7 +35,9 @@ public class ReviewController {
             @PathVariable Integer reviewId,
             @RequestPart("request") ReviewRequest request,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        request.setReviewImages(images);
+        if(images != null) {
+            request.setReviewImages(images);
+        }
         return service.update(reviewId, request);
     }
 

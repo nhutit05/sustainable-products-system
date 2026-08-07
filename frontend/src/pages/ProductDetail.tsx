@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { ProductDetail, ProductRecommendation, ProductResponse } from '../model/product.model'
-import { ChessKing, Heart, Leaf, Plus, ShoppingCart, Sprout, Zap } from 'lucide-react'
+import { ChessKing, Heart, Leaf, Minus, Plus, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart, CartItemResponse } from '../model/cart.model'
 import { useNotification } from '../context/useNotification'
@@ -11,7 +11,6 @@ import { Modal, Radio, Space } from 'antd'
 import Checkout from '../components/order/Checkout'
 import { useCart } from '../context/CartContext'
 import CompareListInput from '../components/product/CompareListInput'
-import { create } from 'axios'
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -26,6 +25,9 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<ProductResponse | null>(null)
 
   const [activeImg, setActiveImg] = useState(0)
+
+  // Số lượng người dùng chọn — dùng chung cho "Thêm giỏ hàng" và "Mua ngay"
+  const [quantity, setQuantity] = useState<number>(1)
 
   // Mo modal chon phuong thuc thanh toan
   const [isOpenModalPayment, setIsOpenModalPayment] = useState(false)
@@ -182,14 +184,39 @@ export default function ProductDetail() {
     })
   }, [locationPath]) // Scroll to top when pathname changes
 
+  // Reset số lượng đã chọn mỗi khi chuyển sang sản phẩm khác
+  useEffect(() => {
+    setQuantity(1)
+  }, [productId])
+
+  // Tăng/giảm số lượng, giới hạn trong khoảng [1, inventory]
+  const updateQuantity = (change: number) => {
+    setQuantity((prev) => {
+      const next = prev + change
+      if (next < 1) return 1
+      if (product && next > product.inventory) return product.inventory
+      return next
+    })
+  }
+
   // Add to cart
   const addToCart = async (productId: number) => {
     if (cart && token) {
+      //  Truong hop so luong san pham khong hop le (nho hon 1 hoac lon hon ton kho)
+      if (quantity < 1 || (product && quantity > product.inventory)) {
+        showNotification({
+          message: 'Số lượng sản phẩm không hợp lệ',
+          type: 'WARNING',
+          duration: 3000,
+        })
+        return
+      }
+
       try {
         const data = {
           cartId: cart.cartId,
           productId: productId,
-          quantity: 1,
+          quantity: quantity, // dùng số lượng người dùng đã chọn
         }
 
         const response = await fetch('http://localhost:8080/api/cart-items', {
@@ -201,6 +228,8 @@ export default function ProductDetail() {
           body: JSON.stringify(data),
         })
 
+        console.log('Add to cart response:', response)
+
         if (response.ok) {
           showNotification({
             message: 'Sản phẩm đã được thêm vào giỏ hàng thành công!',
@@ -209,6 +238,7 @@ export default function ProductDetail() {
           })
 
           refreshCartCount() // Cập nhật lại số lượng sản phẩm trong giỏ hàng
+          setQuantity(1) // reset lại số lượng sau khi thêm thành công
         } else {
           showNotification({
             message: 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.',
@@ -310,6 +340,7 @@ export default function ProductDetail() {
         type: 'WARNING',
         duration: 3000,
       })
+      return
     }
     setIsOpenModalPayment(true)
   }
@@ -318,6 +349,12 @@ export default function ProductDetail() {
     setIsOpenModalPayment(false)
     setSelectedPaymentMethod(undefined) // Reset selected payment method when closing the modal
   }
+
+  // Ghi nhớ trạng thái gốc của cart-item để khôi phục sau khi luồng "Mua ngay" kết thúc
+  const buyNowRestoreRef = useRef<{
+    productId: number
+    originalQuantity: number | null // null = trước đó sản phẩm này CHƯA có trong giỏ
+  } | null>(null)
 
   const handleShowCheckout = async () => {
     if (!selectedPaymentMethod) {
@@ -328,43 +365,47 @@ export default function ProductDetail() {
       })
       return
     }
-    setIsOpenCheckout(true)
-    setIsOpenModalPayment(false)
 
-    // Cap nhat lai du lieu truyen props
-    if (product && cartId && selectedPaymentMethod) {
-      const cartItemData: CartItemResponse = {
-        cartId: cartId,
-        productId: product.productId,
-        productName: product.productName,
-        productPrice: product.productPrice,
-        quantity: 1,
-        subtotal: product.productPrice,
-      }
+    if (!product || !cartId) return
+
+    if (quantity < 1 || quantity > product.inventory) {
+      showNotification({
+        message: 'Số lượng sản phẩm không hợp lệ hoặc vượt quá tồn kho',
+        type: 'WARNING',
+        duration: 3000,
+      })
+      return
+    }
+
+    const cartItemData: CartItemResponse = {
+      cartId: cartId,
+      productId: product.productId,
+      productName: product.productName,
+      productPrice: product.productPrice,
+      quantity: quantity,
+      subtotal: product.productPrice * quantity,
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/cart-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(cartItemData),
+      })
+
       setCartItem(cartItemData)
-
-      // Tao 1 cartItem moi trong database
-      const createCartItem = async () => {
-        try {
-          const response = await fetch('http://localhost:8080/api/cart-items', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(cartItem),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to create cart item')
-          }
-        } catch (error) {
-          console.error('Error creating cart item:', error)
-        }
-      }
-
-      await createCartItem()
-      console.log('Thêm cart item thành công')
+      setIsOpenCheckout(true)
+      setIsOpenModalPayment(false)
+    } catch (error) {
+      console.error('Error creating cart item:', error)
+      showNotification({
+        message: 'Không thể tạo giỏ hàng, vui lòng thử lại',
+        type: 'ERROR',
+        duration: 3000,
+      })
     }
   }
 
@@ -497,13 +538,45 @@ export default function ProductDetail() {
                 </span>
               </div>
 
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-4">
+                <span className="text-base text-gray-600">Số lượng:</span>
+
+                <div className="flex items-center border border-green-200 rounded-xl overflow-hidden bg-green-50 w-fit">
+                  <button
+                    onClick={() => updateQuantity(-1)}
+                    disabled={quantity <= 1}
+                    className="px-3 py-2 text-green-700 hover:bg-green-100 transition-colors font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+
+                  <span className="px-4 py-2 text-green-900 font-semibold text-base min-w-12 text-center">
+                    {quantity}
+                  </span>
+
+                  <button
+                    onClick={() => updateQuantity(1)}
+                    disabled={product.inventory === 0 || quantity >= product.inventory}
+                    className="px-3 py-2 text-green-700 hover:bg-green-100 transition-colors font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <span className="text-sm text-gray-500">
+                  {product.inventory > 0 ? `Còn ${product.inventory} sản phẩm` : 'Hết hàng'}
+                </span>
+              </div>
+
               {/* Buttons */}
               <div className="flex flex-col gap-4">
                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                   {/* ADD TO CART */}
                   <button
                     onClick={() => addToCart(product.productId)}
-                    className="flex w-full items-center justify-center rounded-2xl min-h-13 border border-emerald-400 bg-white px-4 text-sm sm:text-base font-semibold text-green-900 transition-all duration-300 hover:bg-emerald-500 hover:text-white"
+                    disabled={product.inventory === 0}
+                    className="flex w-full items-center justify-center rounded-2xl min-h-13 border border-emerald-400 bg-white px-4 text-sm sm:text-base font-semibold text-green-900 transition-all duration-300 hover:bg-emerald-500 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-green-900"
                   >
                     <ShoppingCart className="mr-2 h-5 w-5 shrink-0" />
                     Thêm vào giỏ hàng
@@ -522,7 +595,8 @@ export default function ProductDetail() {
                 {/* BUY NOW */}
                 <button
                   onClick={() => showModalPayment()}
-                  className="flex w-full items-center min-h-13 justify-center rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 px-4 text-sm sm:text-base font-bold text-white transition-all duration-300 hover:from-emerald-500 hover:to-teal-700"
+                  disabled={product.inventory === 0}
+                  className="flex w-full items-center min-h-13 justify-center rounded-2xl bg-linear-to-r from-emerald-400 to-teal-600 px-4 text-sm sm:text-base font-bold text-white transition-all duration-300 hover:from-emerald-500 hover:to-teal-700 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Zap className="mr-2 h-5 w-5 shrink-0" />
                   Mua ngay
@@ -651,8 +725,8 @@ export default function ProductDetail() {
 
       {isOpenCheckout && cartItem && (
         <Checkout
-          cartItems={[cartItem]} // Cast cartItem to CartItemResponse
-          totalPrice={product?.productPrice || 0}
+          cartItems={[cartItem]}
+          totalPrice={cartItem.subtotal}
           paymentMethodId={selectedPaymentMethod || 0}
           setOnClose={() => setIsOpenCheckout(false)}
         />
