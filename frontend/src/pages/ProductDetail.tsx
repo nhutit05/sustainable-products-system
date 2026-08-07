@@ -11,6 +11,7 @@ import { Modal, Radio, Space } from 'antd'
 import Checkout from '../components/order/Checkout'
 import { useCart } from '../context/CartContext'
 import CompareListInput from '../components/product/CompareListInput'
+import { create } from 'axios'
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -220,6 +221,12 @@ export default function ProductDetail() {
       } catch (error) {
         console.error('Error adding product to cart:', error)
       }
+    } else {
+      showNotification({
+        message: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng',
+        type: 'WARNING',
+        duration: 3000,
+      })
     }
   }
 
@@ -297,17 +304,32 @@ export default function ProductDetail() {
 
   // BUY NOW
   const showModalPayment = () => {
+    if (!token) {
+      showNotification({
+        message: 'Vui lòng đăng nhập để mua sản phẩm',
+        type: 'WARNING',
+        duration: 3000,
+      })
+    }
     setIsOpenModalPayment(true)
   }
 
   const closeModalPayment = () => {
     setIsOpenModalPayment(false)
-    setSelectedPaymentMethod(undefined)
+    setSelectedPaymentMethod(undefined) // Reset selected payment method when closing the modal
   }
 
-  const handleShowCheckout = () => {
+  const handleShowCheckout = async () => {
+    if (!selectedPaymentMethod) {
+      showNotification({
+        message: 'Vui lòng chọn phương thức thanh toán',
+        type: 'WARNING',
+        duration: 3000,
+      })
+      return
+    }
     setIsOpenCheckout(true)
-    closeModalPayment()
+    setIsOpenModalPayment(false)
 
     // Cap nhat lai du lieu truyen props
     if (product && cartId && selectedPaymentMethod) {
@@ -341,7 +363,8 @@ export default function ProductDetail() {
         }
       }
 
-      createCartItem()
+      await createCartItem()
+      console.log('Thêm cart item thành công')
     }
   }
 

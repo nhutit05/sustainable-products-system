@@ -100,24 +100,24 @@ export default function Profile() {
   ]
 
   return (
-    <div className="profile-page mt-12 p-4 bg-emerald-50">
+    <div className="profile-page mt-6 sm:mt-12 p-3 sm:p-4 bg-emerald-50">
       <div className="max-w-7xl mx-auto">
         {/* BANNER */}
-        <section className="profile-banner p-4 mb-4 rounded-2xl bg-[radial-gradient(circle_at_45%_50%,rgba(16,185,129,0.18)_0%,transparent_45%),linear-gradient(to_right,#0E1D2C,#0D3D39,#0E1D2C)]">
-          <h3 className="text-xl font-semibold text-white py-2">
+        <section className="profile-banner p-4 sm:p-6 mb-4 rounded-2xl bg-[radial-gradient(circle_at_45%_50%,rgba(16,185,129,0.18)_0%,transparent_45%),linear-gradient(to_right,#0E1D2C,#0D3D39,#0E1D2C)]">
+          <h3 className="text-base sm:text-xl font-semibold text-white py-2">
             Chào mừng {customerData?.username || 'Bạn'} đến với trang quản lý thông tin cá nhân
           </h3>
-          <p className="text-emerald-600">
+          <p className="text-sm sm:text-base text-emerald-600">
             Thông tin cá nhân của bạn sẽ được hiển thị ở đây. Hãy đảm bảo rằng thông tin của bạn
             luôn được cập nhật và chính xác.
           </p>
         </section>
 
         {/* PROFILE INFORMATION */}
-        <main className="profile-main grid grid-cols-3 gap-4">
+        <main className="profile-main grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* PROFILE NAVBAR */}
           <section className="profile_info p-4 bg-white rounded-2xl shadow col-span-1">
-            <div className="my-3 flex items-center gap-4 border-b border-green-100 pb-4">
+            <div className="my-3 flex flex-wrap sm:flex-nowrap items-center gap-4 border-b border-green-100 pb-4">
               <div className="rounded-full border border-green-500 w-16 h-16 flex items-center justify-center overflow-hidden">
                 <img
                   src={'/user_default.jpg'}
@@ -125,11 +125,11 @@ export default function Profile() {
                   className="w-full h-full rounded-full object-cover"
                 />
               </div>
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <h3 className="text-xl font-bold text-green-900 flex items-center gap-2 mb-2">
                   {customerData?.username}
                   <div
-                    className={`w-fit rounded-full bg-amber-100 shadow-amber-200 px-4 py-1 ml-3`}
+                    className={`w-fit rounded-full bg-amber-100 shadow-amber-200 px-3 sm:px-4 py-1 sm:ml-3`}
                   >
                     <div
                       className={`w-full h-full flex items-center font-semibold text-xs justify-center text-amber-500`}
@@ -152,12 +152,12 @@ export default function Profile() {
             <NavbarProfile NAV_LINKS={navbarItems} />
           </section>
 
-          <section className="p-4 bg-white rounded-2xl shadow col-span-2">
+          <section className="p-4 bg-white rounded-2xl shadow col-span-1 md:col-span-2">
             {token ? (
               <Outlet />
             ) : (
               <div className="flex flex-col items-center justify-center h-full">
-                <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-4">
                   Bạn cần đăng nhập để truy cập trang này.
                 </h3>
                 <button
