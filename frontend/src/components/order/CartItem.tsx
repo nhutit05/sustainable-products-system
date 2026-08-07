@@ -26,17 +26,18 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   const unitPrice = useRef<number>(item.quantity > 0 ? item.subtotal / item.quantity : 0)
 
   useEffect(() => {
-    if (product && item.quantity <= product.inventory) {
-      setLocalQty(item.quantity)
-    } else {
+    // Chưa có dữ liệu sản phẩm thì chưa kiểm tra tồn kho, tránh cảnh báo nhầm
+    if (!product) return
+
+    if (item.quantity > product.inventory) {
       showNotification({
-        message: `Số lượng sản phẩm trong giỏ hàng vượt quá tồn kho. Vui lòng kiểm tra lại.`,
+        message: `Số lượng sản phẩm "${product.productName}" trong giỏ hàng vượt quá tồn kho hiện có (${product.inventory}). Vui lòng kiểm tra lại.`,
         type: 'WARNING',
         duration: 3000,
       })
-      // Rollback về quantity cũ nếu vượt quá tồn kho
-      setLocalQty(item.quantity)
     }
+
+    setLocalQty(item.quantity)
     setLocalSubtotal(item.subtotal)
     unitPrice.current = item.quantity > 0 ? item.subtotal / item.quantity : 0
     pendingQty.current = item.quantity
