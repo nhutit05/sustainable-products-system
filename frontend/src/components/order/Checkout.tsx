@@ -203,6 +203,7 @@ export default function Checkout({
           duration: 3000,
         })
         navigate('/')
+        refreshCartCount()
         return
       }
 
