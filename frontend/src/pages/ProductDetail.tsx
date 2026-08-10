@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { ProductDetail, ProductRecommendation, ProductResponse } from '../model/product.model'
+import type { ProductRecommendation, ProductResponse } from '../model/product.model'
 import { ChessKing, Heart, Leaf, Minus, Plus, ShoppingCart, Sprout, Zap } from 'lucide-react'
 import ProductCardSuggest from '../components/product/ProductCardSuggest'
 import type { Cart, CartItemResponse } from '../model/cart.model'
@@ -11,6 +11,13 @@ import { Modal, Radio, Space } from 'antd'
 import Checkout from '../components/order/Checkout'
 import { useCart } from '../context/CartContext'
 import CompareListInput from '../components/product/CompareListInput'
+
+// Trạng thái ghi nhớ để khôi phục cart-item về đúng như trước khi bấm "Mua ngay"
+interface BuyNowRestoreState {
+  productId: number
+  originalQuantity: number | null // null = trước đó sản phẩm này CHƯA có trong giỏ
+}
+
 export default function ProductDetail() {
   const location = useLocation()
 
@@ -228,8 +235,6 @@ export default function ProductDetail() {
           body: JSON.stringify(data),
         })
 
-        console.log('Add to cart response:', response)
-
         if (response.ok) {
           showNotification({
             message: 'Sản phẩm đã được thêm vào giỏ hàng thành công!',
@@ -350,11 +355,26 @@ export default function ProductDetail() {
     setSelectedPaymentMethod(undefined) // Reset selected payment method when closing the modal
   }
 
-  // Ghi nhớ trạng thái gốc của cart-item để khôi phục sau khi luồng "Mua ngay" kết thúc
-  const buyNowRestoreRef = useRef<{
-    productId: number
-    originalQuantity: number | null // null = trước đó sản phẩm này CHƯA có trong giỏ
-  } | null>(null)
+  // ===== BUY NOW: cô lập hoàn toàn với giỏ hàng thật (KHÔNG sửa Checkout.tsx) =====
+  // Ghi nhớ trạng thái gốc của cart-item (nếu bị đụng vào tạm thời) để khôi phục lại
+  // đúng như cũ sau khi luồng "Mua ngay" kết thúc — bất kể đặt hàng thành công hay không.
+  const buyNowRestoreRef = useRef<BuyNowRestoreState | null>(null)
+
+  // Lấy số lượng hiện có của sản phẩm trong giỏ hàng thật (nếu có).
+  // GIẢ ĐỊNH: GET /api/cart-items trả về danh sách CartItemResponse[] của user hiện tại.
+  const getExistingCartItem = async (targetProductId: number): Promise<CartItemResponse | null> => {
+    try {
+      const response = await fetch('http://localhost:8080/api/cart-items', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) return null
+      const items: CartItemResponse[] = await response.json()
+      return items.find((i) => i.productId === targetProductId) ?? null
+    } catch (error) {
+      console.error('Error fetching current cart items:', error)
+      return null
+    }
+  }
 
   const handleShowCheckout = async () => {
     if (!selectedPaymentMethod) {
@@ -368,7 +388,12 @@ export default function ProductDetail() {
 
     if (!product || !cartId) return
 
-    if (quantity < 1 || quantity > product.inventory) {
+    // Gán ra biến cục bộ để TypeScript giữ được kiểu chắc chắn (không undefined/null)
+    // xuyên suốt các đoạn await bên dưới
+    const currentProduct = product
+    const currentCartId = cartId
+
+    if (quantity < 1 || quantity > currentProduct.inventory) {
       showNotification({
         message: 'Số lượng sản phẩm không hợp lệ hoặc vượt quá tồn kho',
         type: 'WARNING',
@@ -377,37 +402,181 @@ export default function ProductDetail() {
       return
     }
 
-    const cartItemData: CartItemResponse = {
-      cartId: cartId,
-      productId: product.productId,
-      productName: product.productName,
-      productPrice: product.productPrice,
-      quantity: quantity,
-      subtotal: product.productPrice * quantity,
-    }
+    // ⚠️ API checkout chỉ nhận productIds (không có quantity trong body), backend lấy
+    // quantity từ cart-item thật đang lưu theo productId. Để "Mua ngay" dùng đúng số lượng
+    // đang chọn ở đây mà KHÔNG ảnh hưởng vĩnh viễn đến giỏ hàng, ta ghi đè TẠM cart-item,
+    // rồi khôi phục lại số lượng gốc ngay khi phát hiện đơn hàng đã được xử lý xong
+    // (xem cơ chế polling bên dưới, vì không được sửa Checkout.tsx để nhận callback trực tiếp).
+    const existingItem = await getExistingCartItem(currentProduct.productId)
 
     try {
-      const response = await fetch('http://localhost:8080/api/cart-items', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(cartItemData),
-      })
+      if (existingItem) {
+        // Sản phẩm đã có trong giỏ -> lưu lại số lượng gốc, rồi ghi đè tạm bằng số đang chọn
+        const res = await fetch(
+          `http://localhost:8080/api/cart-items/${currentProduct.productId}?quantity=${quantity}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        if (!res.ok) throw new Error('Failed to prepare buy-now item')
 
-      setCartItem(cartItemData)
-      setIsOpenCheckout(true)
-      setIsOpenModalPayment(false)
+        buyNowRestoreRef.current = {
+          productId: currentProduct.productId,
+          originalQuantity: existingItem.quantity,
+        }
+      } else {
+        // Sản phẩm chưa có trong giỏ -> tạo cart-item tạm chỉ để checkout dùng
+        const res = await fetch('http://localhost:8080/api/cart-items', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            cartId: currentCartId,
+            productId: currentProduct.productId,
+            quantity,
+          }),
+        })
+        if (!res.ok) throw new Error('Failed to prepare buy-now item')
+
+        buyNowRestoreRef.current = { productId: currentProduct.productId, originalQuantity: null }
+      }
     } catch (error) {
-      console.error('Error creating cart item:', error)
+      console.error('Error preparing buy-now item:', error)
       showNotification({
-        message: 'Không thể tạo giỏ hàng, vui lòng thử lại',
+        message: 'Không thể chuẩn bị đơn hàng, vui lòng thử lại',
         type: 'ERROR',
         duration: 3000,
       })
+      return
+    }
+
+    // Dữ liệu hiển thị/tính tiền trong Checkout — luôn dùng số lượng đang chọn ở trang chi tiết,
+    // độc lập hoàn toàn với số lượng đã lưu sẵn trong giỏ hàng
+    const cartItemData: CartItemResponse = {
+      cartId: currentCartId,
+      productId: currentProduct.productId,
+      productName: currentProduct.productName,
+      productPrice: currentProduct.productPrice,
+      quantity,
+      subtotal: currentProduct.productPrice * quantity,
+    }
+
+    setCartItem(cartItemData)
+    setIsOpenCheckout(true)
+    setIsOpenModalPayment(false)
+  }
+
+  // Khôi phục giỏ hàng thật về đúng trạng thái trước khi bấm "Mua ngay".
+  const restoreCartAfterBuyNow = async () => {
+    const restore = buyNowRestoreRef.current
+    if (!restore) return
+    buyNowRestoreRef.current = null
+
+    try {
+      if (restore.originalQuantity === null) {
+        // Sản phẩm vốn không có trong giỏ -> xoá cart-item tạm đi.
+        // Nếu đơn đã đặt thành công, backend có thể đã xoá sẵn — DELETE lần nữa lỗi cũng bỏ qua an toàn.
+        await fetch(`http://localhost:8080/api/cart-items/${restore.productId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      } else {
+        let qtyToRestore = restore.originalQuantity
+
+        // Tồn kho có thể đã giảm sau khi đơn "Mua ngay" được xử lý thành công (vừa bán ra),
+        // nên kiểm tra lại tồn kho mới nhất trước khi khôi phục để tránh vượt quá tồn kho.
+        try {
+          const productRes = await fetch(`http://localhost:8080/api/products/${restore.productId}`)
+          if (productRes.ok) {
+            const latestProduct = await productRes.json()
+            if (typeof latestProduct?.inventory === 'number') {
+              qtyToRestore = Math.min(qtyToRestore, latestProduct.inventory)
+            }
+          }
+        } catch {
+          // Không lấy được tồn kho mới nhất -> vẫn thử khôi phục với số lượng gốc
+        }
+
+        if (qtyToRestore < 1) {
+          console.warn(
+            `Không thể khôi phục sản phẩm ${restore.productId} vào giỏ hàng: tồn kho hiện tại không đủ.`
+          )
+          refreshCartCount()
+          return
+        }
+
+        // Sản phẩm vốn đã có -> đưa số lượng về lại đúng như trước khi bấm "Mua ngay"
+        const putRes = await fetch(
+          `http://localhost:8080/api/cart-items/${restore.productId}?quantity=${qtyToRestore}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          }
+        )
+
+        // Nếu PUT thất bại (ví dụ cart-item đã bị backend xoá do đặt hàng thành công)
+        // thì tạo lại với đúng số lượng gốc để giỏ hàng trở về như cũ
+        if (!putRes.ok) {
+          await fetch('http://localhost:8080/api/cart-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              cartId,
+              productId: restore.productId,
+              quantity: qtyToRestore,
+            }),
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error restoring cart after buy now:', error)
+    } finally {
+      refreshCartCount()
     }
   }
+
+  // Vì KHÔNG được sửa Checkout.tsx, ta không có callback báo khi đặt hàng thành công
+  // (COD điều hướng đi ngay không gọi setOnClose, PayOS giữ modal mở không gọi setOnClose).
+  // Giải pháp: trong lúc modal Checkout đang mở, định kỳ kiểm tra xem cart-item tạm còn tồn
+  // tại trên server không. Nếu nó biến mất (backend đã tự xoá do đơn hàng được xử lý xong),
+  // lập tức khôi phục lại số lượng gốc — không cần đợi modal đóng.
+  useEffect(() => {
+    if (!isOpenCheckout) return
+    const restore = buyNowRestoreRef.current
+    if (!restore || !token) return
+
+    const watchedProductId = restore.productId
+
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/cart-items', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!response.ok) return
+
+        const items: CartItemResponse[] = await response.json()
+        const stillExists = items.some((i) => i.productId === watchedProductId)
+
+        // Item tạm đã biến mất khỏi giỏ hàng thật -> đơn hàng đã được xử lý xong -> khôi phục ngay
+        if (!stillExists) {
+          clearInterval(intervalId)
+          restoreCartAfterBuyNow()
+        }
+      } catch (error) {
+        console.error('Error polling cart status during buy-now checkout:', error)
+      }
+    }, 1500)
+
+    return () => clearInterval(intervalId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpenCheckout])
+  // ===== Hết phần BUY NOW =====
 
   const [isCompareListOpen, setIsCompareListOpen] = useState(false)
 
@@ -728,7 +897,12 @@ export default function ProductDetail() {
           cartItems={[cartItem]}
           totalPrice={cartItem.subtotal}
           paymentMethodId={selectedPaymentMethod || 0}
-          setOnClose={() => setIsOpenCheckout(false)}
+          setOnClose={() => {
+            // Khách huỷ/đóng modal trước khi kịp đặt hàng thành công -> khôi phục giỏ hàng ngay.
+            // An toàn khi gọi trùng với cơ chế polling nhờ kiểm tra buyNowRestoreRef.current bên trong.
+            restoreCartAfterBuyNow()
+            setIsOpenCheckout(false)
+          }}
         />
       )}
 
