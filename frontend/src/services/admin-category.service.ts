@@ -13,7 +13,7 @@ import type {
 } from '../model/admin-category.model'
 import type { ReviewResponse } from '../model/review.model'
 
-const API_URL = 'http://localhost:8080/api'
+const API_URL = '/api'
 
 // ─── Cities ────────────────────────────────────────────────
 

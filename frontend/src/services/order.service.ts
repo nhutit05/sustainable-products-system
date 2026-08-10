@@ -1,6 +1,6 @@
 import type { CheckoutResponse } from "../model/checkout.model";
 
-const API = "http://localhost:8080/api/orders";
+const API = "/api/orders";
 
 export async function checkout(
     token: string,
@@ -35,7 +35,7 @@ export async function getOrder(
     console.log("Polling orderId:", orderId);
 
     const response = await fetch(
-        `http://localhost:8080/api/orders/${orderId}`,
+        `/api/orders/${orderId}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,

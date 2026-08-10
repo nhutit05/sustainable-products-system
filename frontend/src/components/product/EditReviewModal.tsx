@@ -63,7 +63,7 @@ export default function EditReviewModal({ onClose, review, onSuccess }: EditRevi
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/reviews/${review.reviewId}`, {
+      const response = await fetch(`/api/reviews/${review.reviewId}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,

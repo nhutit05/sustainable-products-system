@@ -136,7 +136,7 @@ export default function AdminLayout() {
 
     const checkToken = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/admin/orders?page=0&size=1', {
+        const response = await fetch('/api/admin/orders?page=0&size=1', {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (response.status === 401 || response.status === 403) {

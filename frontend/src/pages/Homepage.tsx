@@ -22,7 +22,7 @@ export default function Homepage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/products?page=1&limit=4')
+        const response = await fetch('/api/products?page=1&limit=4')
 
         if (response.ok) {
           const data = await response.json()

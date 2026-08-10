@@ -26,7 +26,7 @@ export default function CompareProductResult({
       setError(false)
       try {
         const query = productIds.map((id) => `productIds=${id}`).join('&')
-        const response = await fetch(`http://localhost:8080/api/products/compare?${query}`)
+        const response = await fetch(`/api/products/compare?${query}`)
         if (response.ok) {
           const result = await response.json()
           setData(result)

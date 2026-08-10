@@ -79,7 +79,7 @@ export default function ProductDetail() {
     // Lay thong tin chi tiet san pham tu productId
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products/${productId}`)
+        const response = await fetch(`/api/products/${productId}`)
         if (response.ok) {
           const data = await response.json()
           setProduct(data)
@@ -93,7 +93,7 @@ export default function ProductDetail() {
     const fetchSuggestProducts = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/products/${productId}/recommendations?limit=6`
+          `/api/products/${productId}/recommendations?limit=6`
         )
         if (response.ok) {
           const data = await response.json()
@@ -107,7 +107,7 @@ export default function ProductDetail() {
     // Lay cartId
     const fetchCart = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cart', {
+        const response = await fetch('/api/cart', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -125,7 +125,7 @@ export default function ProductDetail() {
     const checkFavoriteProduct = async (productId: number) => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          `/api/favorite-products/product/${productId}`,
           {
             method: 'GET',
             headers: {
@@ -143,7 +143,7 @@ export default function ProductDetail() {
 
     const fetchPaymentMethods = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/payment-methods', {
+        const response = await fetch('/api/payment-methods', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -159,7 +159,7 @@ export default function ProductDetail() {
 
     const fetchMyCart = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cart', {
+        const response = await fetch('/api/cart', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -226,7 +226,7 @@ export default function ProductDetail() {
           quantity: quantity, // dùng số lượng người dùng đã chọn
         }
 
-        const response = await fetch('http://localhost:8080/api/cart-items', {
+        const response = await fetch('/api/cart-items', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -281,7 +281,7 @@ export default function ProductDetail() {
 
       try {
         const response = await fetch(
-          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          `/api/favorite-products/product/${productId}`,
           {
             method: 'DELETE',
             headers: {
@@ -309,7 +309,7 @@ export default function ProductDetail() {
       setIsFavorite(true)
 
       try {
-        const response = await fetch('http://localhost:8080/api/favorite-products', {
+        const response = await fetch('/api/favorite-products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -364,7 +364,7 @@ export default function ProductDetail() {
   // GIẢ ĐỊNH: GET /api/cart-items trả về danh sách CartItemResponse[] của user hiện tại.
   const getExistingCartItem = async (targetProductId: number): Promise<CartItemResponse | null> => {
     try {
-      const response = await fetch('http://localhost:8080/api/cart-items', {
+      const response = await fetch('/api/cart-items', {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!response.ok) return null
@@ -413,7 +413,7 @@ export default function ProductDetail() {
       if (existingItem) {
         // Sản phẩm đã có trong giỏ -> lưu lại số lượng gốc, rồi ghi đè tạm bằng số đang chọn
         const res = await fetch(
-          `http://localhost:8080/api/cart-items/${currentProduct.productId}?quantity=${quantity}`,
+          `/api/cart-items/${currentProduct.productId}?quantity=${quantity}`,
           {
             method: 'PUT',
             headers: {
@@ -430,7 +430,7 @@ export default function ProductDetail() {
         }
       } else {
         // Sản phẩm chưa có trong giỏ -> tạo cart-item tạm chỉ để checkout dùng
-        const res = await fetch('http://localhost:8080/api/cart-items', {
+        const res = await fetch('/api/cart-items', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -482,7 +482,7 @@ export default function ProductDetail() {
       if (restore.originalQuantity === null) {
         // Sản phẩm vốn không có trong giỏ -> xoá cart-item tạm đi.
         // Nếu đơn đã đặt thành công, backend có thể đã xoá sẵn — DELETE lần nữa lỗi cũng bỏ qua an toàn.
-        await fetch(`http://localhost:8080/api/cart-items/${restore.productId}`, {
+        await fetch(`/api/cart-items/${restore.productId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -492,7 +492,7 @@ export default function ProductDetail() {
         // Tồn kho có thể đã giảm sau khi đơn "Mua ngay" được xử lý thành công (vừa bán ra),
         // nên kiểm tra lại tồn kho mới nhất trước khi khôi phục để tránh vượt quá tồn kho.
         try {
-          const productRes = await fetch(`http://localhost:8080/api/products/${restore.productId}`)
+          const productRes = await fetch(`/api/products/${restore.productId}`)
           if (productRes.ok) {
             const latestProduct = await productRes.json()
             if (typeof latestProduct?.inventory === 'number') {
@@ -513,7 +513,7 @@ export default function ProductDetail() {
 
         // Sản phẩm vốn đã có -> đưa số lượng về lại đúng như trước khi bấm "Mua ngay"
         const putRes = await fetch(
-          `http://localhost:8080/api/cart-items/${restore.productId}?quantity=${qtyToRestore}`,
+          `/api/cart-items/${restore.productId}?quantity=${qtyToRestore}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -523,7 +523,7 @@ export default function ProductDetail() {
         // Nếu PUT thất bại (ví dụ cart-item đã bị backend xoá do đặt hàng thành công)
         // thì tạo lại với đúng số lượng gốc để giỏ hàng trở về như cũ
         if (!putRes.ok) {
-          await fetch('http://localhost:8080/api/cart-items', {
+          await fetch('/api/cart-items', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({
@@ -555,7 +555,7 @@ export default function ProductDetail() {
 
     const intervalId = setInterval(async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cart-items', {
+        const response = await fetch('/api/cart-items', {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!response.ok) return

@@ -18,7 +18,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return
     }
     try {
-      const response = await fetch('http://localhost:8080/api/cart-items', {
+      const response = await fetch('/api/cart-items', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

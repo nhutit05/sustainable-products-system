@@ -8,7 +8,7 @@ import type {
   paymentStatusResponse,
 } from "../model/order.model";
 
-const API_URL = "http://localhost:8080/api/admin/orders";
+const API_URL = "/api/admin/orders";
 
 export interface GetOrdersParams {
   page: number;
@@ -62,7 +62,7 @@ export async function getOrders(
   return response.data;
 }
 
-const ADMIN_API = "http://localhost:8080/api/admin";
+const ADMIN_API = "/api/admin";
 
 export async function getOrderStatuses(
     token: string
@@ -113,7 +113,7 @@ export async function getPaymentMethods(
 }
 
 
-const API = "http://localhost:8080/api/admin/orders";
+const API = "/api/admin/orders";
 
 export const getOrderById = async (
     token: string,

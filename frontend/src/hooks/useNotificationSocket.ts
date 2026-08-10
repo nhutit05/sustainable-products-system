@@ -24,7 +24,7 @@ export function useNotificationSocket({
     }
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`http://localhost:8080/ws?token=${token}`),
+      webSocketFactory: () => new SockJS(`/ws?token=${token}`),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

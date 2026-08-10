@@ -16,7 +16,7 @@ import AdmProductDetail from '../components/admin/AdmProductDetail'
 import AdmEditProduct from '../components/admin/AdmEditProduct'
 import { useNotification } from '../context/useNotification'
 
-const API = 'http://localhost:8080/api/admin'
+const API = '/api/admin'
 
 const formatCurrency = (value: number) =>
   Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)

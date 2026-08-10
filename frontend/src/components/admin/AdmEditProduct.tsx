@@ -82,7 +82,7 @@ export default function AdmEditProduct({
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/admin/materials', {
+        const res = await fetch('/api/admin/materials', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
         if (res.ok && !cancelled) setMaterials(await res.json())
@@ -146,7 +146,7 @@ export default function AdmEditProduct({
       )
 
       const res = await fetch(
-        `http://localhost:8080/api/admin/products/${selectedProduct.productId}`,
+        `/api/admin/products/${selectedProduct.productId}`,
         {
           method: 'PUT',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -210,7 +210,7 @@ export default function AdmEditProduct({
 
       setLoading(true)
       const res = await fetch(
-        `http://localhost:8080/api/admin/products/${selectedProduct.productId}`,
+        `/api/admin/products/${selectedProduct.productId}`,
         {
           method: 'PUT',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },

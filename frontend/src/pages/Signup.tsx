@@ -73,7 +73,7 @@ export default function Signup() {
 
   const handleGoogleCredential = useCallback(
     async (response: { credential: string }) => {
-      const res = await fetch('http://localhost:8080/api/auth/google', {
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: response.credential }),
@@ -180,7 +180,7 @@ export default function Signup() {
     e.preventDefault()
     if (!validateForm()) return
 
-    const response = await fetch('http://localhost:8080/api/auth/register', {
+    const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { Notification } from '../model/notification.model'
 
-const API_URL = 'http://localhost:8080/api/notifications'
+const API_URL = '/api/notifications'
 
 export interface NotificationSummary {
   notifications: Notification[]

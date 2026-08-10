@@ -39,7 +39,7 @@ export default function AdminNavbar({
   useEffect(() => {
     const fetchAdmin = async () => {
       try {
-        await fetch('http://localhost:8080/api/auth/me', {
+        await fetch('/api/auth/me', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ import type {
 } from "../model/voucher.model";
 import type { PageResponse } from "../model/page.model";
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = "/api";
 
 function buildQuery(query: VoucherQuery): string {
     const params = new URLSearchParams();

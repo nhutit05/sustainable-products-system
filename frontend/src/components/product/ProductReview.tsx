@@ -57,7 +57,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
   // Fetch reviews - Dùng useCallback & useEffect để tránh lỗi re-render vô tận
   const fetchReviews = useCallback(async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/products/${productId}/reviews`)
+      const response = await fetch(`/api/products/${productId}/reviews`)
       if (response.ok) {
         const reviewData = await response.json()
         setReviews(reviewData)
@@ -78,7 +78,7 @@ export default function ProductReview({ productId }: ProductReviewProps) {
     setDeletingId(reviewId) // Bật hiệu ứng loading cho card review này
 
     try {
-      const response = await fetch(`http://localhost:8080/api/reviews/${reviewId}`, {
+      const response = await fetch(`/api/reviews/${reviewId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { BannerResponse } from '../model/banner.model'
 
-const API_URL = 'http://localhost:8080/api'
+const API_URL = '/api'
 
 export async function getAllBanners(token: string): Promise<BannerResponse[]> {
   const response = await axios.get<BannerResponse[]>(`${API_URL}/admin/banners`, {

@@ -39,7 +39,7 @@ export default function ProductCard({ product, onUnfavorite }: ProductCardProps)
     const checkFavoriteProduct = async (productId: number) => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          `/api/favorite-products/product/${productId}`,
           {
             method: 'GET',
             headers: {
@@ -76,7 +76,7 @@ export default function ProductCard({ product, onUnfavorite }: ProductCardProps)
 
       try {
         const response = await fetch(
-          `http://localhost:8080/api/favorite-products/product/${productId}`,
+          `/api/favorite-products/product/${productId}`,
           {
             method: 'DELETE',
             headers: {
@@ -108,7 +108,7 @@ export default function ProductCard({ product, onUnfavorite }: ProductCardProps)
       setIsFavorite(true)
 
       try {
-        const response = await fetch('http://localhost:8080/api/favorite-products', {
+        const response = await fetch('/api/favorite-products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

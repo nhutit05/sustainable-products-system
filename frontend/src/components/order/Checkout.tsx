@@ -90,7 +90,7 @@ export default function Checkout({
 
   const refreshAddresses = async (preferSelectedId?: number) => {
     try {
-      const response = await fetch('http://localhost:8080/api/addresses', {
+      const response = await fetch('/api/addresses', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -128,7 +128,7 @@ export default function Checkout({
   useEffect(() => {
     const fetchVouchers = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/vouchers', {
+        const response = await fetch('/api/vouchers', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -174,7 +174,7 @@ export default function Checkout({
     }
 
     try {
-      const response = await fetch('http://localhost:8080/api/orders/checkout', {
+      const response = await fetch('/api/orders/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

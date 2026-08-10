@@ -27,7 +27,7 @@ export default function AdmProductDetail({ product, open, onClose }: ProductDeta
     ;(async () => {
       setLoading(true)
       try {
-        await fetch('http://localhost:8080/api/admin/materials', {
+        await fetch('/api/admin/materials', {
           headers: { Authorization: `Bearer ${token}` },
         })
       } catch (e) {
