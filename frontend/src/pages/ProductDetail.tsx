@@ -352,7 +352,7 @@ export default function ProductDetail() {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(cartItem),
+            body: JSON.stringify(cartItemData),
           })
 
           if (!response.ok) {

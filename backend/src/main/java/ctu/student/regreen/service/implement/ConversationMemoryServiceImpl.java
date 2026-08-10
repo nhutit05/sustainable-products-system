@@ -1,10 +1,10 @@
 package ctu.student.regreen.service.implement;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Service;
 
@@ -14,11 +14,11 @@ import ctu.student.regreen.service.interfaces.ConversationMemoryService;
 @Service
 public class ConversationMemoryServiceImpl implements ConversationMemoryService {
 
-    private final Map<String, List<ChatMessageMemory>> store = new HashMap<>();
+    private final Map<String, List<ChatMessageMemory>> store = new ConcurrentHashMap<>();
 
     @Override
     public void saveUserMessage(String sessionId, String message) {
-        store.computeIfAbsent(sessionId, k -> new ArrayList<>())
+        store.computeIfAbsent(sessionId, k -> new CopyOnWriteArrayList<>())
                 .add(ChatMessageMemory.builder()
                         .role("user")
                         .content(message)
@@ -28,7 +28,7 @@ public class ConversationMemoryServiceImpl implements ConversationMemoryService 
 
     @Override
     public void saveAssistantMessage(String sessionId, String message) {
-        store.computeIfAbsent(sessionId, k -> new ArrayList<>())
+        store.computeIfAbsent(sessionId, k -> new CopyOnWriteArrayList<>())
                 .add(ChatMessageMemory.builder()
                         .role("assistant")
                         .content(message)
@@ -40,7 +40,7 @@ public class ConversationMemoryServiceImpl implements ConversationMemoryService 
     public List<ChatMessageMemory> getHistory(String sessionId, int limit) {
 
         List<ChatMessageMemory> history =
-                store.getOrDefault(sessionId, new ArrayList<>());
+                store.getOrDefault(sessionId, List.of());
 
         return history.stream()
                 .skip(Math.max(0, history.size() - limit))

@@ -12,6 +12,7 @@ import ctu.student.regreen.config.SupabaseProperties;
 import ctu.student.regreen.dto.response.UploadFileResponse;
 import ctu.student.regreen.service.interfaces.StorageService;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -20,6 +21,18 @@ import java.util.UUID;
 public class StorageServiceImpl implements StorageService {
 
         private final SupabaseProperties supabaseProperties;
+        private RestClient restClient;
+
+        @PostConstruct
+        public void init() {
+                this.restClient = RestClient.builder()
+                                .baseUrl(supabaseProperties.getUrl())
+                                .defaultHeader(HttpHeaders.AUTHORIZATION,
+                                                "Bearer " + supabaseProperties.getServiceKey())
+                                .defaultHeader("apikey",
+                                                supabaseProperties.getServiceKey())
+                                .build();
+        }
 
         @Override
         public UploadFileResponse upload(MultipartFile file) {
@@ -32,21 +45,13 @@ public class StorageServiceImpl implements StorageService {
                                         + "_"
                                         + file.getOriginalFilename();
 
-                        String endpoint = supabaseProperties.getUrl()
-                                        + "/storage/v1/object/"
+                        String endpoint = "/storage/v1/object/"
                                         + supabaseProperties.getStorage().getBucket()
                                         + "/"
                                         + objectName;
 
-                        RestClient.create()
-                                        .post()
+                        restClient.post()
                                         .uri(endpoint)
-                                        .header(
-                                                        HttpHeaders.AUTHORIZATION,
-                                                        "Bearer " + supabaseProperties.getServiceKey())
-                                        .header(
-                                                        "apikey",
-                                                        supabaseProperties.getServiceKey())
                                         .contentType(
                                                         MediaType.parseMediaType(
                                                                         file.getContentType()))
@@ -97,26 +102,15 @@ public class StorageServiceImpl implements StorageService {
         public void delete(String storagePath) {
 
 
-                String endpoint = supabaseProperties.getUrl()
-                                + "/storage/v1/object/"
+                String endpoint = "/storage/v1/object/"
                                 + supabaseProperties.getStorage().getBucket()
                                 + "/"
                                 + storagePath;
 
-
-                System.out.println("DELETE URL = " + endpoint);
-
                 try {
 
-                        RestClient.create()
-                                        .method(HttpMethod.DELETE)
+                        restClient.method(HttpMethod.DELETE)
                                         .uri(endpoint)
-                                        .header(
-                                                        HttpHeaders.AUTHORIZATION,
-                                                        "Bearer " + supabaseProperties.getServiceKey())
-                                        .header(
-                                                        "apikey",
-                                                        supabaseProperties.getServiceKey())
                                         .retrieve()
                                         .toBodilessEntity();
 
