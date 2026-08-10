@@ -103,8 +103,13 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of("http://localhost:5173"));
+        String allowedOrigins = System.getenv().getOrDefault(
+                "CORS_ALLOWED_ORIGINS",
+                "http://localhost:5173");
+
+        for (String origin : allowedOrigins.split(",")) {
+            configuration.addAllowedOrigin(origin.trim());
+        }
 
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

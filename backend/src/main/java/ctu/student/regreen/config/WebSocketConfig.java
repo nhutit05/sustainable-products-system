@@ -29,8 +29,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
 
+        String allowedOrigins = System.getenv().getOrDefault(
+                "CORS_ALLOWED_ORIGINS",
+                "http://localhost:5173");
+
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://localhost:5173")
+                .setAllowedOrigins(allowedOrigins.split(","))
                 .addInterceptors(webSocketAuthInterceptor)
                 .withSockJS();
     }
