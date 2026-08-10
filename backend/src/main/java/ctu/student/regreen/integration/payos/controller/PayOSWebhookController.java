@@ -30,7 +30,9 @@ public class PayOSWebhookController {
     @PostMapping("/webhook/confirm")
     public ResponseEntity<String> confirmWebhook() {
 
-        String webhookUrl = "https://encounter-trustee-contest.ngrok-free.dev/api/payos/webhook";
+        String webhookUrl = System.getenv().getOrDefault(
+                "PAYOS_WEBHOOK_URL",
+                "http://localhost:8080/api/payos/webhook");
 
         webhookService.confirm(webhookUrl);
 

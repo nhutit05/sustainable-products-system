@@ -33,5 +33,7 @@ services:
         value: ""
       - key: PAYOS_CANCEL_URL
         value: ""
+      - key: PAYOS_WEBHOOK_URL
+        value: ""
     healthCheckPath: /actuator/health
     autoDeploy: true
