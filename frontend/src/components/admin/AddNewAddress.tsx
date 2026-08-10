@@ -37,7 +37,7 @@ export default function AddNewAddress({
   useEffect(() => {
     const fetchCites = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cities', {
+        const response = await fetch('/api/cities', {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ export default function AddNewAddress({
 
     const fetchVillages = async (cityId: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/villages?cityId=${cityId}`, {
+        const response = await fetch(`/api/villages?cityId=${cityId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -86,7 +86,7 @@ export default function AddNewAddress({
     event.preventDefault()
 
     try {
-      const response = await fetch('http://localhost:8080/api/addresses', {
+      const response = await fetch('/api/addresses', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

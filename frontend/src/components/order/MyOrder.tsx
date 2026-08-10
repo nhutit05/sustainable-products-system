@@ -40,7 +40,7 @@ export default function MyOrder() {
     const fetchOrders = async () => {
       setLoading(true)
       try {
-        const response = await fetch('http://localhost:8080/api/orders', {
+        const response = await fetch('/api/orders', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ export default function MyOrder() {
   const fetchRefundOrder = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/api/refund-slips/order/${selectedOrder?.orderId}`,
+        `/api/refund-slips/order/${selectedOrder?.orderId}`,
         {
           headers: {
             'Content-Type': 'application/json',

@@ -112,7 +112,7 @@ export default function Login() {
       password: password,
     }
 
-    const response = await fetch('http://localhost:8080/api/auth/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ export default function Login() {
 
   const handleGoogleCredential = useCallback(
     async (response: { credential: string }) => {
-      const res = await fetch('http://localhost:8080/api/auth/google', {
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential: response.credential }),

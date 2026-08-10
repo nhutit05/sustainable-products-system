@@ -56,7 +56,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
       try {
         const token = localStorage.getItem('token')
         const response = await fetch(
-          `http://localhost:8080/api/cart-items/${item.productId}?quantity=${newQty}`,
+          `/api/cart-items/${item.productId}?quantity=${newQty}`,
           {
             method: 'PUT',
             headers: {
@@ -113,7 +113,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
     setIsRemoving(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:8080/api/cart-items/${item.productId}`, {
+      const response = await fetch(`/api/cart-items/${item.productId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -128,7 +128,7 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products/${item.productId}`)
+        const response = await fetch(`/api/products/${item.productId}`)
         if (response.ok) {
           const data: ProductDetail = await response.json()
           setProduct(data)

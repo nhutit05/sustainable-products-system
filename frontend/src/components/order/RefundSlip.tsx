@@ -30,7 +30,7 @@ export default function RefundSlip({ order, setOnClose, setSendRefund }: Invoice
   useEffect(() => {
     const fetchBanks = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/banks', {
+        const response = await fetch('/api/banks', {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -61,7 +61,7 @@ export default function RefundSlip({ order, setOnClose, setSendRefund }: Invoice
       setIsSubmitting(true)
 
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:8080/api/refund-slips', {
+      const response = await fetch('/api/refund-slips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

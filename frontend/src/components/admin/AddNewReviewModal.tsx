@@ -73,7 +73,7 @@ export default function AddNewReviewModal({
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/products/${productId}/reviews`, {
+      const response = await fetch(`/api/products/${productId}/reviews`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

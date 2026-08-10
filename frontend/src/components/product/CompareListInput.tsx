@@ -34,7 +34,7 @@ export default function CompareListInput({ onCloseInput, firstProduct }: Compare
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products`)
+        const response = await fetch(`/api/products`)
         if (response.ok) {
           const data = await response.json()
           setAllProducts(data)

@@ -15,7 +15,7 @@ import type {
   ExportFormat,
 } from '../model/statistics.model'
 
-const API_URL = 'http://localhost:8080/api/admin/statistics'
+const API_URL = '/api/admin/statistics'
 
 export async function getRevenueByCategory(
   token: string,

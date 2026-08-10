@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { DashboardSummary, RevenueByMonth, RecentOrder } from '../model/dashboard.model';
 
-const API_URL = 'http://localhost:8080/api/admin/dashboard';
+const API_URL = '/api/admin/dashboard';
 
 export async function getDashboardSummary(
   token: string,

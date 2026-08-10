@@ -31,7 +31,7 @@ export default function Products() {
       setIsLoading(true)
 
       try {
-        const response = await fetch(`http://localhost:8080/api/products`)
+        const response = await fetch(`/api/products`)
 
         if (response.ok) {
           const responseData = await response.json()
@@ -46,7 +46,7 @@ export default function Products() {
 
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/categories')
+        const response = await fetch('/api/categories')
         if (response.ok) {
           const categoriesData = await response.json()
           setCategoriesList(categoriesData)
@@ -58,7 +58,7 @@ export default function Products() {
 
     const getCountProducts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/products/count')
+        const response = await fetch('/api/products/count')
         if (response.ok) {
           const countData = await response.json()
 

@@ -7,7 +7,7 @@ import type {
 
 import type { PageResponse } from "../types/page";
 
-const API = "http://localhost:8080/api/admin/knowledge";
+const API = "/api/admin/knowledge";
 
 export async function uploadDocument(
     token: string,

@@ -31,7 +31,7 @@ export default function Cart() {
     // Lay danh sach san pham trong gio hang
     const fetchCartItem = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cart-items', {
+        const response = await fetch('/api/cart-items', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -48,7 +48,7 @@ export default function Cart() {
     // FETCH PHUONG THUC THANH TOAN
     const fetchPaymentMethods = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/payment-methods', {
+        const response = await fetch('/api/payment-methods', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -42,7 +42,7 @@ export default function AdmAddProduct({ open, onClose, onSaved, categories }: Ad
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/admin/materials', {
+        const res = await fetch('/api/admin/materials', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
         if (res.ok && !cancelled) setMaterials(await res.json())
@@ -108,7 +108,7 @@ export default function AdmAddProduct({ open, onClose, onSaved, categories }: Ad
       })
 
       setLoading(true)
-      const res = await fetch('http://localhost:8080/api/admin/products', {
+      const res = await fetch('/api/admin/products', {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData,

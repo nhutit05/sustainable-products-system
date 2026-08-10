@@ -22,7 +22,7 @@ export default function ProfileFavorite() {
   useEffect(() => {
     const fetchProduct = async (productId: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/products/${productId}`)
+        const response = await fetch(`/api/products/${productId}`)
         if (response.ok) {
           return await response.json()
         }
@@ -35,7 +35,7 @@ export default function ProfileFavorite() {
       setIsLoading(true)
       setError(null)
       try {
-        const response = await fetch('http://localhost:8080/api/favorite-products', {
+        const response = await fetch('/api/favorite-products', {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

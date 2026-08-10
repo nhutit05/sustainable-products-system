@@ -18,7 +18,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchUsername = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/auth/me', {
+        const response = await fetch('/api/auth/me', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export default function Profile() {
     const fetchCustomer = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/customers/me?username=${user?.username}`,
+          `/api/customers/me?username=${user?.username}`,
           {
             method: 'GET',
             headers: {

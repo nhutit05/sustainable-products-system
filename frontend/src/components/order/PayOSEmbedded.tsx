@@ -60,7 +60,7 @@ export default function PayOSEmbedded({
     if (paymentStatus !== 'PENDING') return
     const timer = setInterval(async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
+        const response = await fetch(`/api/orders/${orderId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },

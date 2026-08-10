@@ -17,7 +17,7 @@ export const CustomerProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/auth/me`, {
+        const response = await fetch(`/api/auth/me`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ export const CustomerProvider = ({ children }: { children: React.ReactNode }) =>
       try {
         if (token) {
           const response = await fetch(
-            `http://localhost:8080/api/customers/me`,
+            `/api/customers/me`,
             {
               method: 'GET',
               headers: {

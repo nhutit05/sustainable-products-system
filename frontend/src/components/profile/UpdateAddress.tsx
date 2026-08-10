@@ -32,7 +32,7 @@ export default function UpdateAddress({ address, setShowUpdateAddress }: UpdateA
   useEffect(() => {
     const fetchCites = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/cities', {
+        const response = await fetch('/api/cities', {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -50,7 +50,7 @@ export default function UpdateAddress({ address, setShowUpdateAddress }: UpdateA
 
     const fetchVillages = async (cityId: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/villages?cityId=${cityId}`, {
+        const response = await fetch(`/api/villages?cityId=${cityId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ export default function UpdateAddress({ address, setShowUpdateAddress }: UpdateA
   useEffect(() => {
     const fetchCityAndVillage = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/cities/${address.cityId}`, {
+        const response = await fetch(`/api/cities/${address.cityId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ export default function UpdateAddress({ address, setShowUpdateAddress }: UpdateA
         }
 
         const villageResponse = await fetch(
-          `http://localhost:8080/api/villages/${address.villageId}`,
+          `/api/villages/${address.villageId}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export default function UpdateAddress({ address, setShowUpdateAddress }: UpdateA
     event.preventDefault()
 
     try {
-      const response = await fetch(`http://localhost:8080/api/addresses/${address.addressId}`, {
+      const response = await fetch(`/api/addresses/${address.addressId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

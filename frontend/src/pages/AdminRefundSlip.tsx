@@ -115,7 +115,7 @@ export default function AdminRefundSlip() {
       params.append('page', (currentPage - 1).toString())
       params.append('size', pageSize.toString())
       const response = await fetch(
-        `http://localhost:8080/api/admin/refund-slips?${params.toString()}`,
+        `/api/admin/refund-slips?${params.toString()}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       if (response.ok) {
@@ -144,7 +144,7 @@ export default function AdminRefundSlip() {
     setDetailLoading(true)
     setDrawerOpen(true)
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/refund-slips/${refundSlipId}`, {
+      const response = await fetch(`/api/admin/refund-slips/${refundSlipId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (response.ok) {
@@ -169,7 +169,7 @@ export default function AdminRefundSlip() {
     setActionLoading(true)
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/refund-slips/${refundSlipId}/approve`,
+        `/api/admin/refund-slips/${refundSlipId}/approve`,
         { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } }
       )
       if (response.ok) {
@@ -206,7 +206,7 @@ export default function AdminRefundSlip() {
     setActionLoading(true)
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/refund-slips/${refundSlipId}/reject`,
+        `/api/admin/refund-slips/${refundSlipId}/reject`,
         { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } }
       )
       if (response.ok) {
@@ -243,7 +243,7 @@ export default function AdminRefundSlip() {
     setActionLoading(true)
     try {
       const response = await fetch(
-        `http://localhost:8080/api/admin/refund-slips/${refundSlipId}/refunded`,
+        `/api/admin/refund-slips/${refundSlipId}/refunded`,
         { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } }
       )
       if (response.ok) {

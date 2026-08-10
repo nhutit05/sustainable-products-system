@@ -18,7 +18,7 @@ export default function ProfileAddress() {
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/addresses', {
+        const response = await fetch('/api/addresses', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -49,7 +49,7 @@ export default function ProfileAddress() {
       if (selectedAddressRemove) {
         try {
           const response = await fetch(
-            `http://localhost:8080/api/addresses/${selectedAddressRemove.addressId}`,
+            `/api/addresses/${selectedAddressRemove.addressId}`,
             {
               method: 'DELETE',
               headers: {

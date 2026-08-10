@@ -61,7 +61,7 @@ export default function Chatbot({ isChatbotOpen, setIsChatbotOpen }: ChatbotProp
   const fetchedMessage = async (message: string) => {
     setIsSending(true)
     try {
-      const response = await fetch(`http://localhost:8080/api/chat/rag?q=${message}`)
+      const response = await fetch(`/api/chat/rag?q=${message}`)
       const data = await response.text()
       return data
     } catch (error) {
