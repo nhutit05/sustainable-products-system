@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { qrcode } from 'qrcode-generator'
+import qrcode from 'qrcode-generator'
 
 interface QRCodeCanvasProps {
   value: string
