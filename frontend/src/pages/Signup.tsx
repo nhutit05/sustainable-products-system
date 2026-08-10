@@ -104,7 +104,6 @@ export default function Signup() {
           theme: 'outline',
           size: 'large',
           text: 'continue_with',
-          width: btn.offsetWidth,
         })
       }
     }
