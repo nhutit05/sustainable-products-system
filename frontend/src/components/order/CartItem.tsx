@@ -1,18 +1,17 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import type { CartItemResponse } from '../../model/cart.model'
-import type { ProductDetail, ProductIntroduce } from '../../model/product.model'
-import { Leaf, Minus, Plus, Trash2 } from 'lucide-react'
+import type { ProductDetail } from '../../model/product.model'
+import { AlertTriangle, Leaf, Minus, Plus, Trash2 } from 'lucide-react'
 import { useNotification } from '../../context/useNotification'
 
 interface CartItemProps {
-  item: CartItemResponse // Day la cart item
+  item: CartItemResponse
   onQuantityChange?: (productId: number, newQty: number) => void
   onRemove?: (productId: number) => void
 }
 
 export default function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null)
-  // Optimistic quantity state — cập nhật UI ngay, sync API sau
   const [localQty, setLocalQty] = useState(item.quantity)
   const [localSubtotal, setLocalSubtotal] = useState(item.subtotal)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -20,18 +19,26 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
   const { showNotification } = useNotification()
 
-  // Ref để debounce: lưu timeout và quantity mới nhất cần sync
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingQty = useRef<number>(localQty)
   const unitPrice = useRef<number>(item.quantity > 0 ? item.subtotal / item.quantity : 0)
+  const hasWarnedRef = useRef(false) // tránh spam notification mỗi lần render
+
+  // Trạng thái tồn kho — chỉ tính được khi đã có product
+  const isOutOfStock = !!product && product.inventory === 0
+  const isInsufficientStock = !!product && !isOutOfStock && localQty > product.inventory
+  const isUnavailable = isOutOfStock || isInsufficientStock
 
   useEffect(() => {
-    // Chưa có dữ liệu sản phẩm thì chưa kiểm tra tồn kho, tránh cảnh báo nhầm
     if (!product) return
 
-    if (item.quantity > product.inventory) {
+    if (item.quantity > product.inventory && !hasWarnedRef.current) {
+      hasWarnedRef.current = true
       showNotification({
-        message: `Số lượng sản phẩm "${product.productName}" trong giỏ hàng vượt quá tồn kho hiện có (${product.inventory}). Vui lòng kiểm tra lại.`,
+        message:
+          product.inventory === 0
+            ? `Sản phẩm "${product.productName}" hiện đã hết hàng.`
+            : `Số lượng sản phẩm "${product.productName}" trong giỏ hàng vượt quá tồn kho hiện có (${product.inventory}). Vui lòng điều chỉnh lại.`,
         type: 'WARNING',
         duration: 3000,
       })
@@ -61,11 +68,9 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
         if (!response.ok) throw new Error('Update failed')
 
-        // Báo lên parent để cập nhật tổng giỏ hàng và subtotal ngay trên trang Cart
         onQuantityChange?.(item.productId, newQty)
       } catch (error) {
         console.error('Error updating quantity:', error)
-        // Rollback về quantity cũ nếu API lỗi
         setLocalQty(item.quantity)
         setLocalSubtotal(item.subtotal)
         pendingQty.current = item.quantity
@@ -78,17 +83,26 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
   const updateQty = (change: number) => {
     const newQty = pendingQty.current + change
+
     if (newQty < 1) return
 
-    // Cập nhật UI ngay lập tức (optimistic)
+    // Chỉ chặn TĂNG vượt tồn kho — nếu item đang > tồn kho sẵn (do tồn kho giảm sau khi thêm),
+    // khách vẫn được giảm xuống để về mức hợp lệ
+    if (product && change > 0 && newQty > product.inventory) {
+      showNotification({
+        message: `Chỉ còn ${product.inventory} sản phẩm "${product.productName}" trong kho.`,
+        type: 'WARNING',
+        duration: 3000,
+      })
+      return
+    }
+
     pendingQty.current = newQty
     setLocalQty(newQty)
     setLocalSubtotal(unitPrice.current * newQty)
 
-    // Cập nhật parent ngay để tổng tiền thay đổi liền trên trang giỏ hàng
     onQuantityChange?.(item.productId, newQty)
 
-    // Debounce: huỷ timer cũ, đặt timer mới 500ms
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     debounceTimer.current = setTimeout(() => {
       syncQtyToServer(pendingQty.current)
@@ -96,7 +110,6 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
   }
 
   const removeItem = async () => {
-    // XOA GIO HANG
     setIsRemoving(true)
     try {
       const token = localStorage.getItem('token')
@@ -112,14 +125,12 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
     }
   }
 
-  // Cleanup debounce timer khi component unmount
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await fetch(`http://localhost:8080/api/products/${item.productId}`)
         if (response.ok) {
           const data: ProductDetail = await response.json()
-
           setProduct(data)
         } else {
           console.error('Failed to fetch product data')
@@ -137,18 +148,27 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
 
   return (
     <div
-      className={`cartItem bg-white p-3 rounded-2xl border border-emerald-100 mb-4 flex items-center justify-between hover:cursor-pointer hover:shadow-md transition-all duration-300 ${
-        isRemoving ? 'opacity-50 pointer-events-none' : ''
-      }`}
+      className={`cartItem bg-white p-3 rounded-2xl border mb-4 flex items-center justify-between transition-all duration-300 ${
+        isUnavailable
+          ? 'border-red-200 bg-red-50/40 opacity-60 grayscale-[30%]'
+          : 'border-emerald-100 hover:cursor-pointer hover:shadow-md'
+      } ${isRemoving ? 'opacity-50 pointer-events-none' : ''}`}
     >
       {product && (
         <div className="cartItem_content flex items-center gap-4 w-full">
-          <div className="cartItem_image">
+          <div className="cartItem_image relative">
             <img
               src={product.imageUrls[0] || '/images/default-product.png'}
               alt={product.productName}
-              className="cartItem-img w-24 h-24 rounded-2xl object-cover"
+              className={`cartItem-img w-24 h-24 rounded-2xl object-cover ${
+                isUnavailable ? 'grayscale' : ''
+              }`}
             />
+            {isOutOfStock && (
+              <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 text-white text-xs font-bold">
+                Hết hàng
+              </span>
+            )}
           </div>
 
           <div className="cartItem_main flex-1 relative">
@@ -159,6 +179,16 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
                 <Leaf className="inline-block w-4 h-4 mr-1" />
                 Eco <span>{product.baseEcoPoints * localQty}</span>
               </div>
+
+              {/* Cảnh báo tồn kho không đủ, hiển thị cố định trên item */}
+              {isUnavailable && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs font-semibold text-red-600">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  {isOutOfStock
+                    ? 'Sản phẩm hiện đã hết hàng'
+                    : `Chỉ còn ${product.inventory} sản phẩm, vui lòng điều chỉnh số lượng`}
+                </div>
+              )}
 
               <div className="cartItem--remove absolute top-0 right-0">
                 <button
@@ -182,16 +212,16 @@ export default function CartItem({ item, onQuantityChange, onRemove }: CartItemP
                 </button>
 
                 <span
-                  className={`px-3 py-1.5 text-green-900 font-semibold text-sm min-w-8 text-center transition-opacity duration-150 ${
-                    isUpdating ? 'opacity-60' : 'opacity-100'
-                  }`}
+                  className={`px-3 py-1.5 font-semibold text-sm min-w-8 text-center transition-opacity duration-150 ${
+                    isUnavailable ? 'text-red-600' : 'text-green-900'
+                  } ${isUpdating ? 'opacity-60' : 'opacity-100'}`}
                 >
                   {localQty}
                 </span>
 
                 <button
                   onClick={() => updateQty(1)}
-                  disabled={isUpdating}
+                  disabled={isUpdating || isOutOfStock || localQty >= product.inventory}
                   className="px-3 py-1.5 text-green-700 hover:bg-green-100 transition-colors font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-3.5 h-3.5" />
